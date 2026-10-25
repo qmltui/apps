@@ -267,12 +267,12 @@ void MarkdownViewerTest::paletteResolvesSemanticRoles() {
 void MarkdownViewerTest::terminalDefaultColorsPalette() {
   MdPalette palette;
   palette.m_text = QStringLiteral("default");
-  palette.m_textMuted = QStringLiteral("gray");
-  palette.m_heading = QStringLiteral("white");
-  palette.m_heading1Bg = QStringLiteral("blue");
-  palette.m_link = QStringLiteral("cyan");
-  palette.m_success = QStringLiteral("green");
-  palette.m_warning = QStringLiteral("yellow");
+  palette.m_textMuted = QStringLiteral("ansi:gray");
+  palette.m_heading = QStringLiteral("ansi:white");
+  palette.m_heading1Bg = QStringLiteral("ansi:blue");
+  palette.m_link = QStringLiteral("ansi:cyan");
+  palette.m_success = QStringLiteral("ansi:green");
+  palette.m_warning = QStringLiteral("ansi:yellow");
   palette.m_codeBg = QStringLiteral("default");
 
   // "default" resolves to 0 (the terminal default SGR 39/49 ink)

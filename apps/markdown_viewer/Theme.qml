@@ -22,7 +22,7 @@ QtObject {
 
     readonly property string border: (activeTheme === "aurora" || activeTheme === "modern") ? "#414558" :
                                     (activeTheme === "amber_crt") ? "#ffb000" :
-                                    (activeTheme === "terminal" || activeTheme === "default") ? "gray" :
+                                    (activeTheme === "terminal" || activeTheme === "default") ? "ansi:gray" :
                                     (activeTheme === "dracula") ? "#6272a4" :
                                     (activeTheme === "nord") ? "#4c566a" :
                                     (activeTheme === "monokai") ? "#75715e" : "#414868"
@@ -37,35 +37,35 @@ QtObject {
 
     readonly property string textMuted: (activeTheme === "aurora" || activeTheme === "modern") ? "#626880" :
                                         (activeTheme === "amber_crt") ? "#996600" :
-                                        (activeTheme === "terminal" || activeTheme === "default") ? "gray" :
+                                        (activeTheme === "terminal" || activeTheme === "default") ? "ansi:gray" :
                                         (activeTheme === "dracula") ? "#6272a4" :
                                         (activeTheme === "nord") ? "#d8dee9" :
                                         (activeTheme === "monokai") ? "#75715e" : "#565f89"
 
     readonly property string accent: (activeTheme === "aurora" || activeTheme === "modern") ? "#00d7ff" :
                                      (activeTheme === "amber_crt") ? "#ffb000" :
-                                     (activeTheme === "terminal" || activeTheme === "default") ? "cyan" :
+                                     (activeTheme === "terminal" || activeTheme === "default") ? "ansi:cyan" :
                                      (activeTheme === "dracula") ? "#bd93f9" :
                                      (activeTheme === "nord") ? "#88c0d0" :
                                      (activeTheme === "monokai") ? "#a6e22e" : "#7aa2f7"
 
     readonly property string accentSecondary: (activeTheme === "aurora" || activeTheme === "modern") ? "#ff79c6" :
                                               (activeTheme === "amber_crt") ? "#ffd700" :
-                                              (activeTheme === "terminal" || activeTheme === "default") ? "magenta" :
+                                              (activeTheme === "terminal" || activeTheme === "default") ? "ansi:magenta" :
                                               (activeTheme === "dracula") ? "#ff79c6" :
                                               (activeTheme === "nord") ? "#81a1c1" :
                                               (activeTheme === "monokai") ? "#f92672" : "#bb9af7"
 
     readonly property string success: (activeTheme === "aurora" || activeTheme === "modern") ? "#50fa7b" :
                                       (activeTheme === "amber_crt") ? "#ffb000" :
-                                      (activeTheme === "terminal" || activeTheme === "default") ? "green" :
+                                      (activeTheme === "terminal" || activeTheme === "default") ? "ansi:green" :
                                       (activeTheme === "dracula") ? "#50fa7b" :
                                       (activeTheme === "nord") ? "#a3be8c" :
                                       (activeTheme === "monokai") ? "#a6e22e" : "#9ece6a"
 
     readonly property string warning: (activeTheme === "aurora" || activeTheme === "modern") ? "#ffb86c" :
                                       (activeTheme === "amber_crt") ? "#ff8800" :
-                                      (activeTheme === "terminal" || activeTheme === "default") ? "yellow" :
+                                      (activeTheme === "terminal" || activeTheme === "default") ? "ansi:yellow" :
                                       (activeTheme === "dracula") ? "#f1fa8c" :
                                       (activeTheme === "nord") ? "#ebcb8b" :
                                       (activeTheme === "monokai") ? "#e6db74" : "#e0af68"
@@ -73,21 +73,21 @@ QtObject {
     // Modern badge & semantic tokens
     readonly property string h1Bg: (activeTheme === "aurora" || activeTheme === "modern") ? "#5856d6" :
                                    (activeTheme === "amber_crt") ? "#ffb000" :
-                                   (activeTheme === "terminal" || activeTheme === "default") ? "blue" :
+                                   (activeTheme === "terminal" || activeTheme === "default") ? "ansi:blue" :
                                    (activeTheme === "dracula") ? "#bd93f9" :
                                    (activeTheme === "nord") ? "#5e81ac" :
                                    (activeTheme === "monokai") ? "#f92672" : "#7aa2f7"
 
     readonly property string h1Fg: (activeTheme === "aurora" || activeTheme === "modern") ? "#ffffff" :
                                    (activeTheme === "amber_crt") ? "#000000" :
-                                   (activeTheme === "terminal" || activeTheme === "default") ? "white" :
+                                   (activeTheme === "terminal" || activeTheme === "default") ? "ansi:white" :
                                    (activeTheme === "dracula") ? "#282a36" :
                                    (activeTheme === "nord") ? "#eceff4" :
                                    (activeTheme === "monokai") ? "#272822" : "#ffffff"
 
     readonly property string inlineCodeFg: (activeTheme === "aurora" || activeTheme === "modern") ? "#f43f5e" :
                                            (activeTheme === "amber_crt") ? "#ffcc00" :
-                                           (activeTheme === "terminal" || activeTheme === "default") ? "yellow" :
+                                           (activeTheme === "terminal" || activeTheme === "default") ? "ansi:yellow" :
                                            (activeTheme === "dracula") ? "#ff79c6" :
                                            (activeTheme === "nord") ? "#88c0d0" :
                                            (activeTheme === "monokai") ? "#f92672" : "#e0af68"
@@ -101,27 +101,27 @@ QtObject {
 
     readonly property string syntaxFunction: (activeTheme === "aurora" || activeTheme === "modern") ? "#50fa7b" :
                                              (activeTheme === "amber_crt") ? "#ffd700" :
-                                             (activeTheme === "terminal" || activeTheme === "default") ? "green" :
+                                             (activeTheme === "terminal" || activeTheme === "default") ? "ansi:green" :
                                              (activeTheme === "dracula") ? "#50fa7b" :
                                              (activeTheme === "nord") ? "#88c0d0" :
                                              (activeTheme === "monokai") ? "#a6e22e" : "#7aa2f7"
 
     readonly property string syntaxKeyword: (activeTheme === "aurora" || activeTheme === "modern") ? "#ff79c6" :
-                                            (activeTheme === "terminal" || activeTheme === "default") ? "magenta" : accentSecondary
+                                            (activeTheme === "terminal" || activeTheme === "default") ? "ansi:magenta" : accentSecondary
     readonly property string syntaxType: (activeTheme === "aurora" || activeTheme === "modern") ? "#00d7ff" :
-                                         (activeTheme === "terminal" || activeTheme === "default") ? "cyan" : accent
+                                         (activeTheme === "terminal" || activeTheme === "default") ? "ansi:cyan" : accent
     readonly property string syntaxString: (activeTheme === "aurora" || activeTheme === "modern") ? "#ffb86c" :
-                                           (activeTheme === "terminal" || activeTheme === "default") ? "green" : success
+                                           (activeTheme === "terminal" || activeTheme === "default") ? "ansi:green" : success
     readonly property string syntaxComment: textMuted
     readonly property string syntaxNumber: (activeTheme === "aurora" || activeTheme === "modern") ? "#bd93f9" :
-                                           (activeTheme === "terminal" || activeTheme === "default") ? "yellow" : warning
+                                           (activeTheme === "terminal" || activeTheme === "default") ? "ansi:yellow" : warning
     readonly property string syntaxPreprocessor: (activeTheme === "aurora" || activeTheme === "modern") ? "#ff79c6" :
-                                                 (activeTheme === "terminal" || activeTheme === "default") ? "magenta" : warning
+                                                 (activeTheme === "terminal" || activeTheme === "default") ? "ansi:magenta" : warning
     readonly property string syntaxSymbol: (activeTheme === "aurora" || activeTheme === "modern") ? "#ff79c6" :
-                                           (activeTheme === "terminal" || activeTheme === "default") ? "cyan" : accentSecondary
+                                           (activeTheme === "terminal" || activeTheme === "default") ? "ansi:cyan" : accentSecondary
 
-    readonly property string searchMatchFg: (activeTheme === "terminal" || activeTheme === "default") ? "black" : bg
-    readonly property string activeMatchFg: (activeTheme === "terminal" || activeTheme === "default") ? "black" : bg
+    readonly property string searchMatchFg: (activeTheme === "terminal" || activeTheme === "default") ? "ansi:black" : bg
+    readonly property string activeMatchFg: (activeTheme === "terminal" || activeTheme === "default") ? "ansi:black" : bg
 
     function cycleTheme() {
         if (activeTheme === "aurora" || activeTheme === "modern") activeTheme = "tokyo_night"
