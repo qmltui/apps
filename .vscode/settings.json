@@ -1,0 +1,7 @@
+{
+    "cmake.options.statusBarVisibility": "visible",
+    "cmake.buildDirectory": "${workspaceFolder}/builds/${buildKit}/${buildType}",
+    "cmake.configureSettings": {
+        "FETCHCONTENT_SOURCE_DIR_QMLTUI": "/home/yosri/qml-tui"
+    }
+}

@@ -1,0 +1,28 @@
+# QmlTui Framework Technical Guide
+
+QmlTui is a modern retained-mode terminal UI framework designed for Qt 6.
+
+## Retained-Mode Terminal Architecture
+
+Unlike traditional immediate-mode TUI libraries, QmlTui uses a scene graph and retained-mode terminal items:
+
+1. **Items & Hierarchies**: Subclass `qmltui::Item` to provide custom rendering into `TextGridBuffer`.
+2. **Layout Engine**: Automatic declarative positioning with `Row`, `Column`, `GridLayout`, and `Anchors`.
+3. **QML Declarative Bindings**: Full reactive properties and signal-slot mechanisms.
+4. **Behavior on Properties**: Smooth animated value transitions in terminals.
+5. **Automation & Testing**: Native `Runner` closed-loop automation engine.
+
+## Core QML Modules
+
+- `QmlTui`: Core terminal primitives (`Terminal`, `Item`, `Rectangle`, `Text`, `Paragraph`, `ListView`, `ScrollView`).
+- `QmlTui.Controls`: Pre-built interactive widgets (`Button`, `CheckBox`, `RadioButton`, `Slider`, `Switch`, `Dialog`, `Popup`, `Calendar`).
+- `QmlTui.Image`: Textual pixel art and image rendering (`Image`, `ImageGrid`).
+- `QmlTui.TerminalHost`: Embedded Unix PTY virtual terminal host.
+
+## Closed-Loop Agent Workflow
+
+Inspect initial frames or run scripted scenarios without launching full terminal emulators:
+
+```bash
+QMLTUI_RUNNER_CAPTURE_AFTER_MS=0 ./build/examples/apps/markdown_viewer/qmltui_markdown_viewer
+```

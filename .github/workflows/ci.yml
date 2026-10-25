@@ -1,0 +1,30 @@
+name: Applications
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  main:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: yosriayed/qml-tui
+          path: qml-tui
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          modules: qtmultimedia
+      - run: cmake -S . -B build -G Ninja -DFETCHCONTENT_SOURCE_DIR_QMLTUI=${{ github.workspace }}/qml-tui
+      - run: cmake --build build -j 4
+      - run: ctest --test-dir build --output-on-failure -j 4
+  release:
+    if: vars.QMLTUI_RELEASE_AVAILABLE == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          modules: qtmultimedia
+      - run: cmake -S . -B build -G Ninja
+      - run: cmake --build build -j 4
+      - run: ctest --test-dir build --output-on-failure -j 4

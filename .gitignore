@@ -1,0 +1,4 @@
+build*/
+.qmltui/
+.qtcreator/
+apps/*/.qmlls.ini

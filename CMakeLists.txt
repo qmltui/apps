@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.21)
+project(QmlTuiApps VERSION 0.5.0 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+include(CTest)
+include(FetchContent)
+set(QMLTUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(QMLTUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(QMLTUI_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+set(QMLTUI_ENABLE_PRIVATE_QT ON CACHE BOOL "" FORCE)
+set(QMLTUI_ENABLE_RUNNER ON CACHE BOOL "" FORCE)
+if(UNIX)
+    set(QMLTUI_ENABLE_PTYVIEW ON CACHE BOOL "" FORCE)
+endif()
+FetchContent_Declare(qmltui
+    GIT_REPOSITORY https://github.com/yosriayed/qml-tui.git
+    GIT_TAG  main
+    GIT_SHALLOW TRUE)
+FetchContent_MakeAvailable(qmltui)
+find_program(QMLTUI_AGG_EXECUTABLE NAMES agg HINTS "$ENV{HOME}/.cargo/bin")
+if(QMLTUI_AGG_EXECUTABLE)
+    set(QMLTUI_RECORD_POST_COMMAND "${QMLTUI_AGG_EXECUTABLE}" --theme asciinema --quiet "<CAST>" "<CAST_STEM>.gif")
+endif()
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Qml)
+if(BUILD_TESTING)
+    find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+endif()
+qt_standard_project_setup(REQUIRES 6.8)
+# Existing app registrations use this switch; QmlTui was configured above with
+# its own tests disabled, so it controls only the application scenarios here.
+set(QMLTUI_BUILD_TESTS ${BUILD_TESTING})
+add_subdirectory(apps)
+qmltui_scenario_editor_support()

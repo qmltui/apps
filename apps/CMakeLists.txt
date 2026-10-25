@@ -1,0 +1,30 @@
+add_subdirectory(agent_stream)
+add_subdirectory(container_fleet)
+add_subdirectory(package_manager)
+if(QMLTUI_ENABLE_PRIVATE_QT)
+    add_subdirectory(industrial_plc_hmi)
+endif()
+add_subdirectory(audio_player)
+add_subdirectory(plotting_dashboard)
+# /proc readers and Linux system providers: POSIX only.
+if(UNIX)
+    if(QMLTUI_ENABLE_PRIVATE_QT)
+        add_subdirectory(btop)
+    endif()
+endif()
+add_subdirectory(snake_game)
+add_subdirectory(screensaver)
+if(QMLTUI_ENABLE_PRIVATE_QT)
+    add_subdirectory(twozero48)
+endif()
+
+# The viewer fetches md4qt (KDE) itself; a failed fetch fails configuration
+# loudly instead of silently dropping the app.
+option(QMLTUI_BUILD_MARKDOWN_VIEWER "Build the markdown_viewer showcase (fetches md4qt)" ON)
+if(QMLTUI_BUILD_MARKDOWN_VIEWER)
+    add_subdirectory(markdown_viewer)
+endif()
+
+if(QMLTUI_ENABLE_PTYVIEW)
+    add_subdirectory(file_manager)
+endif()
