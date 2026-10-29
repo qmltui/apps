@@ -16,7 +16,6 @@ Rectangle {
 
     Column {
         anchors.fill: parent
-        anchors.margins: 1
         spacing: 0
 
         Text {
@@ -43,7 +42,6 @@ Rectangle {
                     TextInput {
                         id: setRpmInput
                         anchors.fill: parent
-                        anchors.margins: 1
                         text: root.targetSpeed.toString()
                         color: HmiTheme.textPrimary
                         onAccepted: {
@@ -63,7 +61,6 @@ Rectangle {
                     TextInput {
                         id: setTempInput
                         anchors.fill: parent
-                        anchors.margins: 1
                         text: root.maxTempLimit.toString()
                         color: HmiTheme.textPrimary
                         onAccepted: {

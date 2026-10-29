@@ -12,15 +12,12 @@ qt_add_qml_module(qmltui_snake_game
 
 target_link_libraries(qmltui_snake_game PRIVATE Qt6::Core Qt6::Qml qmltui::core)
 
-if(TARGET qmltui::runner)
-    target_link_libraries(qmltui_snake_game PRIVATE qmltui::runner)
-endif()
-
 if(COMMAND qmltui_wasm_app)   # browser build, see examples/wasm and docs/guide/webassembly.md
     qmltui_wasm_app(qmltui_snake_game)
 endif()
 
 if(BUILD_TESTING AND TARGET qmltui::runner)
+    target_link_libraries(qmltui_snake_game PRIVATE qmltui::runner)
     # The game ticks on QML Timers, so the whole run is virtual time.
     qmltui_add_scenario(
         NAME test_runner_snake TARGET qmltui_snake_game

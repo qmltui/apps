@@ -80,43 +80,41 @@ if(QMLTUI_INSTALL_EXAMPLES)
     install(TARGETS qmltui_markdown_viewer RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
-if(TARGET qmltui::runner)
+if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_markdown_viewer PRIVATE qmltui::runner)
 
-    if(QMLTUI_BUILD_TESTS)
-        qmltui_add_scenario(
-            NAME markdown_viewer_scenario_wide
-            TARGET qmltui_markdown_viewer
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_markdown_viewer.js"
-            COLUMNS 100
-            ROWS 32
-            SCENARIO_TIMEOUT_MS 15000
-            LABELS AgentSmoke
-        )
-        qmltui_add_scenario(
-            NAME markdown_viewer_scenario_narrow
-            TARGET qmltui_markdown_viewer
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_markdown_viewer.js"
-            COLUMNS 70
-            ROWS 24
-            SCENARIO_TIMEOUT_MS 15000
-            LABELS AgentSmoke
-        )
-        qmltui_add_scenario(
-            NAME markdown_viewer_demo
-            TARGET qmltui_markdown_viewer
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
-            COLUMNS 100
-            ROWS 32
-            CLOCK VIRTUAL
-            SCENARIO_TIMEOUT_MS 15000
-            RECORD markdown_viewer.cast
-            LABELS Demo
-        )
-    endif()
+    qmltui_add_scenario(
+        NAME markdown_viewer_scenario_wide
+        TARGET qmltui_markdown_viewer
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_markdown_viewer.js"
+        COLUMNS 100
+        ROWS 32
+        SCENARIO_TIMEOUT_MS 15000
+        LABELS AgentSmoke
+    )
+    qmltui_add_scenario(
+        NAME markdown_viewer_scenario_narrow
+        TARGET qmltui_markdown_viewer
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_markdown_viewer.js"
+        COLUMNS 70
+        ROWS 24
+        SCENARIO_TIMEOUT_MS 15000
+        LABELS AgentSmoke
+    )
+    qmltui_add_scenario(
+        NAME markdown_viewer_demo
+        TARGET qmltui_markdown_viewer
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
+        COLUMNS 100
+        ROWS 32
+        CLOCK VIRTUAL
+        SCENARIO_TIMEOUT_MS 15000
+        RECORD markdown_viewer.cast
+        LABELS Demo
+    )
 endif()
 
-if(QMLTUI_BUILD_TESTS)
+if(BUILD_TESTING)
     qt_add_executable(test_markdown_viewer_document test_markdown_viewer.cpp)
     target_link_libraries(test_markdown_viewer_document PRIVATE
         Qt6::Core

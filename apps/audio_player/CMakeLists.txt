@@ -78,34 +78,32 @@ if(QMLTUI_INSTALL_EXAMPLES)
     install(TARGETS qmltui_audio_player RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
-if(TARGET qmltui::runner)
+if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_audio_player PRIVATE qmltui::runner)
 
-    if(QMLTUI_BUILD_TESTS)
-        qmltui_add_scenario_test(
-            NAME audio_player_demo_smoke
-            TARGET qmltui_audio_player
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_audio_player.js"
-            COLUMNS 120
-            ROWS 36
-            ARTIFACT "audio_player/initial.txt"
-            ARTIFACT_CONTENT "AUDIO PLAYER"
-            LABELS AgentSmoke
-        )
+    qmltui_add_scenario(
+        NAME audio_player_demo_smoke
+        TARGET qmltui_audio_player
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_audio_player.js"
+        COLUMNS 120
+        ROWS 36
+        ARTIFACT "audio_player/initial.txt"
+        ARTIFACT_CONTENT "AUDIO PLAYER"
+        LABELS AgentSmoke
+    )
 
-        qmltui_add_scenario_test(
-            NAME audio_player_demo
-            TARGET qmltui_audio_player
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
-            COLUMNS 120
-            ROWS 36
-            RECORD audio_player.cast
-            LABELS Demo
-        )
-    endif()
+    qmltui_add_scenario(
+        NAME audio_player_demo
+        TARGET qmltui_audio_player
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
+        COLUMNS 120
+        ROWS 36
+        RECORD audio_player.cast
+        LABELS Demo
+    )
 endif()
 
-if(QMLTUI_BUILD_TESTS)
+if(BUILD_TESTING)
     qt_add_executable(test_audio_player_dsp test_audio_player_dsp.cpp ${audio_player_sources})
     target_include_directories(test_audio_player_dsp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(test_audio_player_dsp PRIVATE

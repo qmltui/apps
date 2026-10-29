@@ -8,21 +8,19 @@ qt_add_qml_module(qmltui_container_fleet
         FleetListModel.h
     QML_FILES
         Main.qml
-
- DEPENDENCIES TARGET qmltui::core qmltui::controls
+    DEPENDENCIES
+        TARGET qmltui::core
+        TARGET qmltui::controls
 )
 
-target_link_libraries(qmltui_container_fleet PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls qmltui::controls)
-
-if(TARGET qmltui::runner)
-    target_link_libraries(qmltui_container_fleet PRIVATE qmltui::runner)
-endif()
+target_link_libraries(qmltui_container_fleet PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
 
 if(QMLTUI_INSTALL_EXAMPLES)
     install(TARGETS qmltui_container_fleet RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
 if(BUILD_TESTING AND TARGET qmltui::runner)
+    target_link_libraries(qmltui_container_fleet PRIVATE qmltui::runner)
     qmltui_add_scenario(
         NAME test_runner_container_fleet TARGET qmltui_container_fleet
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_fleet.js"

@@ -92,10 +92,6 @@ Panel {
     Column {
         id: visInner
         anchors.fill: parent
-        anchors.topMargin: 1
-        anchors.bottomMargin: 1
-        anchors.leftMargin: 1
-        anchors.rightMargin: 1
         spacing: 1
 
         readonly property int specHeight: !visDeck.showSpectrumSection ? 0

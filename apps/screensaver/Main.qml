@@ -72,7 +72,7 @@ Terminal {
         Rectangle {
             id: header
             width: parent.width
-            height: rootWindow.showHud ? 3 : 0
+            height: rootWindow.showHud ? 4 : 0
             visible: rootWindow.showHud
             color: "#050b14"
             border.style: Border.Single
@@ -135,7 +135,6 @@ Terminal {
 
             Item {
                 anchors.fill: parent
-                anchors.margins: rootWindow.showHud ? 1 : 0
 
                 StarfieldSaver {
                     visible: rootWindow.currentMode === 0

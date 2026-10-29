@@ -175,11 +175,8 @@ Terminal {
                     id: processSummary
 
                     anchors.top: parent.top
-                    anchors.topMargin: 1
                     anchors.left: parent.left
-                    anchors.leftMargin: 1
                     anchors.right: parent.right
-                    anchors.rightMargin: 1
                     height: 5
 
                     Text {
@@ -230,11 +227,8 @@ Terminal {
 
                     anchors.top: processSummary.bottom
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 1
                     anchors.left: parent.left
-                    anchors.leftMargin: 1
                     anchors.right: parent.right
-                    anchors.rightMargin: 1
                     focus: true
                     Keys.onPressed: event => root.handleKeyEvent(event)
                     model: systemModel
@@ -326,9 +320,8 @@ Terminal {
                     Text {
                         visible: networkPanel.height >= 4
                         anchors.top: parent.top
-                        anchors.topMargin: 1
                         anchors.left: parent.left
-                        anchors.leftMargin: 2
+                        anchors.leftMargin: 1
                         text: qsTr("▼ download  %1").arg(systemModel.downloadRateText)
                         color: root.cyanColor
                     }
@@ -336,12 +329,10 @@ Terminal {
                     Sparkline {
                         visible: networkPanel.height >= 6
                         anchors.top: parent.top
-                        anchors.topMargin: 2
+                        anchors.topMargin: 1
                         anchors.bottom: parent.verticalCenter
                         anchors.left: parent.left
-                        anchors.leftMargin: 1
                         anchors.right: parent.right
-                        anchors.rightMargin: 1
                         values: systemModel.downloadHistory
                         filled: true
                         color: root.purpleColor
@@ -352,7 +343,7 @@ Terminal {
                         visible: networkPanel.height >= 5
                         anchors.top: parent.verticalCenter
                         anchors.left: parent.left
-                        anchors.leftMargin: 2
+                        anchors.leftMargin: 1
                         text: qsTr("▲ upload    %1").arg(systemModel.uploadRateText)
                         color: root.pinkColor
                     }
@@ -362,11 +353,8 @@ Terminal {
                         anchors.top: parent.verticalCenter
                         anchors.topMargin: 1
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 1
                         anchors.left: parent.left
-                        anchors.leftMargin: 1
                         anchors.right: parent.right
-                        anchors.rightMargin: 1
                         values: systemModel.uploadHistory
                         filled: true
                         color: root.pinkColor
@@ -393,13 +381,11 @@ Terminal {
 
                     Column {
                         anchors.top: parent.top
-                        anchors.topMargin: 1
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 1
                         anchors.left: parent.left
-                        anchors.leftMargin: 2
+                        anchors.leftMargin: 1
                         anchors.right: parent.right
-                        anchors.rightMargin: 2
+                        anchors.rightMargin: 1
                         spacing: 0
 
                         Text {
@@ -469,13 +455,11 @@ Terminal {
 
                     Column {
                         anchors.top: parent.top
-                        anchors.topMargin: 1
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 1
                         anchors.left: parent.left
-                        anchors.leftMargin: 2
+                        anchors.leftMargin: 1
                         anchors.right: parent.right
-                        anchors.rightMargin: 2
+                        anchors.rightMargin: 1
                         spacing: 0
 
                         Text {
@@ -541,25 +525,25 @@ Terminal {
             border.color: root.borderColor
 
             Text {
-                anchors.top: parent.top
+                y: 0
                 anchors.left: parent.left
-                anchors.leftMargin: 2
+                anchors.leftMargin: 1
                 text: qsTr("┐¹cpu┌──┐menu┌┐preset *┌")
                 color: root.greenColor
                 bold: true
             }
 
             Text {
-                anchors.top: parent.top
+                y: 0
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("┐%1┌").arg(root.clockText)
                 color: root.textColor
             }
 
             Text {
-                anchors.top: parent.top
+                y: 0
                 anchors.right: parent.right
-                anchors.rightMargin: 2
+                anchors.rightMargin: 1
                 text: qsTr("┐- %1ms +┌").arg(systemModel.refreshInterval)
                 color: root.cyanColor
             }
@@ -568,11 +552,8 @@ Terminal {
                 id: cpuGraphArea
 
                 anchors.top: parent.top
-                anchors.topMargin: 1
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 1
                 anchors.left: parent.left
-                anchors.leftMargin: 1
                 anchors.right: corePanel.left
 
                 Canvas {
@@ -625,7 +606,6 @@ Terminal {
 
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
-                anchors.rightMargin: 1
                 width: 25
                 height: Math.min(parent.height - 2, Math.max(6, Math.min(systemModel.coreUsage.length, 16) + 4))
                 color: root.panelColor
@@ -633,9 +613,9 @@ Terminal {
                 border.color: root.borderColor
 
                 Text {
-                    anchors.top: parent.top
+                    y: 0
                     anchors.left: parent.left
-                    anchors.leftMargin: 2
+                    anchors.leftMargin: 1
                     text: qsTr("┐%1┌┐%2┌").arg(systemModel.cpuNameText.slice(0, Math.max(4, corePanel.width - systemModel.cpuFrequencyText.length - 7))).arg(systemModel.cpuFrequencyText)
                     color: root.cyanColor
                     bold: true
@@ -643,11 +623,10 @@ Terminal {
 
                 Row {
                     anchors.top: parent.top
-                    anchors.topMargin: 1
                     anchors.left: parent.left
-                    anchors.leftMargin: 2
+                    anchors.leftMargin: 1
                     anchors.right: parent.right
-                    anchors.rightMargin: 2
+                    anchors.rightMargin: 1
                     spacing: 1
 
                     Text {
@@ -678,13 +657,13 @@ Terminal {
                     id: coreColumn
 
                     anchors.top: parent.top
-                    anchors.topMargin: 2
+                    anchors.topMargin: 1
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 2
+                    anchors.bottomMargin: 1
                     anchors.left: parent.left
-                    anchors.leftMargin: 2
+                    anchors.leftMargin: 1
                     anchors.right: parent.right
-                    anchors.rightMargin: 2
+                    anchors.rightMargin: 1
                     spacing: 0
 
                     Repeater {
@@ -723,7 +702,7 @@ Terminal {
                 Text {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
-                    anchors.leftMargin: 2
+                    anchors.leftMargin: 1
                     text: qsTr("LAV: %1").arg(systemModel.loadAverageText)
                     color: root.textColor
                 }

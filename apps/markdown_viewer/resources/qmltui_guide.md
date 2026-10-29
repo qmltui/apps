@@ -14,10 +14,10 @@ Unlike traditional immediate-mode TUI libraries, QmlTui uses a scene graph and r
 
 ## Core QML Modules
 
-- `QmlTui`: Core terminal primitives (`Terminal`, `Item`, `Rectangle`, `Text`, `Paragraph`, `ListView`, `ScrollView`).
-- `QmlTui.Controls`: Pre-built interactive widgets (`Button`, `CheckBox`, `RadioButton`, `Slider`, `Switch`, `Dialog`, `Popup`, `Calendar`).
-- `QmlTui.Image`: Textual pixel art and image rendering (`Image`, `ImageGrid`).
-- `QmlTui.TerminalHost`: Embedded Unix PTY virtual terminal host.
+- `QmlTui`: Core terminal primitives (`Terminal`, `Item`, `Rectangle`, `Text`, `Paragraph`, `ListView`, `ScrollView`, `TableView`, `TreeView`, `Scrollback`, `Canvas`, `AnimatedSprite`).
+- `QmlTui.Controls`: Pre-built interactive widgets (`Button`, `CheckBox`, `RadioButton`, `Slider`, `ComboBox`, `SpinBox`, `Dialog`, `Popup`, `Calendar`).
+- `QmlTui.Image`: Textual pixel art and image rendering (`Image`).
+- `QmlTui.PtyView`: Embedded Unix PTY virtual terminal host (`PtyView`).
 
 ## Closed-Loop Agent Workflow
 

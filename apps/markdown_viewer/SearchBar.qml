@@ -22,9 +22,10 @@ Rectangle {
 
     Row {
         anchors.fill: parent
-        anchors.leftMargin: 2
-        anchors.rightMargin: 2
+        anchors.leftMargin: 1
+        anchors.rightMargin: 1
         spacing: 2
+        clip: true
 
         Text {
             text: "🔍 Search:"

@@ -36,11 +36,8 @@ qt_add_qml_module(qmltui_agent_stream
 
 target_link_libraries(qmltui_agent_stream PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
 
-if(TARGET qmltui::runner)
-    target_link_libraries(qmltui_agent_stream PRIVATE qmltui::runner)
-endif()
-
 if(BUILD_TESTING AND TARGET qmltui::runner)
+    target_link_libraries(qmltui_agent_stream PRIVATE qmltui::runner)
     qmltui_add_scenario(NAME agent_stream_inline TARGET qmltui_agent_stream
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_inline.js"
         COLUMNS 120 ROWS 35 CLOCK VIRTUAL LABELS AgentSmoke

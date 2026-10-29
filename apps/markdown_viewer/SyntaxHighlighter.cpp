@@ -137,8 +137,9 @@ bool SyntaxHighlighter::isType(const QString &word, Language lang) {
     static const QSet<QString> qmlTypes = {
         "int", "double", "string", "bool", "real", "var", "list", "color", "date", "point", "size", "rect",
         "Item", "Rectangle", "Text", "Paragraph", "Terminal", "Column", "Row", "Grid", "GridLayout",
-        "ListView", "ScrollView", "Button", "CheckBox", "RadioButton", "Slider", "Switch", "Dialog",
-        "Popup", "Timer", "MouseArea", "Repeater", "Loader", "Sparkline", "TabBar", "Toast", "BusyIndicator", "Palette"
+        "ListView", "ScrollView", "TableView", "TreeView", "Scrollback", "Canvas", "AnimatedSprite",
+        "Button", "CheckBox", "RadioButton", "Slider", "ComboBox", "SpinBox", "Dialog",
+        "Popup", "Timer", "MouseArea", "Repeater", "Loader", "Sparkline", "TabBar", "BusyIndicator", "StatusBadge"
     };
 
     static const QSet<QString> haskellTypes = {

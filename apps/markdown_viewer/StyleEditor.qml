@@ -212,7 +212,6 @@ Rectangle {
     Column {
         id: mainColumn
         anchors.fill: parent
-        anchors.margins: 1
         spacing: 0
 
         // Header Title

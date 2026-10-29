@@ -147,7 +147,6 @@ Terminal {
                 focus: true
                 selectedRow: 0
                 anchors.fill: parent
-                anchors.margins: 1
                 showColumnGrid: true
                 headerColor: root.colorAccentCyan
                 headerBackgroundColor: "#181825"
@@ -303,12 +302,14 @@ Terminal {
             Column {
                 x: 1
                 y: 1
+                width: Math.max(0, parent.width - 2)
                 spacing: 0
 
                 Repeater {
                     model: root.selectedLogs
                     delegate: Text {
                         required property string modelData
+                        width: parent.width
                         text: "  > " + modelData
                         color: modelData.indexOf("ALERT") !== -1 ? root.colorAccentRed : modelData.indexOf("WARN") !== -1 ? root.colorAccentYellow : root.colorTextMuted
                     }

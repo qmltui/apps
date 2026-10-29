@@ -399,7 +399,6 @@ Terminal {
 
                     Column {
                         anchors.fill: parent
-                        anchors.margins: 1
                         spacing: 0
 
                         Text {
@@ -538,7 +537,6 @@ Terminal {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: 1
                 spacing: 0
 
                         Text {
@@ -588,7 +586,6 @@ Terminal {
                                     Canvas {
                                         id: tempCanvas
                                         anchors.fill: parent
-                                        anchors.margins: 1
                             color: rootWindow.machineState === PlcTypes.Error
                                    ? HmiTheme.statusError
                                    : (rootWindow.machineState === PlcTypes.Processing
@@ -644,7 +641,6 @@ Terminal {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: 1
                 spacing: 0
 
                         Text { text: "RPM Setpoint:"; color: HmiTheme.textPrimary }
@@ -657,7 +653,6 @@ Terminal {
                     TextInput {
                         id: rpmInput
                                 anchors.fill: parent
-                                anchors.margins: 1
                                 text: rootWindow.targetSpeed.toString()
                         color: HmiTheme.textPrimary
                         onAccepted: {
@@ -677,7 +672,6 @@ Terminal {
                             TextInput {
                                 id: tempLimitInput
                                 anchors.fill: parent
-                                anchors.margins: 1
                                 text: rootWindow.maxTempLimit.toString()
                         color: HmiTheme.textPrimary
                         onAccepted: {
@@ -690,18 +684,20 @@ Terminal {
                         Row {
                             width: parent.width
                             height: 3
-                            spacing: 1
+                            spacing: 0
                             Button {
                                 background: Rectangle {
                                     color: "#1e3a1e"
                                     border.color: "default"
                                     border.style: parent && parent.height >= 3 ? (parent.activeFocus ? Border.Double : Border.Single) : Border.None
                                 }
-                                width: Math.floor((parent.width - 1) / 2)
+                                width: Math.floor(parent.width / 2)
                                 height: 3
+                                leftPadding: 1
+                                rightPadding: 1
                                 text: "[S] START"
                                 textColor: HmiTheme.textSuccess
-                        onClicked: rootWindow.triggerStart()
+                                onClicked: rootWindow.triggerStart()
                             }
                             Button {
                                 background: Rectangle {
@@ -709,29 +705,33 @@ Terminal {
                                     border.color: "default"
                                     border.style: parent && parent.height >= 3 ? (parent.activeFocus ? Border.Double : Border.Single) : Border.None
                                 }
-                                width: parent.width - Math.floor((parent.width - 1) / 2) - 1
+                                width: parent.width - Math.floor(parent.width / 2)
                                 height: 3
+                                leftPadding: 1
+                                rightPadding: 1
                                 text: "[X] STOP"
                                 textColor: HmiTheme.textDanger
-                        onClicked: rootWindow.triggerStop()
+                                onClicked: rootWindow.triggerStop()
                             }
                         }
 
                         Row {
                             width: parent.width
                             height: 3
-                            spacing: 1
+                            spacing: 0
                             Button {
                                 background: Rectangle {
                                     color: "#3a301e"
                                     border.color: "default"
                                     border.style: parent && parent.height >= 3 ? (parent.activeFocus ? Border.Double : Border.Single) : Border.None
                                 }
-                                width: Math.floor((parent.width - 1) / 2)
+                                width: Math.floor(parent.width / 2)
                                 height: 3
+                                leftPadding: 1
+                                rightPadding: 1
                                 text: "[R] RESET"
                                 textColor: HmiTheme.textWarning
-                        onClicked: rootWindow.requestReset()
+                                onClicked: rootWindow.requestReset()
                             }
                             Button {
                                 background: Rectangle {
@@ -739,11 +739,13 @@ Terminal {
                                     border.color: "default"
                                     border.style: parent && parent.height >= 3 ? (parent.activeFocus ? Border.Double : Border.Single) : Border.None
                                 }
-                                width: parent.width - Math.floor((parent.width - 1) / 2) - 1
+                                width: parent.width - Math.floor(parent.width / 2)
                                 height: 3
+                                leftPadding: 1
+                                rightPadding: 1
                                 text: "[M] MAINT"
                                 textColor: HmiTheme.textHighlight
-                        onClicked: rootWindow.requestMaintenance()
+                                onClicked: rootWindow.requestMaintenance()
                             }
                         }
                     }
@@ -789,7 +791,6 @@ Terminal {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: 1
                 spacing: 0
 
                 Text {

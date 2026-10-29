@@ -85,7 +85,7 @@ Popup {
                 cursorVisible: true
                 cursorColor: Theme.accentYellow
                 onAccepted: {
-                    root.accepted(textInput.text, root.isDirectory);
+                    root.dialogAccepted(textInput.text, root.isDirectory);
                     root.close();
                 }
             }

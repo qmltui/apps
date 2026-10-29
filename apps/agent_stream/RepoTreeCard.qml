@@ -29,7 +29,7 @@ Column {
         branchColor: "#38bdf8"
 
         Component.onCompleted: {
-            repoTreeView.rootNode = {
+            repoTreeView.model = {
                 "text": "QmlTui (Repository Root)",
                 "expanded": true,
                 "children": [

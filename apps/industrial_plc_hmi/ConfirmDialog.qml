@@ -21,7 +21,6 @@ Rectangle {
 
     Column {
         anchors.fill: parent
-        anchors.margins: 1
         spacing: 0
 
         Rectangle {

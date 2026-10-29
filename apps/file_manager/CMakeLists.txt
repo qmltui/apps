@@ -33,18 +33,16 @@ target_link_libraries(qmltui_file_manager PRIVATE
     qmltui::pty_view
 )
 
-if(TARGET qmltui::runner)
-    target_link_libraries(qmltui_file_manager PRIVATE qmltui::runner)
-endif()
-
 if(QMLTUI_INSTALL_EXAMPLES)
     install(TARGETS qmltui_file_manager RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
-if(TARGET qmltui::runner AND QMLTUI_BUILD_TESTS)
+if(BUILD_TESTING AND TARGET qmltui::runner)
+    target_link_libraries(qmltui_file_manager PRIVATE qmltui::runner)
+
     # idle_budget asserts the application does not repaint while nothing changes.
     foreach(scenario navigation preview search actions idle_budget)
-        qmltui_add_scenario_test(
+        qmltui_add_scenario(
             NAME file_manager_${scenario}
             TARGET qmltui_file_manager
             SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_${scenario}.js"
@@ -54,7 +52,7 @@ if(TARGET qmltui::runner AND QMLTUI_BUILD_TESTS)
         )
     endforeach()
 
-    qmltui_add_scenario_test(
+    qmltui_add_scenario(
         NAME file_manager_demo
         TARGET qmltui_file_manager
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"

@@ -15,7 +15,8 @@ qt_add_qml_module(qmltui_btop
         Main.qml
         BtopPanel.qml
     DEPENDENCIES
- TARGET qmltui::core qmltui::controls
+        TARGET qmltui::core
+        TARGET qmltui::controls
 )
 
 target_link_libraries(qmltui_btop PRIVATE
@@ -29,38 +30,36 @@ if(QMLTUI_INSTALL_EXAMPLES)
     install(TARGETS qmltui_btop RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
 
-if(TARGET qmltui::runner)
+if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_btop PRIVATE qmltui::runner)
 
-    if(QMLTUI_BUILD_TESTS)
-        qmltui_add_scenario_test(
-            NAME btop_smoke
-            TARGET qmltui_btop
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_btop.js"
-            COLUMNS 132
-            ROWS 42
-            LABELS AgentSmoke
-        )
+    qmltui_add_scenario(
+        NAME btop_smoke
+        TARGET qmltui_btop
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_btop.js"
+        COLUMNS 132
+        ROWS 42
+        LABELS AgentSmoke
+    )
 
-        # Only timer-driven refreshes may repaint while the user is idle.
-        qmltui_add_scenario_test(
-            NAME btop_idle_budget
-            TARGET qmltui_btop
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_idle_budget.js"
-            COLUMNS 132
-            ROWS 42
-            LABELS AgentSmoke
-        )
+    # Only timer-driven refreshes may repaint while the user is idle.
+    qmltui_add_scenario(
+        NAME btop_idle_budget
+        TARGET qmltui_btop
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_idle_budget.js"
+        COLUMNS 132
+        ROWS 42
+        LABELS AgentSmoke
+    )
 
-        qmltui_add_scenario_test(
-            NAME btop_demo
-            TARGET qmltui_btop
-            SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
-            COLUMNS 132
-            ROWS 42
-            CLOCK VIRTUAL
-            RECORD btop.cast
-            LABELS Demo
-        )
-    endif()
+    qmltui_add_scenario(
+        NAME btop_demo
+        TARGET qmltui_btop
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
+        COLUMNS 132
+        ROWS 42
+        CLOCK VIRTUAL
+        RECORD btop.cast
+        LABELS Demo
+    )
 endif()

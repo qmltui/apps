@@ -36,7 +36,7 @@ Rectangle {
         width: 16
         height: 1
         anchors.right: parent.right
-        anchors.rightMargin: 2
+        anchors.rightMargin: 1
         y: 1
         color: root.machineState === PlcTypes.Error || !root.validState
                ? HmiTheme.statusError

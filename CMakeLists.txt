@@ -26,8 +26,7 @@ if(BUILD_TESTING)
     find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
 endif()
 qt_standard_project_setup(REQUIRES 6.8)
-# Existing app registrations use this switch; QmlTui was configured above with
-# its own tests disabled, so it controls only the application scenarios here.
-set(QMLTUI_BUILD_TESTS ${BUILD_TESTING})
 add_subdirectory(apps)
-qmltui_scenario_editor_support()
+if(COMMAND qmltui_scenario_editor_support)
+    qmltui_scenario_editor_support()
+endif()

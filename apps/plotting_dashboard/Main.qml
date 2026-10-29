@@ -215,7 +215,6 @@ Terminal {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: 1
                 spacing: 0
 
                 Text {
@@ -433,13 +432,9 @@ Terminal {
                     Item {
                         id: upperChartBox
                         anchors.top: upperTitle.bottom
-                        anchors.topMargin: 1
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 1
                         anchors.left: parent.left
-                        anchors.leftMargin: 1
                         anchors.right: parent.right
-                        anchors.rightMargin: 1
 
                         // Superposed Canvas 1: High-Performance Background Grid Lines Canvas
                         Canvas {
@@ -517,13 +512,9 @@ Terminal {
                     Item {
                         id: lowerChartBox
                         anchors.top: lowerTitle.bottom
-                        anchors.topMargin: 1
                         anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 1
                         anchors.left: parent.left
-                        anchors.leftMargin: 1
                         anchors.right: parent.right
-                        anchors.rightMargin: 1
 
                         // Superposed Canvas 1: High-Performance Background Cross-hairs Grid Canvas
                         Canvas {

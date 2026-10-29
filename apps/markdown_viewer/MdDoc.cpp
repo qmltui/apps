@@ -733,10 +733,12 @@ QString MdDoc::truncateToDisplayWidth(const QString &text, int width) {
     return {};
   QString result;
   int used = 0;
-  for (const Grapheme &cluster : UnicodeText::graphemes(text)) {
+  GraphemeIterator iterator(text);
+  GraphemeRef cluster;
+  while (iterator.next(cluster)) {
     if (used + cluster.width > width)
       break;
-    result += QString::fromUtf8(cluster.utf8);
+    result.append(cluster.utf16);
     used += cluster.width;
   }
   return result;
@@ -783,14 +785,15 @@ void MdDoc::appendWrappedLine(const QList<FormattedSegment> &segments,
           continue;
         }
 
-        const QVector<Grapheme> clusters = UnicodeText::graphemes(pending);
-        if (clusters.isEmpty())
+        GraphemeIterator iterator(pending);
+        GraphemeRef firstCluster;
+        if (!iterator.next(firstCluster))
           break;
         FormattedSegment replacement = style;
         replacement.text = QStringLiteral("");
         current.segments.append(replacement);
         usedWidth = 1;
-        pending.remove(0, clusters.constFirst().utf16Length);
+        pending.remove(0, firstCluster.utf16Length());
         if (!pending.isEmpty())
           pushLine();
         continue;
@@ -817,13 +820,15 @@ void MdDoc::appendWrappedLine(const QList<FormattedSegment> &segments,
       token.clear();
     };
 
-    for (const Grapheme &cluster : UnicodeText::graphemes(segment.text)) {
-      const QString grapheme = QString::fromUtf8(cluster.utf8);
-      if (grapheme == QStringLiteral("\n")) {
+    GraphemeIterator iterator(segment.text);
+    GraphemeRef cluster;
+    while (iterator.next(cluster)) {
+      const QStringView grapheme = cluster.utf16;
+      if (grapheme == u"\n") {
         flushToken();
         pushLine(true);
-      } else if (grapheme == QStringLiteral(" ") ||
-                 grapheme == QStringLiteral("\t")) {
+      } else if (grapheme == u" " ||
+                 grapheme == u"\t") {
         flushToken();
         if (usedWidth >= maxWidth)
           pushLine();
@@ -832,7 +837,7 @@ void MdDoc::appendWrappedLine(const QList<FormattedSegment> &segments,
         current.segments.append(space);
         ++usedWidth;
       } else {
-        token += grapheme;
+        token.append(grapheme);
       }
     }
     flushToken();
