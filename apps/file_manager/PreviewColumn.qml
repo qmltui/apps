@@ -2,12 +2,39 @@ pragma ComponentBehavior: Bound
 
 import QtQml
 import QmlTui
+import QmlTui.Image
 
 Rectangle {
     id: root
 
     required property var previewData
     property var backend: null
+    property int renderModeIndex: 0
+
+    readonly property int currentRenderMode: {
+        if (root.renderModeIndex === 1)
+            return Image.HalfBlock;
+        if (root.renderModeIndex === 2)
+            return Image.Braille;
+        if (root.renderModeIndex === 3)
+            return Image.ASCII;
+        return Image.Auto;
+    }
+
+    readonly property string currentRenderModeName: {
+        if (root.renderModeIndex === 1)
+            return "HalfBlock";
+        if (root.renderModeIndex === 2)
+            return "Braille";
+        if (root.renderModeIndex === 3)
+            return "ASCII";
+        return "Auto";
+    }
+
+    function cycleRenderMode(): string {
+        root.renderModeIndex = (root.renderModeIndex + 1) % 4;
+        return root.currentRenderModeName;
+    }
 
     onWidthChanged: {
         if (root.backend && root.width > 0) {
@@ -41,9 +68,9 @@ Rectangle {
                 id: textParagraph
                 width: textScrollView.width
                 wrapMode: Text.NoWrap
-                textFormat: Text.PlainText
+                textFormat: Text.AnsiText
                 color: Theme.textPrimary
-                text: root.previewData ? (root.previewData.formattedText || root.previewData.rawText || (root.previewData.textLines ? root.previewData.textLines.join("\n") : "")) : ""
+                text: root.previewData ? (root.previewData.highlightedText || root.previewData.formattedText || root.previewData.rawText || (root.previewData.textLines ? root.previewData.textLines.join("\n") : "")) : ""
             }
         }
     }
@@ -72,8 +99,15 @@ Rectangle {
 
                 Row {
                     spacing: 1
-                    Text { text: "📁 " + (root.previewData ? root.previewData.name : ""); color: Theme.accentBlue; bold: true }
-                    Text { text: "(" + (root.previewData ? root.previewData.itemCount : 0) + " items)"; color: Theme.textSecondary }
+                    Text {
+                        text: "📁 " + (root.previewData ? root.previewData.name : "")
+                        color: Theme.accentBlue
+                        bold: true
+                    }
+                    Text {
+                        text: "(" + (root.previewData ? root.previewData.itemCount : 0) + " items)"
+                        color: Theme.textSecondary
+                    }
                 }
 
                 Text {
@@ -150,23 +184,83 @@ Rectangle {
             spacing: 1
 
             Column {
+                id: metadataHeader
                 width: parent.width
                 spacing: 0
 
                 Text {
-                    text: root.previewData && root.previewData.type === "image" ? "🖼️ Image Asset" : "📦 Binary / Archive"
+                    text: {
+                        if (!root.previewData || root.previewData.type !== "image")
+                            return "📦 Binary / Archive";
+                        if (root.previewData.mediaKind === "pdf")
+                            return "📕 Image Asset · PDF";
+                        if (root.previewData.mediaKind === "svg")
+                            return "📐 Image Asset · SVG";
+                        return "🖼️ Image Asset";
+                    }
                     color: Theme.accentPink
                     bold: true
                 }
 
-                Text { text: "File: " + (root.previewData ? root.previewData.name : ""); color: Theme.textPrimary; bold: true }
-                Text { text: "MIME: " + (root.previewData ? root.previewData.mimeType : ""); color: Theme.accentCyan }
-                Text { text: "Size: " + (root.previewData ? root.previewData.sizeFormatted : ""); color: Theme.textSecondary }
-                Text { text: "Perms: " + (root.previewData ? root.previewData.permissions : "") + "  Owner: " + (root.previewData ? root.previewData.owner : ""); color: Theme.textDim }
+                Text {
+                    text: "File: " + (root.previewData ? root.previewData.name : "")
+                    color: Theme.textPrimary
+                    bold: true
+                }
+                Text {
+                    text: "MIME: " + (root.previewData ? root.previewData.mimeType : "")
+                    color: Theme.accentCyan
+                }
+                Text {
+                    text: {
+                        const sz = root.previewData ? (root.previewData.sizeFormatted || "") : "";
+                        const dims = root.previewData && root.previewData.dimensions ? (" · " + root.previewData.dimensions) : "";
+                        return "Size: " + sz + dims;
+                    }
+                    color: Theme.textSecondary
+                }
+                Text {
+                    text: "Perms: " + (root.previewData ? root.previewData.permissions : "") + "  Owner: " + (root.previewData ? root.previewData.owner : "")
+                    color: Theme.textDim
+                }
+                Text {
+                    visible: Boolean(root.previewData && root.previewData.type === "image")
+                    text: {
+                        const modeStr = "[m] Mode: " + root.currentRenderModeName;
+                        const pageCount = (root.previewData && root.previewData.pageCount) ? root.previewData.pageCount : 1;
+                        if (pageCount > 1) {
+                            const curPage = (root.backend ? root.backend.previewPage : 0) + 1;
+                            return modeStr + "  [[/]] Page " + curPage + "/" + pageCount;
+                        }
+                        return modeStr;
+                    }
+                    color: Theme.accentYellow
+                }
+            }
+
+            Image {
+                id: previewImage
+                width: parent.width
+                height: Math.max(4, parent.height - metadataHeader.height - 1)
+                visible: Boolean(root.previewData && root.previewData.type === "image")
+                retainWhileLoading: true
+                fillMode: Image.PreserveAspectFit
+                renderMode: root.currentRenderMode
+                smooth: false
+                source: {
+                    if (!root.previewData || root.previewData.type !== "image" || !root.previewData.path)
+                        return "";
+                    const w = Math.max(16, previewImage.renderSize.width);
+                    const h = Math.max(16, previewImage.renderSize.height);
+                    const mockFlag = (root.backend && root.backend.isMock) ? "1" : "0";
+                    const page = root.backend ? root.backend.previewPage : 0;
+                    return "image://preview/render?path=" + encodeURIComponent(root.previewData.path) + "&mime=" + encodeURIComponent(root.previewData.mimeType || "") + "&page=" + page + "&mock=" + mockFlag + "&w=" + w + "&h=" + h;
+                }
             }
 
             Text {
-                text: root.previewData && root.previewData.type === "image" ? "[ Image Content Preview ]" : "[ Binary Data Block ]"
+                visible: Boolean(root.previewData && root.previewData.type === "binary")
+                text: "[ Binary Data Block ]"
                 color: Theme.textMuted
             }
         }

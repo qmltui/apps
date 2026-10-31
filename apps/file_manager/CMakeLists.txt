@@ -1,5 +1,7 @@
 set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
+find_package(Qt6 6.8 REQUIRED COMPONENTS Gui Svg Pdf)
+
 qt_add_executable(qmltui_file_manager main.cpp)
 
 qt_add_qml_module(qmltui_file_manager
@@ -8,6 +10,8 @@ qt_add_qml_module(qmltui_file_manager
     SOURCES
         FileManagerBackend.h
         FileManagerBackend.cpp
+        PreviewImageProvider.h
+        PreviewImageProvider.cpp
     QML_FILES
         Main.qml
         Theme.qml
@@ -22,14 +26,19 @@ qt_add_qml_module(qmltui_file_manager
     DEPENDENCIES
         TARGET qmltui::core
         TARGET qmltui::controls
+        TARGET qmltui::image
         TARGET qmltui::pty_view
 )
 
 target_link_libraries(qmltui_file_manager PRIVATE
     Qt6::Core
+    Qt6::Gui
     Qt6::Qml
+    Qt6::Svg
+    Qt6::Pdf
     qmltui::core
     qmltui::controls
+    qmltui::image
     qmltui::pty_view
 )
 

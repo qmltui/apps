@@ -18,58 +18,98 @@ Terminal {
 
     property bool isFilterMode: false
     property bool isEditorOpen: false
-    property bool isShellOpen: false
+    property string shellLayout: "closed" // "closed" | "split" | "fullscreen"
+    readonly property bool isShellOpen: root.shellLayout !== "closed"
+    property bool isShellFocused: false
+    property double lastExclamMs: 0
     property string editorFilePath: ""
 
     readonly property int centerHeight: Math.max(6, root.height - (root.isFilterMode ? 3 : 2))
     readonly property int targetShellHeight: Math.max(7, Math.floor(root.centerHeight * 0.45))
-    readonly property int shellDrawerHeight: root.isShellOpen ? root.targetShellHeight : 0
 
-    function openShellDrawer() {
-        root.queryColors();
-        root.isShellOpen = true;
+    function ensureShellStarted() {
         if (!backend.isMock) {
-            if (shellPty.running)
-                shellPty.kill();
-            shellPty.workingDirectory = backend.currentPath;
-            shellPty.clearScrollback();
-            shellPty.start();
+            if (!shellPty.running) {
+                shellPty.workingDirectory = backend.currentPath;
+                backend.setShellWorkingDirectory(backend.currentPath);
+                shellPty.clearScrollback();
+                shellPty.start();
+            }
+        } else if (backend.shellWorkingDirectory === "") {
+            backend.setShellWorkingDirectory(backend.currentPath);
         }
+    }
+
+    function openShellDrawer(fullscreen = false) {
+        root.queryColors();
+        root.isFilterMode = false;
+        filterTextInput.focus = false;
+        root.shellLayout = fullscreen ? "fullscreen" : "split";
+        root.ensureShellStarted();
+        root.focusShell();
+    }
+
+    function focusShell() {
+        if (!root.isShellOpen) {
+            root.openShellDrawer(false);
+            return;
+        }
+        root.isFilterMode = false;
+        filterTextInput.focus = false;
+        if (backend.shellWorkingDirectory !== ""
+            && backend.shellWorkingDirectory !== backend.currentPath
+            && !backend.isShellForegroundBusy(shellPty.processId)) {
+            root.syncShellToCurrentDir();
+        }
+        root.isShellFocused = true;
         shellPty.forceActiveFocus();
     }
 
-    function closeShellDrawer() {
-        if (!root.isShellOpen)
+    function unfocusShell() {
+        if (root.shellLayout === "fullscreen") {
+            root.shellLayout = "split";
+        }
+        if (!root.isShellFocused && !shellPty.activeFocus)
             return;
-        root.isShellOpen = false;
+        root.isShellFocused = false;
         shellPty.focus = false;
+        root.forceActiveFocus();
+        backend.syncDirectoryFromShell(shellPty.processId, shellPty.title, true);
         backend.refreshCurrentAndPreview();
     }
 
-    readonly property string modeName: {
-        if (root.isShellOpen)
-            return "SHELL";
-        if (root.isFilterMode)
-            return "FILTER";
-        if (backend.markedCount > 0)
-            return "SELECT (" + backend.markedCount + ")";
-        return "NORMAL";
+    function closeShellDrawer() {
+        if (!root.isShellOpen && !root.isShellFocused)
+            return;
+        root.isShellFocused = false;
+        root.shellLayout = "closed";
+        shellPty.focus = false;
+        root.forceActiveFocus();
+        backend.refreshCurrentAndPreview();
     }
 
-    readonly property color modeColor: {
-        if (root.isShellOpen)
-            return Theme.accentGreen;
-        if (root.isFilterMode)
-            return Theme.badgeFilter;
-        if (backend.markedCount > 0)
-            return Theme.badgeSelect;
-        return Theme.badgeNormal;
+    function syncShellToCurrentDir() {
+        if (!root.isShellOpen) {
+            root.shellLayout = "split";
+            if (!backend.isMock && !shellPty.running) {
+                shellPty.workingDirectory = backend.currentPath;
+                backend.setShellWorkingDirectory(backend.currentPath);
+                shellPty.clearScrollback();
+                shellPty.start();
+                backend.showToast("Shell cd → " + backend.currentPath);
+                return;
+            }
+        }
+        const cmd = backend.buildShellCdCommand();
+        if (!backend.isMock && shellPty.running && cmd !== "") {
+            shellPty.sendText(cmd);
+        }
     }
 
     // MANDATORY QMLTUI RULE: Explicit key handling for Q/Escape and contextual actions
     Keys.onPressed: event => {
-        // If embedded editor or shell drawer is open, let PtyView handle keys
-        if (root.isEditorOpen || root.isShellOpen) {
+        // If embedded editor or shell PTY has active focus, let PtyView handle keys
+        if (root.isEditorOpen || root.isShellFocused) {
             return;
         }
 
@@ -85,19 +125,21 @@ Terminal {
                 backend.filterText = "";
                 filterTextInput.text = "";
                 filterTextInput.focus = false;
+                root.forceActiveFocus();
                 event.accepted = true;
                 return;
             }
             if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 root.isFilterMode = false;
                 filterTextInput.focus = false;
+                root.forceActiveFocus();
                 event.accepted = true;
                 return;
             }
             return;
         }
 
-        // 1. Exit / Quit Handling
+        // 1. Exit / Quit Handling (q only; Escape never exits the app)
         if (event.key === Qt.Key_Q) {
             Qt.quit();
             event.accepted = true;
@@ -116,7 +158,11 @@ Terminal {
                 event.accepted = true;
                 return;
             }
-            Qt.quit();
+            if (root.isShellOpen) {
+                root.closeShellDrawer();
+                event.accepted = true;
+                return;
+            }
             event.accepted = true;
             return;
         }
@@ -293,9 +339,34 @@ Terminal {
             return;
         }
 
-        // 7. Embedded Shell Drawer (!)
+        // 6b. Visual Preview Controls (m = render mode, [ / ] = document pages)
+        if (event.key === Qt.Key_M) {
+            const nextMode = previewCol.cycleRenderMode();
+            backend.showToast("Preview render mode: " + nextMode);
+            event.accepted = true;
+            return;
+        }
+
+        if (event.key === Qt.Key_BracketRight || event.text === "]") {
+            backend.nextPreviewPage();
+            event.accepted = true;
+            return;
+        }
+
+        if (event.key === Qt.Key_BracketLeft || event.text === "[") {
+            backend.previousPreviewPage();
+            event.accepted = true;
+            return;
+        }
+
+        // 7. Embedded Shell Drawer ('!' = open/focus split shell, '!!' = fullscreen shell)
         if (event.text === "!" || event.key === Qt.Key_Exclam) {
-            root.openShellDrawer();
+            root.lastExclamMs = Date.now();
+            if (root.isShellOpen && !root.isShellFocused) {
+                root.focusShell();
+            } else {
+                root.openShellDrawer(false);
+            }
             event.accepted = true;
             return;
         }
@@ -321,9 +392,10 @@ Terminal {
             filterText: backend.filterText
         }
 
-        // Inline Filter Bar (appears when / or f is pressed)
+        // Inline Filter Bar (appears when / or f is pressed; visibility driven by modeStateGroup)
         Rectangle {
-            visible: root.isFilterMode
+            id: filterBar
+            visible: false
             width: parent.width
             height: 1
             color: Theme.bgCursor
@@ -351,6 +423,7 @@ Terminal {
                     onAccepted: {
                         root.isFilterMode = false;
                         filterTextInput.focus = false;
+                        root.forceActiveFocus();
                     }
                 }
             }
@@ -358,6 +431,8 @@ Terminal {
 
         // 2. Center 3-Column Miller Layout
         Row {
+            id: millerRow
+            visible: true
             width: parent.width
             height: Math.max(6, root.centerHeight - shellDrawer.height)
             spacing: 0
@@ -370,6 +445,28 @@ Terminal {
                 parentEntries: backend.parentEntries
                 currentPath: backend.currentPath
                 parentPath: backend.parentPath
+
+                onItemClicked: index => {
+                    if (root.isEditorOpen || helpDialog.visible || inputDialog.visible || confirmDialog.visible)
+                        return;
+                    if (root.isFilterMode)
+                        root.isFilterMode = false;
+                    filterTextInput.focus = false;
+                    if (root.isShellFocused)
+                        root.unfocusShell();
+                    if (index >= 0 && index < backend.parentEntries.length) {
+                        const entry = backend.parentEntries[index];
+                        if (entry && entry.isDir && entry.path) {
+                            backend.navigateTo(entry.path);
+                        }
+                    }
+                }
+
+                onRequestFileManagerFocus: {
+                    filterTextInput.focus = false;
+                    if (root.isShellFocused)
+                        root.unfocusShell();
+                }
             }
 
             // Single vertical divider between Parent and Current
@@ -395,15 +492,15 @@ Terminal {
                     if (root.isFilterMode)
                         root.isFilterMode = false;
                     filterTextInput.focus = false;
-                    if (root.isShellOpen)
-                        root.closeShellDrawer();
+                    if (root.isShellFocused)
+                        root.unfocusShell();
                     backend.currentIndex = index;
                 }
 
                 onRequestFileManagerFocus: {
                     filterTextInput.focus = false;
-                    if (root.isShellOpen)
-                        root.closeShellDrawer();
+                    if (root.isShellFocused)
+                        root.unfocusShell();
                 }
             }
 
@@ -425,60 +522,97 @@ Terminal {
             }
         }
 
-        // 2b. Toggleable Full-Width Bottom Shell Drawer (opened with !, closed with Esc / exit)
+        // 2b. Embedded Shell Pane (driven by QML States: "" = closed, "split" = bottom drawer, "fullscreen" = full terminal)
         Column {
             id: shellDrawer
             visible: root.isShellOpen || shellDrawer.height > 0
             width: parent.width
-            height: root.shellDrawerHeight
+            height: 0
             clip: true
             spacing: 0
+            state: root.shellLayout === "closed" ? "" : root.shellLayout
 
-            Behavior on height {
-                NumberAnimation {
-                    duration: 200
-                    easing: Easing.InOutQuad
+            states: [
+                State {
+                    name: "split"
+                    PropertyChanges {
+                        target: shellDrawer
+                        height: root.targetShellHeight
+                    }
+                    PropertyChanges {
+                        target: millerRow
+                        visible: true
+                    }
+                },
+                State {
+                    name: "fullscreen"
+                    PropertyChanges {
+                        target: shellDrawer
+                        height: root.centerHeight
+                    }
+                    PropertyChanges {
+                        target: millerRow
+                        visible: false
+                    }
                 }
-            }
+            ]
 
-            onHeightChanged: {
-                if (shellDrawer.height === 0 && !root.isShellOpen && shellPty.running) {
-                    shellPty.kill();
+            transitions: [
+                Transition {
+                    NumberAnimation {
+                        property: "height"
+                        duration: 180
+                        easing: Easing.InOutQuad
+                    }
                 }
-            }
+            ]
 
-            // Top single horizontal line with inline title and close hint
+            // Top single horizontal line with inline title and focus/navigation hints
             Item {
                 width: parent.width
                 height: 1
 
                 Text {
+                    id: shellDividerLine
                     anchors.fill: parent
-                    color: Theme.accentGreen
+                    color: Theme.borderNormal
                     text: "─".repeat(Math.max(0, parent.width))
                 }
 
                 Text {
+                    id: shellTitleText
                     anchors.left: parent.left
                     anchors.leftMargin: 2
-                    text: " 🐚 SHELL ● · " + backend.currentPath + " "
-                    color: Theme.accentGreen
-                    bold: true
+                    text: {
+                        const prefix = root.isShellFocused
+                            ? (root.shellLayout === "fullscreen" ? " 🐚 SHELL (FULL) ● · " : " 🐚 SHELL ● · ")
+                            : " 🐚 SHELL ○ · ";
+                        return prefix + (backend.shellWorkingDirectory || backend.currentPath) + " ";
+                    }
+                    color: Theme.textSecondary
+                    bold: false
                 }
 
                 Text {
+                    id: shellHintText
                     anchors.right: parent.right
                     anchors.rightMargin: 2
-                    text: " [Esc / exit] Close "
-                    color: Theme.accentYellow
-                    bold: true
+                    text: {
+                        if (root.isShellFocused && root.shellLayout === "fullscreen")
+                            return " [Esc / Ctrl+\\] Split & Nav  [exit] Stop ";
+                        if (root.isShellFocused)
+                            return " [Esc / Ctrl+\\] Navigate  [!!] Fullscreen  [exit] Stop ";
+                        return " [!] Focus Shell  [!!] Fullscreen  [Esc] Hide ";
+                    }
+                    color: Theme.textDim
+                    bold: false
                 }
             }
 
             PtyView {
                 id: shellPty
                 width: parent.width
-                height: Math.max(1, root.targetShellHeight - 1)
+                height: Math.max(1, (root.shellLayout === "fullscreen" ? root.centerHeight : root.targetShellHeight) - 1)
                 program: defaultUserShell()
                 workingDirectory: backend.currentPath
                 foregroundColor: QmlTui.defaultColor
@@ -491,10 +625,50 @@ Terminal {
                     shellPty.kill();
                 }
 
+                onActiveFocusChanged: {
+                    if (shellPty.activeFocus && root.isShellOpen) {
+                        if (backend.shellWorkingDirectory !== ""
+                            && backend.shellWorkingDirectory !== backend.currentPath
+                            && !backend.isShellForegroundBusy(shellPty.processId)) {
+                            root.syncShellToCurrentDir();
+                        }
+                        root.isShellFocused = true;
+                    } else if (!shellPty.activeFocus && root.isShellFocused && !backend.isMock) {
+                        root.isShellFocused = false;
+                    }
+                }
+
                 Keys.priority: Keys.BeforeItem
                 Keys.onPressed: event => {
+                    // Double '!!' within 350ms promotes split shell to fullscreen without sending '!' to the PTY
+                    if ((event.text === "!" || event.key === Qt.Key_Exclam)
+                        && root.lastExclamMs > 0
+                        && (Date.now() - root.lastExclamMs) <= 350) {
+                        root.lastExclamMs = 0;
+                        root.openShellDrawer(true);
+                        event.accepted = true;
+                        return;
+                    }
+                    // Ctrl+\ always returns focus to file navigation even if a foreground app (vim/fzf/less) is running
+                    if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Backslash) {
+                        root.unfocusShell();
+                        event.accepted = true;
+                        return;
+                    }
                     if (event.key === Qt.Key_Escape) {
-                        root.closeShellDrawer();
+                        if ((event.modifiers & Qt.ShiftModifier) || (event.modifiers & Qt.AltModifier)) {
+                            if (shellPty.running)
+                                shellPty.sendText("\x1b");
+                            event.accepted = true;
+                            return;
+                        }
+                        // If a foreground child process (vim, nvim, less, fzf, htop) is running in the shell,
+                        // forward Escape to the PTY instead of unfocusing the shell.
+                        if (backend.isShellForegroundBusy(shellPty.processId)) {
+                            event.accepted = backend.isMock;
+                            return;
+                        }
+                        root.unfocusShell();
                         event.accepted = true;
                     }
                 }
@@ -507,6 +681,7 @@ Terminal {
 
         // 3. Bottom Status Bar
         StatusBar {
+            id: statusBar
             width: parent.width
             previewData: backend.previewData
             currentIndex: backend.currentIndex
@@ -515,9 +690,94 @@ Terminal {
             sortField: backend.sortField
             sortAscending: backend.sortAscending
             statusMessage: backend.statusMessage
-            modeName: root.modeName
-            modeColor: root.modeColor
+            modeName: "NORMAL"
+            modeColor: Theme.badgeNormal
         }
+    }
+
+    readonly property string currentModeState: {
+        if (root.isShellFocused && root.shellLayout === "fullscreen")
+            return "SHELL_FULL";
+        if (root.isShellFocused)
+            return "SHELL";
+        if (root.isFilterMode)
+            return "FILTER";
+        if (backend.markedCount > 0)
+            return "SELECT";
+        return "";
+    }
+
+    // Declarative Application Mode StateGroup (NORMAL, SELECT, FILTER, SHELL, SHELL_FULL)
+    StateGroup {
+        id: modeStateGroup
+        state: root.currentModeState
+
+        states: [
+            State {
+                name: "SHELL_FULL"
+                PropertyChanges {
+                    target: statusBar
+                    modeName: "SHELL (FULL)"
+                    modeColor: Theme.accentGreen
+                }
+                PropertyChanges {
+                    target: shellDividerLine
+                    color: Theme.accentGreen
+                }
+                PropertyChanges {
+                    target: shellTitleText
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                PropertyChanges {
+                    target: shellHintText
+                    color: Theme.accentYellow
+                    bold: true
+                }
+            },
+            State {
+                name: "SHELL"
+                PropertyChanges {
+                    target: statusBar
+                    modeName: "SHELL"
+                    modeColor: Theme.accentGreen
+                }
+                PropertyChanges {
+                    target: shellDividerLine
+                    color: Theme.accentGreen
+                }
+                PropertyChanges {
+                    target: shellTitleText
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                PropertyChanges {
+                    target: shellHintText
+                    color: Theme.accentYellow
+                    bold: true
+                }
+            },
+            State {
+                name: "FILTER"
+                PropertyChanges {
+                    target: statusBar
+                    modeName: "FILTER"
+                    modeColor: Theme.badgeFilter
+                }
+                PropertyChanges {
+                    target: filterBar
+                    visible: true
+                }
+            },
+            State {
+                name: "SELECT"
+                PropertyChanges {
+                    target: statusBar
+                    modeName: "SELECT (" + backend.markedCount + ")"
+                    modeColor: Theme.badgeSelect
+                }
+            }
+        ]
     }
 
     // Modal Dialogs

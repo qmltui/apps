@@ -4,8 +4,10 @@
 #include <QDirListing>
 #include <QFile>
 #include <QFileInfo>
+#include <QImageReader>
 #include <QLocale>
 #include <QMimeType>
+#include <QPdfDocument>
 #include <QProcess>
 #include <QStandardPaths>
 #include <QStorageInfo>
@@ -68,46 +70,426 @@ bool copyPathRecursively(const QString &srcPath, const QString &destPath) {
   return QFile::copy(srcPath, destPath);
 }
 
-QStringList wrapTextLine(const QString &rawLine, int maxW) {
-  if (maxW <= 0)
-    return {rawLine};
-  QString line = rawLine;
-  line.replace(QLatin1Char('\t'), QStringLiteral("    "));
-  if (line.isEmpty())
-    return {QString()};
-  if (line.size() <= maxW)
-    return {line};
+enum class PreviewTokenStyle : uint8_t {
+  Normal = 0,
+  Comment,       // \033[3;90m (italic ansi:brightblack / Theme.textMuted)
+  Heading,       // \033[1;94m (bold ansi:brightblue / Theme.accentBlue)
+  String,        // \033[92m   (ansi:brightgreen / Theme.accentGreen)
+  NumberLiteral, // \033[93m   (ansi:brightyellow / Theme.accentYellow)
+  KeyCode,       // \033[96m   (ansi:brightcyan / Theme.accentCyan)
+};
 
-  QStringList chunks;
-  QString current;
-  const QStringList words = line.split(QLatin1Char(' '));
+QLatin1StringView sgrForTokenStyle(PreviewTokenStyle style) {
+  switch (style) {
+  case PreviewTokenStyle::Comment:
+    return QLatin1StringView("\033[3;90m");
+  case PreviewTokenStyle::Heading:
+    return QLatin1StringView("\033[1;94m");
+  case PreviewTokenStyle::String:
+    return QLatin1StringView("\033[92m");
+  case PreviewTokenStyle::NumberLiteral:
+    return QLatin1StringView("\033[93m");
+  case PreviewTokenStyle::KeyCode:
+    return QLatin1StringView("\033[96m");
+  case PreviewTokenStyle::Normal:
+    break;
+  }
+  return QLatin1StringView("");
+}
 
-  for (qsizetype i = 0; i < words.size(); ++i) {
-    const QString &word = words.at(i);
-    if (word.size() > maxW) {
-      if (!current.isEmpty()) {
-        chunks.append(current);
-        current.clear();
+bool isPreprocessorDirective(QStringView word) {
+  return word == u"include" || word == u"pragma" || word == u"define" ||
+         word == u"ifdef" || word == u"ifndef" || word == u"endif" ||
+         word == u"if" || word == u"elif" || word == u"else" ||
+         word == u"undef" || word == u"error";
+}
+
+bool isCommonLiteral(QStringView word) {
+  return word == u"true" || word == u"false" || word == u"null" ||
+         word == u"nullptr" || word == u"None" || word == u"True" ||
+         word == u"False" || word == u"ON" || word == u"OFF";
+}
+
+std::vector<PreviewTokenStyle> tokenizePreviewLine(const QString &line,
+                                                   bool isMarkdown) {
+  const qsizetype len = line.size();
+  std::vector<PreviewTokenStyle> styles(static_cast<size_t>(len),
+                                        PreviewTokenStyle::Normal);
+  if (len == 0)
+    return styles;
+
+  auto fillRange = [&](qsizetype start, qsizetype end,
+                       PreviewTokenStyle style) {
+    for (qsizetype k = (std::max)(qsizetype(0), start);
+         k < (std::min)(len, end); ++k) {
+      styles[static_cast<size_t>(k)] = style;
+    }
+  };
+
+  qsizetype firstNonSpace = 0;
+  while (firstNonSpace < len && line[firstNonSpace].isSpace())
+    ++firstNonSpace;
+  if (firstNonSpace >= len)
+    return styles;
+
+  // 1. Markdown heading (# Heading .. ###### Heading)
+  if (isMarkdown && line[firstNonSpace] == QLatin1Char('#')) {
+    qsizetype hashEnd = firstNonSpace;
+    while (hashEnd < len && line[hashEnd] == QLatin1Char('#'))
+      ++hashEnd;
+    const qsizetype hashCount = hashEnd - firstNonSpace;
+    if (hashCount >= 1 && hashCount <= 6 &&
+        (hashEnd == len || line[hashEnd].isSpace())) {
+      fillRange(firstNonSpace, len, PreviewTokenStyle::Heading);
+      return styles;
+    }
+  }
+
+  // 2. Markdown fenced code block delimiter (```...)
+  if (QStringView{line}.sliced(firstNonSpace).startsWith(u"```")) {
+    fillRange(firstNonSpace, len, PreviewTokenStyle::KeyCode);
+    return styles;
+  }
+
+  // 3. INI / TOML / Git-config [section] header
+  if (line[firstNonSpace] == QLatin1Char('[')) {
+    qsizetype lastNonSpace = len - 1;
+    while (lastNonSpace > firstNonSpace && line[lastNonSpace].isSpace())
+      --lastNonSpace;
+    if (lastNonSpace > firstNonSpace + 1 &&
+        line[lastNonSpace] == QLatin1Char(']') &&
+        line.indexOf(QLatin1Char(']'), firstNonSpace + 1) == lastNonSpace) {
+      fillRange(firstNonSpace, lastNonSpace + 1, PreviewTokenStyle::Heading);
+      return styles;
+    }
+  }
+
+  qsizetype i = firstNonSpace;
+
+  // 4. C/C++ Preprocessor directive (#include, #pragma, #define, ...)
+  if (line[firstNonSpace] == QLatin1Char('#')) {
+    qsizetype dirStart = firstNonSpace + 1;
+    while (dirStart < len && line[dirStart].isSpace())
+      ++dirStart;
+    qsizetype dirEnd = dirStart;
+    while (dirEnd < len && line[dirEnd].isLetter())
+      ++dirEnd;
+    const QStringView directive =
+        QStringView{line}.sliced(dirStart, dirEnd - dirStart);
+    if (isPreprocessorDirective(directive) &&
+        (dirEnd == len || !line[dirEnd].isLetterOrNumber())) {
+      fillRange(firstNonSpace, dirEnd, PreviewTokenStyle::Heading);
+      i = dirEnd;
+      if (directive == u"include") {
+        const qsizetype openAngle = line.indexOf(QLatin1Char('<'), i);
+        const qsizetype closeAngle =
+            openAngle >= 0 ? line.indexOf(QLatin1Char('>'), openAngle + 1) : -1;
+        if (openAngle >= 0 && closeAngle > openAngle) {
+          fillRange(openAngle, closeAngle + 1, PreviewTokenStyle::String);
+          i = closeAngle + 1;
+        }
       }
-      for (qsizetype k = 0; k < word.size(); k += maxW) {
-        chunks.append(word.mid(k, maxW));
+    }
+  }
+
+  // 5. Unquoted config key at start of line (KEY=value or key: value)
+  if (i == firstNonSpace) {
+    qsizetype keyStart = firstNonSpace;
+    if (line[keyStart] == QLatin1Char('-') && keyStart + 1 < len &&
+        line[keyStart + 1].isSpace()) {
+      ++keyStart;
+      while (keyStart < len && line[keyStart].isSpace())
+        ++keyStart;
+    }
+    if (keyStart < len &&
+        (line[keyStart].isLetter() || line[keyStart] == QLatin1Char('_') ||
+         line[keyStart] == QLatin1Char('.'))) {
+      qsizetype keyEnd = keyStart + 1;
+      while (keyEnd < len && (line[keyEnd].isLetterOrNumber() ||
+                              line[keyEnd] == QLatin1Char('_') ||
+                              line[keyEnd] == QLatin1Char('-') ||
+                              line[keyEnd] == QLatin1Char('.'))) {
+        ++keyEnd;
       }
+      qsizetype sepPos = keyEnd;
+      while (sepPos < len && line[sepPos].isSpace())
+        ++sepPos;
+      if (sepPos < len) {
+        const bool isEqualsKey =
+            line[sepPos] == QLatin1Char('=') &&
+            (sepPos + 1 >= len || line[sepPos + 1] != QLatin1Char('=')) &&
+            !QStringView{line}.sliced(sepPos + 1).trimmed().endsWith(u';');
+        const bool isColonKey =
+            line[sepPos] == QLatin1Char(':') &&
+            (sepPos + 1 >= len || line[sepPos + 1].isSpace());
+        if (isEqualsKey || isColonKey) {
+          fillRange(keyStart, keyEnd, PreviewTokenStyle::KeyCode);
+          i = sepPos + 1;
+        }
+      }
+    }
+  }
+
+  // 6. Left-to-right token scan
+  while (i < len) {
+    const QChar ch = line[i];
+
+    // Line comment // (avoid matching :// inside URLs)
+    if (ch == QLatin1Char('/') && i + 1 < len &&
+        line[i + 1] == QLatin1Char('/') &&
+        (i == 0 || line[i - 1] != QLatin1Char(':'))) {
+      fillRange(i, len, PreviewTokenStyle::Comment);
+      break;
+    }
+
+    // Line comment # (at start of line or preceded by whitespace)
+    if (ch == QLatin1Char('#') &&
+        (i == firstNonSpace || line[i - 1].isSpace())) {
+      fillRange(i, len, PreviewTokenStyle::Comment);
+      break;
+    }
+
+    // Inline backtick code `...`
+    if (ch == QLatin1Char('`')) {
+      const qsizetype closeTick = line.indexOf(QLatin1Char('`'), i + 1);
+      if (closeTick > i) {
+        fillRange(i, closeTick + 1, PreviewTokenStyle::KeyCode);
+        i = closeTick + 1;
+        continue;
+      }
+    }
+
+    // Quoted strings "..." or '...'
+    if (ch == QLatin1Char('"') || ch == QLatin1Char('\'')) {
+      // Skip contractions/possessives like don't or user's
+      if (ch == QLatin1Char('\'') && i > 0 &&
+          (line[i - 1].isLetterOrNumber() ||
+           line[i - 1] == QLatin1Char('_'))) {
+        ++i;
+        continue;
+      }
+      qsizetype j = i + 1;
+      bool closed = false;
+      while (j < len) {
+        if (line[j] == QLatin1Char('\\') && j + 1 < len) {
+          j += 2;
+          continue;
+        }
+        if (line[j] == ch) {
+          closed = true;
+          break;
+        }
+        ++j;
+      }
+      if (closed) {
+        PreviewTokenStyle quoteStyle = PreviewTokenStyle::String;
+        if (ch == QLatin1Char('"')) {
+          qsizetype afterQuote = j + 1;
+          while (afterQuote < len && line[afterQuote].isSpace())
+            ++afterQuote;
+          if (afterQuote < len && line[afterQuote] == QLatin1Char(':') &&
+              (afterQuote + 1 >= len ||
+               line[afterQuote + 1] != QLatin1Char(':'))) {
+            quoteStyle = PreviewTokenStyle::KeyCode;
+          }
+        }
+        fillRange(i, j + 1, quoteStyle);
+        i = j + 1;
+        continue;
+      }
+    }
+
+    // Numbers (integers, floats, version numbers, hex literals)
+    if (ch.isDigit() &&
+        (i == 0 || (!line[i - 1].isLetterOrNumber() &&
+                    line[i - 1] != QLatin1Char('_')))) {
+      qsizetype numEnd = i + 1;
+      if (ch == QLatin1Char('0') && numEnd < len &&
+          (line[numEnd] == QLatin1Char('x') ||
+           line[numEnd] == QLatin1Char('X'))) {
+        ++numEnd;
+        while (numEnd < len &&
+               (line[numEnd].isDigit() ||
+                (line[numEnd] >= QLatin1Char('a') &&
+                 line[numEnd] <= QLatin1Char('f')) ||
+                (line[numEnd] >= QLatin1Char('A') &&
+                 line[numEnd] <= QLatin1Char('F')))) {
+          ++numEnd;
+        }
+      } else {
+        while (numEnd < len) {
+          if (line[numEnd].isDigit()) {
+            ++numEnd;
+          } else if (line[numEnd] == QLatin1Char('.') && numEnd + 1 < len &&
+                     line[numEnd + 1].isDigit()) {
+            ++numEnd;
+          } else {
+            break;
+          }
+        }
+      }
+      while (numEnd < len &&
+             (line[numEnd] == QLatin1Char('u') ||
+              line[numEnd] == QLatin1Char('U') ||
+              line[numEnd] == QLatin1Char('l') ||
+              line[numEnd] == QLatin1Char('L') ||
+              line[numEnd] == QLatin1Char('f') ||
+              line[numEnd] == QLatin1Char('%'))) {
+        ++numEnd;
+      }
+      if (numEnd + 1 < len && line[numEnd] == QLatin1Char('p') &&
+          line[numEnd + 1] == QLatin1Char('x')) {
+        numEnd += 2;
+      }
+      if (numEnd == len ||
+          (!line[numEnd].isLetterOrNumber() &&
+           line[numEnd] != QLatin1Char('_'))) {
+        fillRange(i, numEnd, PreviewTokenStyle::NumberLiteral);
+        i = numEnd;
+        continue;
+      }
+    }
+
+    // Identifiers (check common boolean/null literals)
+    if (ch.isLetter() || ch == QLatin1Char('_')) {
+      qsizetype wordEnd = i + 1;
+      while (wordEnd < len &&
+             (line[wordEnd].isLetterOrNumber() ||
+              line[wordEnd] == QLatin1Char('_'))) {
+        ++wordEnd;
+      }
+      const QStringView word = QStringView{line}.sliced(i, wordEnd - i);
+      if (isCommonLiteral(word)) {
+        fillRange(i, wordEnd, PreviewTokenStyle::NumberLiteral);
+      }
+      i = wordEnd;
       continue;
     }
 
-    if (current.isEmpty()) {
-      current = word;
-    } else if (current.size() + 1 + word.size() <= maxW) {
-      current += QLatin1Char(' ') + word;
-    } else {
-      chunks.append(current);
-      current = word;
+    ++i;
+  }
+
+  return styles;
+}
+
+struct WrappedSlice {
+  QString text;
+  std::vector<PreviewTokenStyle> styles;
+};
+
+QList<WrappedSlice> wrapHighlightedLine(const QString &rawLine, int maxW,
+                                        bool isMarkdown) {
+  QString line = rawLine;
+  line.replace(QLatin1Char('\t'), QStringLiteral("    "));
+  const std::vector<PreviewTokenStyle> lineStyles =
+      tokenizePreviewLine(line, isMarkdown);
+
+  if (line.isEmpty())
+    return {{QString(), {}}};
+  if (maxW <= 0 || line.size() <= maxW)
+    return {{line, lineStyles}};
+
+  QList<WrappedSlice> chunks;
+  QString currentText;
+  std::vector<PreviewTokenStyle> currentStyles;
+
+  qsizetype pos = 0;
+  const qsizetype len = line.size();
+  while (pos < len) {
+    qsizetype scanStart = pos;
+    if (pos == 0) {
+      while (scanStart < len && line[scanStart] == QLatin1Char(' ') &&
+             scanStart < maxW / 2) {
+        ++scanStart;
+      }
     }
+    qsizetype spacePos = line.indexOf(QLatin1Char(' '), scanStart);
+    if (spacePos < 0)
+      spacePos = len;
+    const qsizetype wordLen = spacePos - pos;
+    const QString word = line.mid(pos, wordLen);
+
+    if (wordLen > maxW) {
+      if (!currentText.isEmpty()) {
+        chunks.append({currentText, currentStyles});
+        currentText.clear();
+        currentStyles.clear();
+      }
+      for (qsizetype k = 0; k < wordLen; k += maxW) {
+        const qsizetype sliceLen = (std::min)(qsizetype(maxW), wordLen - k);
+        std::vector<PreviewTokenStyle> sliceStyles(
+            lineStyles.begin() + pos + k,
+            lineStyles.begin() + pos + k + sliceLen);
+        chunks.append({word.mid(k, sliceLen), std::move(sliceStyles)});
+      }
+    } else if (currentText.isEmpty()) {
+      currentText = word;
+      currentStyles.assign(lineStyles.begin() + pos,
+                           lineStyles.begin() + pos + wordLen);
+    } else if (currentText.size() + 1 + wordLen <= maxW) {
+      currentText += QLatin1Char(' ') + word;
+      const PreviewTokenStyle spaceStyle =
+          pos > 0 ? lineStyles[static_cast<size_t>(pos - 1)]
+                  : PreviewTokenStyle::Normal;
+      currentStyles.push_back(spaceStyle);
+      currentStyles.insert(currentStyles.end(), lineStyles.begin() + pos,
+                           lineStyles.begin() + pos + wordLen);
+    } else {
+      chunks.append({currentText, currentStyles});
+      currentText = word;
+      currentStyles.assign(lineStyles.begin() + pos,
+                           lineStyles.begin() + pos + wordLen);
+    }
+
+    if (spacePos >= len)
+      break;
+    pos = spacePos + 1;
   }
-  if (!current.isEmpty()) {
-    chunks.append(current);
+
+  if (!currentText.isEmpty()) {
+    chunks.append({currentText, currentStyles});
   }
-  return chunks.isEmpty() ? QStringList{line} : chunks;
+  if (chunks.isEmpty()) {
+    chunks.append({line, lineStyles});
+  }
+  return chunks;
+}
+
+QString formatAnsiSlice(const WrappedSlice &slice) {
+  if (slice.text.isEmpty())
+    return QString();
+
+  QString out;
+  const qsizetype len = slice.text.size();
+  out.reserve(len + 32);
+
+  qsizetype i = 0;
+  while (i < len) {
+    const PreviewTokenStyle style =
+        static_cast<size_t>(i) < slice.styles.size()
+            ? slice.styles[static_cast<size_t>(i)]
+            : PreviewTokenStyle::Normal;
+    qsizetype j = i + 1;
+    while (j < len) {
+      const PreviewTokenStyle nextStyle =
+          static_cast<size_t>(j) < slice.styles.size()
+              ? slice.styles[static_cast<size_t>(j)]
+              : PreviewTokenStyle::Normal;
+      if (nextStyle != style)
+        break;
+      ++j;
+    }
+    const QLatin1StringView sgr = sgrForTokenStyle(style);
+    if (!sgr.isEmpty()) {
+      out += sgr;
+      out += QStringView{slice.text}.sliced(i, j - i);
+      out += QLatin1StringView("\033[0m");
+    } else {
+      out += QStringView{slice.text}.sliced(i, j - i);
+    }
+    i = j;
+  }
+  return out;
 }
 } // namespace
 
@@ -151,6 +533,7 @@ FileManagerBackend::FileManagerBackend(QObject *parent) : QObject(parent) {
             });
   }
 
+  m_shellWorkingDirectory = m_currentPath;
   refreshAll();
 }
 
@@ -159,10 +542,10 @@ void FileManagerBackend::initMockFileSystem() {
 
   const QDateTime nowUtc = QDateTime::currentDateTimeUtc();
 
-  auto addDir = [this, &nowUtc](
-                    const QString &path, const QString &name,
-                    const QStringList &children,
-                    const QString &perms = QStringLiteral("drwxr-xr-x")) {
+  auto addDir = [this,
+                 &nowUtc](const QString &path, const QString &name,
+                          const QStringList &children,
+                          const QString &perms = QStringLiteral("drwxr-xr-x")) {
     MockItem item;
     item.name = name;
     item.isDir = true;
@@ -175,11 +558,11 @@ void FileManagerBackend::initMockFileSystem() {
     m_mockFs.insert(path, item);
   };
 
-  auto addFile = [this, &nowUtc](
-                     const QString &path, const QString &name,
-                     const QString &content, const QString &mime,
-                     qint64 size = 0,
-                     const QString &perms = QStringLiteral("-rw-r--r--")) {
+  auto addFile = [this, &nowUtc](const QString &path, const QString &name,
+                                 const QString &content, const QString &mime,
+                                 qint64 size = 0,
+                                 const QString &perms =
+                                     QStringLiteral("-rw-r--r--")) {
     MockItem item;
     item.name = name;
     item.isDir = false;
@@ -213,6 +596,7 @@ void FileManagerBackend::initMockFileSystem() {
           QStringLiteral("deploy.py"), QStringLiteral("config.json")});
   addDir(QStringLiteral("/workspace/assets"), QStringLiteral("assets"),
          {QStringLiteral("logo.png"), QStringLiteral("banner.jpg"),
+          QStringLiteral("icon.svg"), QStringLiteral("spec.pdf"),
           QStringLiteral("archive.tar.gz"), QStringLiteral("theme.yaml")});
   addDir(QStringLiteral("/workspace/tests"), QStringLiteral("tests"),
          {QStringLiteral("test_main.cpp"), QStringLiteral("test_cases.json")});
@@ -242,19 +626,18 @@ void FileManagerBackend::initMockFileSystem() {
               "- `q`: Quit"),
           QStringLiteral("text/markdown"));
 
-  addFile(
-      QStringLiteral("/workspace/CMakeLists.txt"),
-      QStringLiteral("CMakeLists.txt"),
-      QStringLiteral("cmake_minimum_required(VERSION 3.22)\n"
-                     "project(FileManager VERSION 1.0.0 LANGUAGES CXX)\n\n"
-                     "set(CMAKE_CXX_STANDARD 20)\n"
-                     "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n"
-                     "find_package(Qt6 6.8 REQUIRED COMPONENTS Core Qml)\n"
-                     "find_package(QmlTui REQUIRED)\n\n"
-                     "qt_add_executable(qmltui_file_manager main.cpp)\n"
-                     "target_link_libraries(qmltui_file_manager PRIVATE "
-                     "Qt6::Core qmltui::core)"),
-      QStringLiteral("text/x-cmake"));
+  addFile(QStringLiteral("/workspace/CMakeLists.txt"),
+          QStringLiteral("CMakeLists.txt"),
+          QStringLiteral("cmake_minimum_required(VERSION 3.22)\n"
+                         "project(FileManager VERSION 1.0.0 LANGUAGES CXX)\n\n"
+                         "set(CMAKE_CXX_STANDARD 20)\n"
+                         "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n"
+                         "find_package(Qt6 6.8 REQUIRED COMPONENTS Core Qml)\n"
+                         "find_package(QmlTui REQUIRED)\n\n"
+                         "qt_add_executable(qmltui_file_manager main.cpp)\n"
+                         "target_link_libraries(qmltui_file_manager PRIVATE "
+                         "Qt6::Core qmltui::core)"),
+          QStringLiteral("text/x-cmake"));
 
   addFile(QStringLiteral("/workspace/package.json"),
           QStringLiteral("package.json"),
@@ -383,6 +766,12 @@ void FileManagerBackend::initMockFileSystem() {
   addFile(QStringLiteral("/workspace/assets/banner.jpg"),
           QStringLiteral("banner.jpg"), QStringLiteral(""),
           QStringLiteral("image/jpeg"), 125890);
+  addFile(QStringLiteral("/workspace/assets/icon.svg"),
+          QStringLiteral("icon.svg"), QStringLiteral(""),
+          QStringLiteral("image/svg+xml"), 6420);
+  addFile(QStringLiteral("/workspace/assets/spec.pdf"),
+          QStringLiteral("spec.pdf"), QStringLiteral(""),
+          QStringLiteral("application/pdf"), 348160);
   addFile(QStringLiteral("/workspace/assets/archive.tar.gz"),
           QStringLiteral("archive.tar.gz"), QStringLiteral(""),
           QStringLiteral("application/gzip"), 2048576);
@@ -459,6 +848,10 @@ void FileManagerBackend::setCurrentIndex(int index) {
     m_currentIndex =
         std::clamp(index, 0, static_cast<int>(m_filteredEntries.size()) - 1);
   }
+  if (m_previewPage != 0) {
+    m_previewPage = 0;
+    emit previewPageChanged();
+  }
   emit currentIndexChanged();
   updatePreview();
 }
@@ -472,6 +865,36 @@ void FileManagerBackend::setPreviewWidth(int w) {
       QStringLiteral("text")) {
     updatePreview();
   }
+}
+
+void FileManagerBackend::setPreviewPage(int page) {
+  const int pageCount =
+      std::max(1, m_previewData.value(QStringLiteral("pageCount"), 1).toInt());
+  const int clamped = std::clamp(page, 0, pageCount - 1);
+  if (m_previewPage == clamped)
+    return;
+  m_previewPage = clamped;
+  emit previewPageChanged();
+}
+
+void FileManagerBackend::nextPreviewPage() {
+  const int pageCount =
+      std::max(1, m_previewData.value(QStringLiteral("pageCount"), 1).toInt());
+  if (pageCount <= 1)
+    return;
+  setPreviewPage((m_previewPage + 1) % pageCount);
+  showToast(
+      QStringLiteral("Page %1 / %2").arg(m_previewPage + 1).arg(pageCount));
+}
+
+void FileManagerBackend::previousPreviewPage() {
+  const int pageCount =
+      std::max(1, m_previewData.value(QStringLiteral("pageCount"), 1).toInt());
+  if (pageCount <= 1)
+    return;
+  setPreviewPage((m_previewPage - 1 + pageCount) % pageCount);
+  showToast(
+      QStringLiteral("Page %1 / %2").arg(m_previewPage + 1).arg(pageCount));
 }
 
 void FileManagerBackend::setFilterText(const QString &filter) {
@@ -692,10 +1115,10 @@ void FileManagerBackend::refreshParent() {
                       .name();
       const QString perms =
           formatPermissions(info.permissions(), isDir, entry.isSymLink());
-      m_parentEntries.append(formatFileEntry(
-          entry.fileName(), QDir::cleanPath(entry.filePath()), isDir,
-          isDir ? -1 : entry.size(), info.lastModified(), perms, m_userHost,
-          mime));
+      m_parentEntries.append(
+          formatFileEntry(entry.fileName(), QDir::cleanPath(entry.filePath()),
+                          isDir, isDir ? -1 : entry.size(), info.lastModified(),
+                          perms, m_userHost, mime));
     }
   }
 
@@ -746,10 +1169,10 @@ void FileManagerBackend::refreshCurrent(const QString &selectPath) {
                       .name();
       const QString perms =
           formatPermissions(info.permissions(), isDir, entry.isSymLink());
-      m_rawCurrentEntries.append(formatFileEntry(
-          entry.fileName(), QDir::cleanPath(entry.filePath()), isDir,
-          isDir ? -1 : entry.size(), info.lastModified(), perms, m_userHost,
-          mime));
+      m_rawCurrentEntries.append(
+          formatFileEntry(entry.fileName(), QDir::cleanPath(entry.filePath()),
+                          isDir, isDir ? -1 : entry.size(), info.lastModified(),
+                          perms, m_userHost, mime));
     }
   }
 
@@ -777,53 +1200,50 @@ void FileManagerBackend::applyFilterAndSort(const QString &selectPath) {
     m_filteredEntries.append(map);
   }
 
-  std::sort(m_filteredEntries.begin(), m_filteredEntries.end(),
-            [this](const QVariant &a, const QVariant &b) {
-              const QVariantMap ma = a.toMap();
-              const QVariantMap mb = b.toMap();
-              const bool isDirA = ma.value(QStringLiteral("isDir")).toBool();
-              const bool isDirB = mb.value(QStringLiteral("isDir")).toBool();
+  std::sort(
+      m_filteredEntries.begin(), m_filteredEntries.end(),
+      [this](const QVariant &a, const QVariant &b) {
+        const QVariantMap ma = a.toMap();
+        const QVariantMap mb = b.toMap();
+        const bool isDirA = ma.value(QStringLiteral("isDir")).toBool();
+        const bool isDirB = mb.value(QStringLiteral("isDir")).toBool();
 
-              if (isDirA != isDirB) {
-                return isDirA; // Folders always first
-              }
+        if (isDirA != isDirB) {
+          return isDirA; // Folders always first
+        }
 
-              int cmp = 0;
-              switch (m_sortField) {
-              case SortField::Name:
-                break;
-              case SortField::Size: {
-                const qint64 sa = ma.value(QStringLiteral("size")).toLongLong();
-                const qint64 sb = mb.value(QStringLiteral("size")).toLongLong();
-                cmp = (sa < sb) ? -1 : (sa > sb ? 1 : 0);
-                break;
-              }
-              case SortField::ModifiedTime: {
-                const QString ta =
-                    ma.value(QStringLiteral("modifiedRaw")).toString();
-                const QString tb =
-                    mb.value(QStringLiteral("modifiedRaw")).toString();
-                cmp = QString::compare(ta, tb, Qt::CaseInsensitive);
-                break;
-              }
-              case SortField::Type: {
-                const QString ea =
-                    ma.value(QStringLiteral("extension")).toString();
-                const QString eb =
-                    mb.value(QStringLiteral("extension")).toString();
-                cmp = m_collator.compare(ea, eb);
-                break;
-              }
-              }
+        int cmp = 0;
+        switch (m_sortField) {
+        case SortField::Name:
+          break;
+        case SortField::Size: {
+          const qint64 sa = ma.value(QStringLiteral("size")).toLongLong();
+          const qint64 sb = mb.value(QStringLiteral("size")).toLongLong();
+          cmp = (sa < sb) ? -1 : (sa > sb ? 1 : 0);
+          break;
+        }
+        case SortField::ModifiedTime: {
+          const QString ta = ma.value(QStringLiteral("modifiedRaw")).toString();
+          const QString tb = mb.value(QStringLiteral("modifiedRaw")).toString();
+          cmp = QString::compare(ta, tb, Qt::CaseInsensitive);
+          break;
+        }
+        case SortField::Type: {
+          const QString ea = ma.value(QStringLiteral("extension")).toString();
+          const QString eb = mb.value(QStringLiteral("extension")).toString();
+          cmp = m_collator.compare(ea, eb);
+          break;
+        }
+        }
 
-              if (cmp == 0) {
-                const QString na = ma.value(QStringLiteral("name")).toString();
-                const QString nb = mb.value(QStringLiteral("name")).toString();
-                cmp = m_collator.compare(na, nb);
-              }
+        if (cmp == 0) {
+          const QString na = ma.value(QStringLiteral("name")).toString();
+          const QString nb = mb.value(QStringLiteral("name")).toString();
+          cmp = m_collator.compare(na, nb);
+        }
 
-              return m_sortAscending ? (cmp < 0) : (cmp > 0);
-            });
+        return m_sortAscending ? (cmp < 0) : (cmp > 0);
+      });
 
   emit currentEntriesChanged();
 
@@ -849,6 +1269,10 @@ void FileManagerBackend::applyFilterAndSort(const QString &selectPath) {
     m_currentIndex = std::clamp(m_currentIndex, 0,
                                 static_cast<int>(m_filteredEntries.size()) - 1);
   }
+  if (m_previewPage != 0) {
+    m_previewPage = 0;
+    emit previewPageChanged();
+  }
   emit currentIndexChanged();
   updatePreview();
 }
@@ -866,12 +1290,34 @@ void FileManagerBackend::syncMarkedStateInFilteredEntries() {
   emit currentEntriesChanged();
 }
 
+bool FileManagerBackend::isVisualPreviewFile(const QString &fileName,
+                                             const QString &mimeName) const {
+  const QString lowerName = fileName.toLower();
+  const QString lowerMime = mimeName.toLower();
+  if (lowerMime.startsWith(QStringLiteral("image/")) ||
+      lowerMime == QStringLiteral("application/pdf")) {
+    return true;
+  }
+  static const QStringList visualExtensions = {
+      QStringLiteral("png"),  QStringLiteral("jpg"), QStringLiteral("jpeg"),
+      QStringLiteral("webp"), QStringLiteral("bmp"), QStringLiteral("gif"),
+      QStringLiteral("ico"),  QStringLiteral("svg"), QStringLiteral("svgz"),
+      QStringLiteral("pdf"),
+  };
+  const QString suffix = QFileInfo(lowerName).suffix();
+  return visualExtensions.contains(suffix);
+}
+
 bool FileManagerBackend::isTextFile(const QString &filePath,
                                     const QString &fileName,
                                     const QString &mimeName) const {
-  const QMimeType mt = m_useMock ? m_mimeDb.mimeTypeForName(mimeName)
-                                 : m_mimeDb.mimeTypeForFile(
-                                       filePath, QMimeDatabase::MatchDefault);
+  if (isVisualPreviewFile(fileName, mimeName))
+    return false;
+
+  const QMimeType mt =
+      m_useMock
+          ? m_mimeDb.mimeTypeForName(mimeName)
+          : m_mimeDb.mimeTypeForFile(filePath, QMimeDatabase::MatchDefault);
   if (mt.isValid() && mt.inherits(QStringLiteral("text/plain")))
     return true;
 
@@ -888,12 +1334,12 @@ bool FileManagerBackend::isTextFile(const QString &filePath,
   }
 
   static const QStringList textExtensions = {
-      QStringLiteral("md"),   QStringLiteral("txt"),  QStringLiteral("qml"),
-      QStringLiteral("h"),    QStringLiteral("hpp"),  QStringLiteral("cpp"),
-      QStringLiteral("c"),    QStringLiteral("rs"),   QStringLiteral("py"),
-      QStringLiteral("json"), QStringLiteral("yaml"), QStringLiteral("yml"),
-      QStringLiteral("toml"), QStringLiteral("sh"),   QStringLiteral("env"),
-      QStringLiteral("cmake"), QStringLiteral("ini"), QStringLiteral("conf"),
+      QStringLiteral("md"),    QStringLiteral("txt"),  QStringLiteral("qml"),
+      QStringLiteral("h"),     QStringLiteral("hpp"),  QStringLiteral("cpp"),
+      QStringLiteral("c"),     QStringLiteral("rs"),   QStringLiteral("py"),
+      QStringLiteral("json"),  QStringLiteral("yaml"), QStringLiteral("yml"),
+      QStringLiteral("toml"),  QStringLiteral("sh"),   QStringLiteral("env"),
+      QStringLiteral("cmake"), QStringLiteral("ini"),  QStringLiteral("conf"),
   };
   const QString suffix = QFileInfo(fileName).suffix().toLower();
   if (textExtensions.contains(suffix))
@@ -1025,7 +1471,14 @@ void FileManagerBackend::updatePreview() {
       m_previewData[QStringLiteral("lineCount")] = lines.size();
       m_previewData[QStringLiteral("textLines")] = lines;
 
+      const QString lowerName = itemName.toLower();
+      const bool isMarkdown =
+          lowerName.endsWith(QStringLiteral(".md")) ||
+          lowerName.endsWith(QStringLiteral(".markdown")) ||
+          mime.contains(QStringLiteral("markdown"), Qt::CaseInsensitive);
+
       QString formattedText;
+      QString highlightedText;
       int gutterDigits = 2;
       if (lines.size() >= 100)
         gutterDigits = 3;
@@ -1035,25 +1488,84 @@ void FileManagerBackend::updatePreview() {
       const int contentWidth = (std::max)(10, m_previewWidth - 2 - gutterWidth);
       const QString blankGutter =
           QString(gutterDigits, QLatin1Char(' ')) + QStringLiteral(" │ ");
+      const QString ansiBlankGutter =
+          QStringLiteral("\033[90m") + blankGutter + QStringLiteral("\033[0m");
 
       for (qsizetype i = 0; i < lines.size(); ++i) {
         const QString lineNumStr = QStringLiteral("%1 │ ").arg(
             i + 1, gutterDigits, 10, QLatin1Char(' '));
-        const QStringList wrappedChunks =
-            wrapTextLine(lines.at(i), contentWidth);
+        const QString ansiLineNumStr =
+            QStringLiteral("\033[90m") + lineNumStr + QStringLiteral("\033[0m");
+        const QList<WrappedSlice> wrappedChunks =
+            wrapHighlightedLine(lines.at(i), contentWidth, isMarkdown);
         for (qsizetype c = 0; c < wrappedChunks.size(); ++c) {
+          const WrappedSlice &slice = wrappedChunks.at(c);
+          const QString ansiBody = formatAnsiSlice(slice);
           if (c == 0) {
-            formattedText +=
-                lineNumStr + wrappedChunks.at(c) + QLatin1Char('\n');
+            formattedText += lineNumStr + slice.text + QLatin1Char('\n');
+            highlightedText += ansiLineNumStr + ansiBody + QLatin1Char('\n');
           } else {
-            formattedText +=
-                blankGutter + wrappedChunks.at(c) + QLatin1Char('\n');
+            formattedText += blankGutter + slice.text + QLatin1Char('\n');
+            highlightedText += ansiBlankGutter + ansiBody + QLatin1Char('\n');
           }
         }
       }
       m_previewData[QStringLiteral("formattedText")] = formattedText;
-    } else if (mime.startsWith(QStringLiteral("image/"))) {
+      m_previewData[QStringLiteral("highlightedText")] = highlightedText;
+    } else if (isVisualPreviewFile(itemName, mime)) {
       m_previewData[QStringLiteral("type")] = QStringLiteral("image");
+      const QString lowerName = itemName.toLower();
+      const QString lowerMime = mime.toLower();
+      const bool isSvg = lowerName.endsWith(QStringLiteral(".svg")) ||
+                         lowerName.endsWith(QStringLiteral(".svgz")) ||
+                         lowerMime.contains(QStringLiteral("svg"));
+      const bool isPdf = lowerName.endsWith(QStringLiteral(".pdf")) ||
+                         lowerMime.contains(QStringLiteral("pdf"));
+
+      if (isSvg) {
+        m_previewData[QStringLiteral("mediaKind")] = QStringLiteral("svg");
+        m_previewData[QStringLiteral("pageCount")] = 1;
+        m_previewData[QStringLiteral("dimensions")] =
+            QStringLiteral("Vector SVG");
+      } else if (isPdf) {
+        m_previewData[QStringLiteral("mediaKind")] = QStringLiteral("pdf");
+        int pages = 3;
+        if (!m_useMock) {
+          QPdfDocument doc;
+          if (doc.load(itemPath) == QPdfDocument::Error::None &&
+              doc.pageCount() > 0) {
+            pages = doc.pageCount();
+          } else {
+            pages = 1;
+          }
+        }
+        m_previewData[QStringLiteral("pageCount")] = pages;
+        m_previewData[QStringLiteral("dimensions")] =
+            QStringLiteral("%1 page%2")
+                .arg(pages)
+                .arg(pages == 1 ? QString() : QStringLiteral("s"));
+      } else {
+        m_previewData[QStringLiteral("mediaKind")] = QStringLiteral("raster");
+        m_previewData[QStringLiteral("pageCount")] = 1;
+        if (m_useMock) {
+          m_previewData[QStringLiteral("dimensions")] =
+              lowerName.contains(QStringLiteral("banner"))
+                  ? QStringLiteral("1920x1080 px")
+                  : QStringLiteral("512x512 px");
+        } else {
+          QImageReader reader(itemPath);
+          const QSize imgSize = reader.size();
+          if (imgSize.isValid() && !imgSize.isEmpty()) {
+            m_previewData[QStringLiteral("dimensions")] =
+                QStringLiteral("%1x%2 px")
+                    .arg(imgSize.width())
+                    .arg(imgSize.height());
+          } else {
+            m_previewData[QStringLiteral("dimensions")] =
+                QStringLiteral("Raster Image");
+          }
+        }
+      }
     } else {
       m_previewData[QStringLiteral("type")] = QStringLiteral("binary");
     }
@@ -1191,10 +1703,17 @@ QString FileManagerBackend::fileIconFor(const QString &name, bool isDir) {
       lower.endsWith(QStringLiteral(".tar")) ||
       lower.endsWith(QStringLiteral(".gz")))
     return QStringLiteral("📦");
+  if (lower.endsWith(QStringLiteral(".pdf")))
+    return QStringLiteral("📕");
+  if (lower.endsWith(QStringLiteral(".svg")) ||
+      lower.endsWith(QStringLiteral(".svgz")))
+    return QStringLiteral("📐");
   if (lower.endsWith(QStringLiteral(".png")) ||
       lower.endsWith(QStringLiteral(".jpg")) ||
       lower.endsWith(QStringLiteral(".jpeg")) ||
-      lower.endsWith(QStringLiteral(".svg")))
+      lower.endsWith(QStringLiteral(".webp")) ||
+      lower.endsWith(QStringLiteral(".gif")) ||
+      lower.endsWith(QStringLiteral(".bmp")))
     return QStringLiteral("🖼️");
   if (lower.endsWith(QStringLiteral(".sh")) ||
       lower.endsWith(QStringLiteral(".bash")))
@@ -1228,8 +1747,17 @@ QString FileManagerBackend::iconColorFor(const QString &name, bool isDir) {
   if (lower.endsWith(QStringLiteral(".tar.gz")) ||
       lower.endsWith(QStringLiteral(".zip")))
     return QStringLiteral("ansi:brightred");
+  if (lower.endsWith(QStringLiteral(".pdf")))
+    return QStringLiteral("ansi:brightred");
+  if (lower.endsWith(QStringLiteral(".svg")) ||
+      lower.endsWith(QStringLiteral(".svgz")))
+    return QStringLiteral("ansi:brightcyan");
   if (lower.endsWith(QStringLiteral(".png")) ||
-      lower.endsWith(QStringLiteral(".jpg")))
+      lower.endsWith(QStringLiteral(".jpg")) ||
+      lower.endsWith(QStringLiteral(".jpeg")) ||
+      lower.endsWith(QStringLiteral(".webp")) ||
+      lower.endsWith(QStringLiteral(".gif")) ||
+      lower.endsWith(QStringLiteral(".bmp")))
     return QStringLiteral("ansi:brightmagenta");
   return QStringLiteral("default");
 }
@@ -1574,10 +2102,10 @@ bool FileManagerBackend::createItem(const QString &name, bool isDirectory) {
     }
   }
 
-  showToast(QStringLiteral("Created %1: %2")
-                .arg(isDirectory ? QStringLiteral("dir")
-                                 : QStringLiteral("file"),
-                     trimmed));
+  showToast(
+      QStringLiteral("Created %1: %2")
+          .arg(isDirectory ? QStringLiteral("dir") : QStringLiteral("file"),
+               trimmed));
   refreshAll(targetPath, false);
   return true;
 }
@@ -1686,6 +2214,120 @@ void FileManagerBackend::toggleShowHidden() {
 void FileManagerBackend::showToast(const QString &msg) {
   m_statusMessage = msg;
   emit statusMessageChanged();
+}
+
+QString FileManagerBackend::shellQuote(const QString &value) {
+  QString escaped = value;
+  escaped.replace(QLatin1Char('\''), QStringLiteral("'\\''"));
+  return QLatin1Char('\'') + escaped + QLatin1Char('\'');
+}
+
+void FileManagerBackend::setShellWorkingDirectory(const QString &path) {
+  const QString clean = QDir::cleanPath(path.trimmed());
+  if (clean.isEmpty() || m_shellWorkingDirectory == clean)
+    return;
+  m_shellWorkingDirectory = clean;
+  emit shellWorkingDirectoryChanged();
+}
+
+void FileManagerBackend::setMockShellBusy(bool busy) {
+  if (m_mockShellBusy == busy)
+    return;
+  m_mockShellBusy = busy;
+  emit mockShellBusyChanged();
+}
+
+bool FileManagerBackend::isShellForegroundBusy(qint64 pid) const {
+  if (m_useMock)
+    return m_mockShellBusy;
+  if (pid <= 0)
+    return false;
+
+  // On Linux, field 8 of /proc/<pid>/stat is tpgid (the foreground process group ID
+  // of the controlling terminal). When an interactive child (vim, nvim, less, fzf, htop)
+  // is running in the foreground, tpgid != pid.
+  QFile statFile(QStringLiteral("/proc/%1/stat").arg(pid));
+  if (statFile.open(QIODevice::ReadOnly)) {
+    const QByteArray data = statFile.readAll();
+    const qsizetype rparen = data.lastIndexOf(')');
+    if (rparen >= 0 && rparen + 2 < data.size()) {
+      const QList<QByteArray> fields = data.mid(rparen + 2).trimmed().split(' ');
+      // fields[0] = state (3), [1] = ppid (4), [2] = pgrp (5), [3] = session (6),
+      // [4] = tty_nr (7), [5] = tpgid (8)
+      if (fields.size() >= 6) {
+        bool ok = false;
+        const qint64 tpgid = fields.at(5).toLongLong(&ok);
+        if (ok && tpgid > 0 && tpgid != pid) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // Fallback: check /proc/<pid>/task/<pid>/children for active child processes
+  QFile childrenFile(
+      QStringLiteral("/proc/%1/task/%1/children").arg(pid));
+  if (childrenFile.open(QIODevice::ReadOnly)) {
+    const QByteArray children = childrenFile.readAll().trimmed();
+    if (!children.isEmpty())
+      return true;
+  }
+
+  return false;
+}
+
+QString FileManagerBackend::buildShellCdCommand() {
+  if (m_currentPath.isEmpty())
+    return QString();
+  setShellWorkingDirectory(m_currentPath);
+  showToast(QStringLiteral("Shell cd → %1").arg(m_currentPath));
+  return QStringLiteral("cd -- %1\n").arg(shellQuote(m_currentPath));
+}
+
+bool FileManagerBackend::syncDirectoryFromShell(qint64 pid,
+                                                const QString &ptyTitle,
+                                                bool onlyIfShellChanged) {
+  bool shellChanged = false;
+  if (!m_useMock) {
+    QString resolved;
+    if (pid > 0) {
+      const QString procCwd =
+          QFileInfo(QStringLiteral("/proc/%1/cwd").arg(pid)).symLinkTarget();
+      if (!procCwd.isEmpty() && QFileInfo(procCwd).isDir()) {
+        resolved = QDir::cleanPath(procCwd);
+      }
+    }
+    if (resolved.isEmpty() && !ptyTitle.isEmpty()) {
+      const qsizetype colonIdx = ptyTitle.lastIndexOf(QLatin1Char(':'));
+      QString candidate =
+          (colonIdx >= 0) ? ptyTitle.mid(colonIdx + 1).trimmed() : ptyTitle.trimmed();
+      if (candidate.startsWith(QLatin1Char('~'))) {
+        candidate = QDir::homePath() + candidate.mid(1);
+      }
+      if (!candidate.isEmpty() && QFileInfo(candidate).isDir()) {
+        resolved = QDir::cleanPath(candidate);
+      }
+    }
+    if (!resolved.isEmpty() && resolved != m_shellWorkingDirectory) {
+      setShellWorkingDirectory(resolved);
+      shellChanged = true;
+    }
+  }
+
+  if (onlyIfShellChanged && !shellChanged) {
+    return false;
+  }
+
+  const QString targetDir =
+      m_shellWorkingDirectory.isEmpty() ? m_currentPath : m_shellWorkingDirectory;
+  if (targetDir.isEmpty())
+    return false;
+
+  if (m_currentPath != targetDir) {
+    navigateTo(targetDir);
+    showToast(QStringLiteral("Synced to shell: %1").arg(m_currentPath));
+  }
+  return true;
 }
 
 } // namespace qmltui::examples

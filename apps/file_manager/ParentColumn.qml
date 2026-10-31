@@ -10,6 +10,9 @@ Rectangle {
     required property string currentPath
     required property string parentPath
 
+    signal itemClicked(int index)
+    signal requestFileManagerFocus()
+
     color: Theme.bgColumnDim
     border.style: Border.None
 
@@ -27,8 +30,14 @@ Rectangle {
         model: root.parentEntries
 
         onFocusChanged: {
-            if (focus)
+            if (focus) {
                 focus = false;
+                root.requestFileManagerFocus();
+            }
+        }
+
+        onItemActivated: index => {
+            root.itemClicked(index);
         }
 
         delegate: Rectangle {

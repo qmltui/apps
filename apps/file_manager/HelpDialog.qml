@@ -4,6 +4,7 @@ import QtQml
 import QmlTui
 
 import QmlTui.Controls
+
 Popup {
     id: root
 
@@ -12,7 +13,7 @@ Popup {
     closePolicy: Popup.CloseOnEscape
     anchors.centerIn: parent
     width: 62
-    height: 19
+    height: 21
 
     Rectangle {
         anchors.fill: parent
@@ -55,28 +56,68 @@ Popup {
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " h / Left"; color: Theme.accentCyan; bold: true }
-                Text { text: "Parent directory (cd ..)"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " h / Left"
+                    color: Theme.accentCyan
+                    bold: true
+                }
+                Text {
+                    text: "Parent directory (cd ..)"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " l / Right / ↵"; color: Theme.accentCyan; bold: true }
-                Text { text: "Enter directory / open file"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " l / Right / ↵"
+                    color: Theme.accentCyan
+                    bold: true
+                }
+                Text {
+                    text: "Enter directory / open file"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " j / Down"; color: Theme.accentCyan; bold: true }
-                Text { text: "Move cursor down"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " j / Down"
+                    color: Theme.accentCyan
+                    bold: true
+                }
+                Text {
+                    text: "Move cursor down"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " k / Up"; color: Theme.accentCyan; bold: true }
-                Text { text: "Move cursor up"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " k / Up"
+                    color: Theme.accentCyan
+                    bold: true
+                }
+                Text {
+                    text: "Move cursor up"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " g / G"; color: Theme.accentCyan; bold: true }
-                Text { text: "Jump to first / last item"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " g / G"
+                    color: Theme.accentCyan
+                    bold: true
+                }
+                Text {
+                    text: "Jump to first / last item"
+                    color: Theme.textPrimary
+                }
             }
         }
 
@@ -92,38 +133,107 @@ Popup {
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " Space / v"; color: Theme.accentGreen; bold: true }
-                Text { text: "Toggle mark selection"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " Space / v"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "Toggle mark selection"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " V / Ctrl+A"; color: Theme.accentGreen; bold: true }
-                Text { text: "Select all / Invert selection"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " V / Ctrl+A"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "Select all / Invert selection"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " y / x / p"; color: Theme.accentGreen; bold: true }
-                Text { text: "Yank (copy) / Cut / Paste"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " y / x / p"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "Yank (copy) / Cut / Paste"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " a / r / d"; color: Theme.accentGreen; bold: true }
-                Text { text: "New file-dir / Rename / Delete"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " a / r / d"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "New file-dir / Rename / Delete"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " / / f"; color: Theme.accentGreen; bold: true }
-                Text { text: "Instant live filter mode"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " / / f"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "Instant live filter mode"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " . / s"; color: Theme.accentGreen; bold: true }
-                Text { text: "Toggle dotfiles / Cycle sort mode"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " . / s"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "Toggle dotfiles / Cycle sort mode"
+                    color: Theme.textPrimary
+                }
             }
             Row {
                 spacing: 2
-                Text { width: 14; text: " ! / Esc"; color: Theme.accentGreen; bold: true }
-                Text { text: "Open shell in folder / Close shell"; color: Theme.textPrimary }
+                Text {
+                    width: 14
+                    text: " m / [ / ]"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "Preview render mode / PDF page"
+                    color: Theme.textPrimary
+                }
+            }
+            Row {
+                spacing: 2
+                Text {
+                    width: 14
+                    text: " ! / !! / Esc"
+                    color: Theme.accentGreen
+                    bold: true
+                }
+                Text {
+                    text: "Split shell / Fullscreen / Back to nav"
+                    color: Theme.textPrimary
+                }
             }
         }
 
@@ -131,11 +241,28 @@ Popup {
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 1
-            Text { text: "Press "; color: Theme.textDim }
-            Text { text: "[Esc]"; color: Theme.accentYellow; bold: true }
-            Text { text: " or "; color: Theme.textDim }
-            Text { text: "[?]"; color: Theme.accentYellow; bold: true }
-            Text { text: " to close"; color: Theme.textDim }
+            Text {
+                text: "Press "
+                color: Theme.textDim
+            }
+            Text {
+                text: "[Esc]"
+                color: Theme.accentYellow
+                bold: true
+            }
+            Text {
+                text: " or "
+                color: Theme.textDim
+            }
+            Text {
+                text: "[?]"
+                color: Theme.accentYellow
+                bold: true
+            }
+            Text {
+                text: " to close"
+                color: Theme.textDim
+            }
         }
     }
 }

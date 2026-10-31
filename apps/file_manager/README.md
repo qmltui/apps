@@ -10,7 +10,8 @@ A modern, fast, 3-column Miller column terminal file manager written in C++20 an
   - **Preview Column**: Dynamic live preview pane:
     - Text/Code files: Line-numbered content preview.
     - Directories: Subtree items and folder stats.
-    - Binary/Images/Archives: MIME type, file size, permissions, owner, and metadata cards.
+    - Images, Vector SVGs & Multi-Page PDFs: Off-thread asynchronous preview rendering via `qmltui::AsyncImageProvider` (`Qt6::Gui`, `Qt6::Svg`, `Qt6::Pdf`) with automatic Kitty/Sixel/HalfBlock/Braille/ASCII support.
+    - Binary/Archives: MIME type, file size, permissions, owner, and metadata cards.
 - **Modern Qt 6.8+ Core Backend**:
   - Uses `QDirListing` for low-overhead C++20 range-based directory entry streaming.
   - Uses `QStorageInfo` for real-time filesystem capacity and mount point metrics.
@@ -41,8 +42,12 @@ A modern, fast, 3-column Miller column terminal file manager written in C++20 an
 | `/` / `f` | Open live filter bar |
 | `.` | Toggle hidden dotfiles |
 | `s` | Cycle sort mode (Name, Size, Modified Time, Type) |
+| `m` | Cycle image preview render mode (`Auto`, `HalfBlock`, `Braille`, `ASCII`) |
+| `[` / `]` | Previous / Next PDF document page in preview pane |
+| `!` / `!!` | Open/focus split shell drawer (`!`) / double-press (`!!`) for fullscreen shell |
+| `Esc` / `Ctrl+\` | Step back: unfocus shell to `NORMAL` navigation (`Esc` passes through when a foreground app like `vim` is running; `Ctrl+\` always unfocuses) → hide shell drawer |
 | `?` / `F1` | Open keybindings help modal |
-| `q` / `Esc` | Quit application (contextual escape) |
+| `q` | Quit application |
 
 ## Building & Running
 

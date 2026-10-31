@@ -47,6 +47,8 @@ class FileManagerBackend : public QObject {
                  currentIndexChanged FINAL)
   Q_PROPERTY(int previewWidth READ previewWidth WRITE setPreviewWidth NOTIFY
                  previewWidthChanged FINAL)
+  Q_PROPERTY(int previewPage READ previewPage WRITE setPreviewPage NOTIFY
+                 previewPageChanged FINAL)
   Q_PROPERTY(
       QVariantMap previewData READ previewData NOTIFY previewDataChanged FINAL)
   Q_PROPERTY(
@@ -62,9 +64,9 @@ class FileManagerBackend : public QObject {
                  sortAscendingChanged FINAL)
   Q_PROPERTY(QString diskUsage READ diskUsage NOTIFY diskUsageChanged FINAL)
   Q_PROPERTY(QString userHost READ userHost CONSTANT FINAL)
+  Q_PROPERTY(QString clipboardOp READ clipboardOp NOTIFY clipboardChanged FINAL)
   Q_PROPERTY(
-      QString clipboardOp READ clipboardOp NOTIFY clipboardChanged FINAL)
-  Q_PROPERTY(int clipboardCount READ clipboardCount NOTIFY clipboardChanged FINAL)
+      int clipboardCount READ clipboardCount NOTIFY clipboardChanged FINAL)
   Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY
                  statusMessageChanged FINAL)
   Q_PROPERTY(QString editorProgram READ editorProgram WRITE setEditorProgram
@@ -75,6 +77,11 @@ class FileManagerBackend : public QObject {
                  currentIndexChanged FINAL)
   Q_PROPERTY(bool isCurrentItemDir READ isCurrentItemDir NOTIFY
                  currentIndexChanged FINAL)
+  Q_PROPERTY(QString shellWorkingDirectory READ shellWorkingDirectory WRITE
+                 setShellWorkingDirectory NOTIFY shellWorkingDirectoryChanged
+                     FINAL)
+  Q_PROPERTY(bool mockShellBusy READ mockShellBusy WRITE setMockShellBusy NOTIFY
+                 mockShellBusyChanged FINAL)
   Q_PROPERTY(bool isMock READ isMock CONSTANT FINAL)
 
 public:
@@ -104,6 +111,9 @@ public:
 
   int previewWidth() const { return m_previewWidth; }
   void setPreviewWidth(int w);
+
+  int previewPage() const { return m_previewPage; }
+  void setPreviewPage(int page);
 
   QVariantMap previewData() const { return m_previewData; }
   QStringList markedPaths() const { return m_markedPaths; }
@@ -137,6 +147,16 @@ public:
   QString currentItemPath() const;
   bool isCurrentItemDir() const;
 
+  QString shellWorkingDirectory() const { return m_shellWorkingDirectory; }
+  Q_INVOKABLE void setShellWorkingDirectory(const QString &path);
+  bool mockShellBusy() const { return m_mockShellBusy; }
+  Q_INVOKABLE void setMockShellBusy(bool busy);
+  Q_INVOKABLE bool isShellForegroundBusy(qint64 pid) const;
+  Q_INVOKABLE QString buildShellCdCommand();
+  Q_INVOKABLE bool syncDirectoryFromShell(qint64 pid,
+                                          const QString &ptyTitle = QString(),
+                                          bool onlyIfShellChanged = false);
+
   Q_INVOKABLE QString detectEditor() const;
   Q_INVOKABLE void refreshCurrentAndPreview();
   Q_INVOKABLE void navigateTo(const QString &path);
@@ -154,6 +174,8 @@ public:
   Q_INVOKABLE bool renameCurrent(const QString &newName);
   Q_INVOKABLE void cycleSort();
   Q_INVOKABLE void toggleShowHidden();
+  Q_INVOKABLE void nextPreviewPage();
+  Q_INVOKABLE void previousPreviewPage();
   Q_INVOKABLE void showToast(const QString &msg);
 
 signals:
@@ -163,6 +185,7 @@ signals:
   void currentEntriesChanged();
   void currentIndexChanged();
   void previewWidthChanged();
+  void previewPageChanged();
   void previewDataChanged();
   void markedPathsChanged();
   void filterTextChanged();
@@ -173,6 +196,8 @@ signals:
   void clipboardChanged();
   void statusMessageChanged();
   void editorProgramChanged();
+  void shellWorkingDirectoryChanged();
+  void mockShellBusyChanged();
 
 private:
   void initMockFileSystem();
@@ -190,6 +215,8 @@ private:
   QString joinPath(const QString &dirPath, const QString &name) const;
   bool isTextFile(const QString &filePath, const QString &fileName,
                   const QString &mimeName) const;
+  bool isVisualPreviewFile(const QString &fileName,
+                           const QString &mimeName) const;
 
   bool copyMockRecursive(const QString &srcPath, const QString &destPath);
   void removeMockRecursive(const QString &path);
@@ -211,15 +238,19 @@ private:
   static QString sortFieldToString(SortField field);
   static SortField sortFieldFromString(const QString &field);
   static QString clipboardOpToString(ClipboardOp op);
+  static QString shellQuote(const QString &value);
 
   bool m_useMock = false;
+  bool m_mockShellBusy = false;
   QString m_currentPath;
+  QString m_shellWorkingDirectory;
   QString m_parentPath;
   QVariantList m_parentEntries;
   QVariantList m_rawCurrentEntries;
   QVariantList m_filteredEntries;
   int m_currentIndex = 0;
   int m_previewWidth = 40;
+  int m_previewPage = 0;
   QVariantMap m_previewData;
   QStringList m_markedPaths;
   QSet<QString> m_markedSet;
