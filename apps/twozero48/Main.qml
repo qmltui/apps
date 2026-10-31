@@ -313,7 +313,7 @@ Terminal {
         // Grid Container (Authentic 2048 board)
         Rectangle {
             id: gridBorder
-            width: 39
+            width: 34
             height: 17
             color: "#bbada0"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -332,7 +332,7 @@ Terminal {
                         required property int index
                         readonly property int val: rootWindow.board[boardCell.index]
 
-                        Layout.preferredWidth: 8
+                        Layout.preferredWidth: 6
                         Layout.preferredHeight: 3
                         color: rootWindow.getCellBg(boardCell.val)
 
