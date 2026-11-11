@@ -1,10 +1,10 @@
-qt_add_executable(qmltui_plotting_dashboard main.cpp)
+qt_add_executable(qmltui_plotting_dashboard src/main.cpp)
 
 qt_add_qml_module(qmltui_plotting_dashboard
     URI PlottingDashboard
     VERSION 1.0
     QML_FILES
-        Main.qml
+        qml/Main.qml
     DEPENDENCIES
         TARGET qmltui::core
         TARGET qmltui::controls
@@ -26,7 +26,7 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME test_runner_plotting_dashboard
         TARGET qmltui_plotting_dashboard
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_plotting_dashboard.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/plotting_dashboard.js"
         COLUMNS 100
         ROWS 32
         LABELS AgentSmoke
@@ -34,10 +34,10 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME plotting_dashboard_demo
         TARGET qmltui_plotting_dashboard
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/demo.js"
         COLUMNS 100
         ROWS 32
-        CLOCK VIRTUAL
+        CLOCK REAL
         RECORD plotting_dashboard.cast
         LABELS Demo
     )

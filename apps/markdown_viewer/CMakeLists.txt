@@ -20,28 +20,28 @@ qt_add_qml_module(qmltui_markdown_viewer_module
     URI QmlTui.Examples.MarkdownViewer
     VERSION 1.0
     SOURCES
-        MdRole.h
-        MdPalette.h
-        MdPalette.cpp
-        MdDocStyle.h
-        MdDocStyle.cpp
-        MdViewStyle.h
-        MdViewStyle.cpp
-        MdDoc.h
-        MdDoc.cpp
-        SyntaxHighlighter.h
-        SyntaxHighlighter.cpp
+        src/MdRole.h
+        src/MdPalette.h
+        src/MdPalette.cpp
+        src/MdDocStyle.h
+        src/MdDocStyle.cpp
+        src/MdViewStyle.h
+        src/MdViewStyle.cpp
+        src/MdDoc.h
+        src/MdDoc.cpp
+        src/SyntaxHighlighter.h
+        src/SyntaxHighlighter.cpp
     QML_FILES
-        Main.qml
-        MdView.qml
-        Theme.qml
-        ModernDocStyle.qml
-        ClassicDocStyle.qml
-        MinimalDocStyle.qml
-        StyleEditor.qml
-        HeaderBar.qml
-        StatusBar.qml
-        SearchBar.qml
+        qml/Main.qml
+        qml/MdView.qml
+        qml/Theme.qml
+        qml/ModernDocStyle.qml
+        qml/ClassicDocStyle.qml
+        qml/MinimalDocStyle.qml
+        qml/StyleEditor.qml
+        qml/HeaderBar.qml
+        qml/StatusBar.qml
+        qml/SearchBar.qml
     RESOURCES
         resources/modern_showcase.md
         resources/welcome.md
@@ -54,7 +54,7 @@ qt_add_qml_module(qmltui_markdown_viewer_module
 )
 
 target_include_directories(qmltui_markdown_viewer_module
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src"
     PRIVATE ${md4qt_SOURCE_DIR}/src ${md4qt_SOURCE_DIR}
 )
 
@@ -69,7 +69,7 @@ target_link_libraries(qmltui_markdown_viewer_module PRIVATE
     md4qt::md4qt
 )
 
-qt_add_executable(qmltui_markdown_viewer main.cpp)
+qt_add_executable(qmltui_markdown_viewer src/main.cpp)
 target_link_libraries(qmltui_markdown_viewer PRIVATE
     Qt6::Core
     Qt6::Qml
@@ -86,7 +86,7 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME markdown_viewer_scenario_wide
         TARGET qmltui_markdown_viewer
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_markdown_viewer.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/markdown_viewer.js"
         COLUMNS 100
         ROWS 32
         SCENARIO_TIMEOUT_MS 15000
@@ -95,7 +95,7 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME markdown_viewer_scenario_narrow
         TARGET qmltui_markdown_viewer
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_markdown_viewer.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/markdown_viewer.js"
         COLUMNS 70
         ROWS 24
         SCENARIO_TIMEOUT_MS 15000
@@ -104,18 +104,18 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME markdown_viewer_demo
         TARGET qmltui_markdown_viewer
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/demo.js"
         COLUMNS 100
         ROWS 32
-        CLOCK VIRTUAL
-        SCENARIO_TIMEOUT_MS 15000
+        CLOCK REAL
+        SCENARIO_TIMEOUT_MS 30000
         RECORD markdown_viewer.cast
         LABELS Demo
     )
 endif()
 
 if(BUILD_TESTING)
-    qt_add_executable(test_markdown_viewer_document test_markdown_viewer.cpp)
+    qt_add_executable(test_markdown_viewer_document tests/markdown_viewer.cpp)
     target_link_libraries(test_markdown_viewer_document PRIVATE
         Qt6::Core
         Qt6::Test

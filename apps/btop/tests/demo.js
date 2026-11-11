@@ -6,7 +6,12 @@ function main(app) {
     app.expectText("MEMORY");
     app.expectText("¹cpu");
     app.marker("System Overview");
-    app.sleep(1000);
+    // Switch to 500ms refresh interval (1000 -> 2000 -> 5000 -> 500) so live CPU Braille graph and sparklines populate smoothly
+    app.press("r");
+    app.press("r");
+    app.press("r");
+    app.waitForText("500ms");
+    app.sleep(1600);
 
     // Sort processes by memory, PID, then CPU
     app.marker("Process Sorting");

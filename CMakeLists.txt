@@ -18,6 +18,8 @@ FetchContent_Declare(qmltui
     GIT_TAG  main
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(qmltui)
+set(QMLTUI_RECORD_DIR "${PROJECT_SOURCE_DIR}/docs/assets/casts")
+file(MAKE_DIRECTORY "${QMLTUI_RECORD_DIR}")
 find_program(QMLTUI_AGG_EXECUTABLE NAMES agg HINTS "$ENV{HOME}/.cargo/bin")
 if(QMLTUI_AGG_EXECUTABLE)
     set(QMLTUI_RECORD_POST_COMMAND "${QMLTUI_AGG_EXECUTABLE}" --theme asciinema --quiet "<CAST>" "<CAST_STEM>.gif")

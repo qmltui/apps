@@ -505,4 +505,4 @@ void MarkdownViewerTest::looseListRendering() {
 }
 
 QTEST_MAIN(MarkdownViewerTest)
-#include "test_markdown_viewer.moc"
+#include "markdown_viewer.moc"

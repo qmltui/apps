@@ -1,10 +1,10 @@
 set(btop_sources
-    BtopModel.cpp
-    BtopModel.h
+    src/BtopModel.cpp
+    src/BtopModel.h
 )
 
 qt_add_executable(qmltui_btop
-    main.cpp
+    src/main.cpp
     ${btop_sources}
 )
 
@@ -12,12 +12,14 @@ qt_add_qml_module(qmltui_btop
     URI BtopDemo
     VERSION 1.0
     QML_FILES
-        Main.qml
-        BtopPanel.qml
+        qml/Main.qml
+        qml/BtopPanel.qml
     DEPENDENCIES
         TARGET qmltui::core
         TARGET qmltui::controls
 )
+
+target_include_directories(qmltui_btop PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 target_link_libraries(qmltui_btop PRIVATE
     Qt6::Core
@@ -36,7 +38,7 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME btop_smoke
         TARGET qmltui_btop
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_btop.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/btop.js"
         COLUMNS 132
         ROWS 42
         LABELS AgentSmoke
@@ -46,7 +48,7 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME btop_idle_budget
         TARGET qmltui_btop
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_idle_budget.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/idle_budget.js"
         COLUMNS 132
         ROWS 42
         LABELS AgentSmoke
@@ -55,10 +57,10 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME btop_demo
         TARGET qmltui_btop
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/demo.js"
         COLUMNS 132
         ROWS 42
-        CLOCK VIRTUAL
+        CLOCK REAL
         RECORD btop.cast
         LABELS Demo
     )

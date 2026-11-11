@@ -576,4 +576,4 @@ void TestAudioPlayerDsp::balanceScalesChannels()
 }
 
 QTEST_GUILESS_MAIN(TestAudioPlayerDsp)
-#include "test_audio_player_dsp.moc"
+#include "audio_player_dsp.moc"

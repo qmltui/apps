@@ -2,7 +2,7 @@
 # without it only the procedural demo source is available.
 find_package(Qt6 OPTIONAL_COMPONENTS Multimedia QUIET)
 
-set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 # Each executable owns the QML module (as table_view does) so Qt writes the
 # build tree's QML import path into a qt.conf beside it and `import QmlTui.Controls`
@@ -11,29 +11,29 @@ set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 # of qmltui::controls is referenced the linker drops the library that carries
 # the module's qmldir.
 set(audio_player_sources
-    AudioEngine.h
-    AudioEngine.cpp
-    SpectrumAnalyzer.h
-    SpectrumAnalyzer.cpp
-    DemoSynth.h
-    DemoSynth.cpp
-    Playlist.h
-    Playlist.cpp
-    WaveformTrace.h
-    WaveformTrace.cpp
-    ScopeArt.h
-    ScopeArt.cpp
+    src/AudioEngine.h
+    src/AudioEngine.cpp
+    src/SpectrumAnalyzer.h
+    src/SpectrumAnalyzer.cpp
+    src/DemoSynth.h
+    src/DemoSynth.cpp
+    src/Playlist.h
+    src/Playlist.cpp
+    src/WaveformTrace.h
+    src/WaveformTrace.cpp
+    src/ScopeArt.h
+    src/ScopeArt.cpp
 )
 set(audio_player_qml_files
-    Main.qml
-    Theme.qml
-    MainDeck.qml
-    PlaylistDeck.qml
-    VisualizerDeck.qml
-    AddTrackDialog.qml
-    KeyMapBar.qml
-    KeyHint.qml
-    VuMeter.qml
+    qml/Main.qml
+    qml/Theme.qml
+    qml/MainDeck.qml
+    qml/PlaylistDeck.qml
+    qml/VisualizerDeck.qml
+    qml/AddTrackDialog.qml
+    qml/KeyMapBar.qml
+    qml/KeyHint.qml
+    qml/VuMeter.qml
 )
 
 # Adds an executable that compiles the module under its own URI.
@@ -56,7 +56,7 @@ function(audio_player_add_executable target uri main_source)
             TARGET qmltui::core
             TARGET qmltui::controls
     )
-    target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(${target} PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
     if(TARGET Qt6::Multimedia)
         target_link_libraries(${target} PRIVATE Qt6::Multimedia)
@@ -72,7 +72,7 @@ else()
     message(STATUS "audio_player: Qt Multimedia not found, demo source only")
 endif()
 
-audio_player_add_executable(qmltui_audio_player AudioPlayer main.cpp)
+audio_player_add_executable(qmltui_audio_player AudioPlayer src/main.cpp)
 
 if(QMLTUI_INSTALL_EXAMPLES)
     install(TARGETS qmltui_audio_player RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
@@ -84,7 +84,7 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME audio_player_demo_smoke
         TARGET qmltui_audio_player
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_audio_player.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/audio_player.js"
         COLUMNS 120
         ROWS 36
         ARTIFACT "audio_player/initial.txt"
@@ -95,17 +95,18 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(
         NAME audio_player_demo
         TARGET qmltui_audio_player
-        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/test_demo.js"
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/demo.js"
         COLUMNS 120
         ROWS 36
+        CLOCK REAL
         RECORD audio_player.cast
         LABELS Demo
     )
 endif()
 
 if(BUILD_TESTING)
-    qt_add_executable(test_audio_player_dsp test_audio_player_dsp.cpp ${audio_player_sources})
-    target_include_directories(test_audio_player_dsp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    qt_add_executable(test_audio_player_dsp tests/audio_player_dsp.cpp ${audio_player_sources})
+    target_include_directories(test_audio_player_dsp PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(test_audio_player_dsp PRIVATE
         Qt6::Core
         Qt6::Qml

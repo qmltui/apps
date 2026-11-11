@@ -1,11 +1,10 @@
 #pragma once
 
+#include "MockFileSystem.h"
+
 #include <QCollator>
 #include <QDateTime>
-#include <QFileDevice>
-#include <QFileInfo>
 #include <QFileSystemWatcher>
-#include <QHash>
 #include <QMimeDatabase>
 #include <QObject>
 #include <QQmlEngine>
@@ -16,18 +15,6 @@
 #include <QVariantMap>
 
 namespace qmltui::examples {
-
-struct MockItem {
-  QString name;
-  bool isDir = false;
-  qint64 size = 0;
-  QDateTime modified;
-  QString permissions;
-  QString owner;
-  QString mimeType;
-  QString content;        // For text files
-  QStringList childNames; // For directories
-};
 
 class FileManagerBackend : public QObject {
   Q_OBJECT
@@ -200,7 +187,6 @@ signals:
   void mockShellBusyChanged();
 
 private:
-  void initMockFileSystem();
   void refreshAll(const QString &selectPath = QString(),
                   bool pathChanged = true);
   void refreshParent();
@@ -213,32 +199,15 @@ private:
 
   QString parentDirectoryPath(const QString &path) const;
   QString joinPath(const QString &dirPath, const QString &name) const;
-  bool isTextFile(const QString &filePath, const QString &fileName,
-                  const QString &mimeName) const;
-  bool isVisualPreviewFile(const QString &fileName,
-                           const QString &mimeName) const;
-
-  bool copyMockRecursive(const QString &srcPath, const QString &destPath);
-  void removeMockRecursive(const QString &path);
-  void renameMockRecursive(const QString &oldPath, const QString &newPath,
-                           const QString &newName);
-
   QVariantMap formatFileEntry(const QString &name, const QString &fullPath,
                               bool isDir, qint64 size,
                               const QDateTime &modified,
                               const QString &permissions, const QString &owner,
                               const QString &mimeType) const;
 
-  static QString formatSize(qint64 bytes);
-  static QString formatPermissions(QFileDevice::Permissions perms, bool isDir,
-                                   bool isSymLink = false);
-  static QString formatOwner(const QFileInfo &info);
-  static QString fileIconFor(const QString &name, bool isDir);
-  static QString iconColorFor(const QString &name, bool isDir);
   static QString sortFieldToString(SortField field);
   static SortField sortFieldFromString(const QString &field);
   static QString clipboardOpToString(ClipboardOp op);
-  static QString shellQuote(const QString &value);
 
   bool m_useMock = false;
   bool m_mockShellBusy = false;
@@ -269,9 +238,7 @@ private:
   QMimeDatabase m_mimeDb;
   QCollator m_collator;
   QFileSystemWatcher *m_fsWatcher = nullptr;
-
-  // Mock storage
-  QHash<QString, MockItem> m_mockFs;
+  MockFileSystem m_mockFs;
 };
 
 } // namespace qmltui::examples

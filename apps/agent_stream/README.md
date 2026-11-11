@@ -4,7 +4,7 @@ Interactive coding-agent session combining `Terminal.Inline`, `Scrollback`, prom
 
 Build with `cmake --build build --target qmltui_agent_stream`.
 Run `./build/apps/agent_stream/qmltui_agent_stream`.
-See [main.cpp](main.cpp) for startup and local QML files for the interface.
+See [main.cpp](src/main.cpp) for startup and [qml/](qml/) for the interface.
 
 Run its scenarios with `ctest --test-dir build -R agent_stream --output-on-failure`.
 

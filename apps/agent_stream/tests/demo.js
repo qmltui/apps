@@ -40,26 +40,28 @@ function main(app) {
     app.expectText("Ask anything");
     app.sleep(500);
 
-    // 4. Run streaming agent scenario (/demo 1)
+    // 4. Inspect workspace hierarchy in scrollback (/tree)
+    app.marker("Workspace Tree");
+    app.typeText("/tree");
+    app.sleep(350);
+    app.press("Enter");
+    app.waitForScrollbackText("QmlTui Workspace", 3000);
+    app.sleep(700);
+
+    // 5. Run streaming agent scenario (/demo 1)
     app.marker("Streaming Agent Execution");
     app.typeText("/demo 1");
-    app.sleep(500);
+    app.sleep(450);
     app.press("Enter");
 
     // Step through streaming thoughts, tool calls, and diff cards to permission prompt
-    for (let i = 0; i < 8; ++i) {
-        app.sleep(600);
-    }
-    app.waitForText("Allow once", 7000);
+    app.waitForText("Allow once", 8000);
     app.marker("Permission Approval");
     app.sleep(900);
 
     // Approve and finish streaming response
     app.press("1");
-    for (let i = 0; i < 6; ++i) {
-        app.sleep(650);
-    }
-    app.expectText("Ask anything");
+    app.waitForText("Ask anything", 8000);
     app.sleep(1000);
     app.stopRecording();
 }

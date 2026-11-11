@@ -12,11 +12,13 @@ function main(app) {
     app.press("Down");
     app.sleep(600);
 
-    // Open live container logs drawer
-    app.marker("Container Logs Drawer");
+    // Open live container logs drawer and sort by CPU Load
+    app.marker("Container Logs & Sorting");
     app.press("L");
     app.waitForFrame();
-    app.sleep(900);
+    app.sleep(800);
+    app.clickText("CPU LOAD");
+    app.sleep(800);
 
     // Filter tabs: Running -> Critical
     app.marker("Filter Running & Critical");
