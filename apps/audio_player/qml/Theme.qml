@@ -2,67 +2,43 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 import QtQml
 
-// Audio Player skin palette and formatting helpers using the terminal default
-// palette ("default" + 16-color "ansi:*" entries).
-// Supports 3 switchable ANSI skins:
-//   0: CLASSIC     (gold titlebars, brightgreen LED matrix, green/yellow/red bars)
-//   1: AMBER AMP   (warm yellow/red phosphor ANSI palette)
-//   2: CYBER NEON  (brightcyan/brightmagenta/blue ANSI palette)
+// Audio Player palette and formatting helpers using strictly the terminal
+// default color ("default") and 16-color ANSI palette entries ("ansi:*").
 QtObject {
     id: theme
 
-    property int skinIndex: 0
-    readonly property int skinCount: 3
-
-    readonly property string skinName: {
-        switch (skinIndex) {
-        case 1: return "AMBER AMP";
-        case 2: return "CYBER NEON";
-        default: return "CLASSIC";
-        }
-    }
-
-    function nextSkin() {
-        skinIndex = (skinIndex + 1) % skinCount;
-    }
-
-    // Chassis & Window backgrounds (SGR default + ANSI black/brightblack)
+    // Surfaces (terminal default + ANSI brightblack highlight)
     readonly property string background: "default"
     readonly property string barBackground: "default"
-    readonly property string transportBackground: "default"
     readonly property string panel: "default"
-    readonly property string lcdBackground: "ansi:black"
     readonly property string playlistBg: "default"
     readonly property string playlistSelectedBg: "ansi:brightblack"
 
-    // Borders & Chrome
-    readonly property string frame: "ansi:brightblack"
-    readonly property string activeFrame: skinIndex === 1 ? "ansi:yellow" : skinIndex === 2 ? "ansi:brightcyan" : "ansi:yellow"
-    readonly property string titleBarGold: skinIndex === 1 ? "ansi:brightyellow" : skinIndex === 2 ? "ansi:brightcyan" : "ansi:brightyellow"
+    // Hairline Dividers & Modal Border (paired with dim: true on Text dividers)
+    readonly property string border: "ansi:brightblack"
+    readonly property string header: "ansi:brightyellow"
 
-    // Text & LED Readouts
+    // Text
     readonly property string text: "default"
-    readonly property string subtle: "ansi:white"
+    readonly property string subtle: "default"
     readonly property string muted: "ansi:brightblack"
-    readonly property string dim: "ansi:brightblack"
 
-    readonly property string ledGreen: skinIndex === 1 ? "ansi:brightyellow" : skinIndex === 2 ? "ansi:brightcyan" : "ansi:brightgreen"
-    readonly property string ledDim: "ansi:brightblack"
-    readonly property string playlistText: skinIndex === 1 ? "ansi:yellow" : skinIndex === 2 ? "ansi:brightcyan" : "ansi:brightgreen"
-    readonly property string playlistActive: "ansi:brightwhite"
+    // Playlist
+    readonly property string playlistText: "default"
+    readonly property string playlistActive: "ansi:brightgreen"
 
-    // Semantic & Spectrum Colors
-    readonly property string accent: skinIndex === 1 ? "ansi:brightyellow" : skinIndex === 2 ? "ansi:brightcyan" : "ansi:brightgreen"
-    readonly property string secondary: skinIndex === 1 ? "ansi:brightred" : skinIndex === 2 ? "ansi:brightmagenta" : "ansi:brightred"
-    readonly property string mid: skinIndex === 1 ? "ansi:yellow" : skinIndex === 2 ? "ansi:magenta" : "ansi:brightyellow"
+    // Semantic & Visualizer ANSI Colors
+    readonly property string accent: "ansi:brightgreen"
+    readonly property string secondary: "ansi:brightred"
+    readonly property string mid: "ansi:brightyellow"
     readonly property string error: "ansi:brightred"
     readonly property string warning: "ansi:brightyellow"
     readonly property string hot: "ansi:brightred"
-    readonly property string playing: skinIndex === 1 ? "ansi:brightyellow" : skinIndex === 2 ? "ansi:brightgreen" : "ansi:brightgreen"
+    readonly property string playing: "ansi:brightgreen"
     readonly property string fileSource: "ansi:brightgreen"
-    readonly property string scopeAccent: skinIndex === 1 ? "ansi:brightyellow" : skinIndex === 2 ? "ansi:brightcyan" : "ansi:brightgreen"
-    readonly property string scopeRight: skinIndex === 1 ? "ansi:brightred" : skinIndex === 2 ? "ansi:brightmagenta" : "ansi:brightcyan"
-    readonly property string vuLow: skinIndex === 1 ? "ansi:brightyellow" : "ansi:brightgreen"
+    readonly property string scopeAccent: "ansi:brightgreen"
+    readonly property string scopeRight: "ansi:brightcyan"
+    readonly property string vuLow: "ansi:brightgreen"
 
     // 1/8-cell vertical resolution for smooth bar tops.
     readonly property var blockGlyphs: [" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
@@ -74,23 +50,6 @@ QtObject {
         if (text.length <= maxCells)
             return text;
         return text.substring(0, Math.max(0, maxCells - 1)) + "…";
-    }
-
-    // Produces a looping horizontal marquee slice of `width` cells.
-    function marqueeSlice(text: string, offset: int, width: int): string {
-        if (width <= 0)
-            return "";
-        if (!text || text.length === 0)
-            return " ".repeat(width);
-        if (text.length <= width)
-            return text.padEnd(width, " ");
-        const loop = text + "   ***   ";
-        const len = loop.length;
-        const start = ((offset % len) + len) % len;
-        let out = "";
-        for (let i = 0; i < width; ++i)
-            out += loop[(start + i) % len];
-        return out;
     }
 
     // Level 0..1 to a dB string with a full-scale reference of 1.0.

@@ -1,19 +1,20 @@
 pragma ComponentBehavior: Bound
 import QmlTui
 
-// One-row footer listing the active Audio Player shortcuts. Narrow terminals get a compact variant.
+// One-row footer listing the non-redundant Audio Player shortcuts.
 Rectangle {
     id: bar
 
     required property AudioEngine engine
     property bool showMainDeck: true
     property bool showPlaylist: true
+    property bool showSpectrum: true
     property bool showVisualizer: true
     property int visMode: 0
     property bool blendOverlaps: false
 
-    readonly property bool compact: width < 140
-    readonly property bool tiny: width < 115
+    readonly property bool compact: width < 100
+    readonly property bool tiny: width < 80
 
     height: 1
     color: Theme.barBackground
@@ -29,15 +30,9 @@ Rectangle {
             activeColor: Theme.warning
         }
         KeyHint {
-            visible: !bar.compact
-            key: "ZXCVB"
-            label: "Transport"
-            activeColor: Theme.accent
-        }
-        KeyHint {
             key: "L"
             label: "Load"
-            activeColor: Theme.titleBarGold
+            activeColor: Theme.header
         }
         KeyHint {
             key: "1"
@@ -49,41 +44,33 @@ Rectangle {
             key: "2"
             label: "PL"
             active: bar.showPlaylist
-            activeColor: Theme.titleBarGold
+            activeColor: Theme.header
         }
         KeyHint {
             key: "3"
-            label: "Vis"
+            label: "Spec"
+            active: bar.showSpectrum
+            activeColor: Theme.accent
+        }
+        KeyHint {
+            key: "4"
+            label: "Scope"
             active: bar.showVisualizer
             activeColor: Theme.scopeAccent
         }
         KeyHint {
             visible: bar.showVisualizer
             key: "W"
-            label: ["Combo", "Spec", "Glow"][bar.visMode] || "Combo"
+            label: ["Stereo", "Glow", "Radial"][bar.visMode] || "Stereo"
             active: bar.visMode !== 0
             activeColor: Theme.scopeAccent
         }
         KeyHint {
-            visible: !bar.tiny
-            key: "[ ]"
-            label: "LP"
-            active: bar.engine.scopeLowPassHz > 0
-            activeColor: Theme.scopeAccent
-        }
-        KeyHint {
-            visible: !bar.tiny
+            visible: !bar.tiny && bar.showVisualizer
             key: "A"
             label: "Blend"
             active: bar.blendOverlaps
             activeColor: Theme.scopeRight
-        }
-        KeyHint {
-            visible: !bar.tiny
-            key: "K"
-            label: "Skin"
-            active: Theme.skinIndex !== 0
-            activeColor: Theme.titleBarGold
         }
         KeyHint {
             key: "Q"

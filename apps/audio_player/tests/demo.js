@@ -7,7 +7,8 @@ function main(app) {
     app.expectText("DEMO");
     app.expectText("SYNTHWAVE RUNNER");
     app.expectText("PLAYLIST");
-    app.expectText("VISUALIZER // SPECTRUM + SCOPE");
+    app.expectText("SPECTRUM // 24-BAND FFT");
+    app.expectText("VISUALIZER // STEREO SCOPE");
 
     // Playlist track selection
     app.marker("Playlist Track Selection");
@@ -16,18 +17,6 @@ function main(app) {
     app.press("Return");
     app.expectText("ACID OVERDRIVE");
     app.sleep(700);
-
-    // Skin cycling (K): CLASSIC -> AMBER AMP -> CYBER NEON -> CLASSIC
-    app.marker("Skin Cycling");
-    app.typeText("k");
-    app.expectText("[AMBER AMP]");
-    app.sleep(700);
-    app.typeText("k");
-    app.expectText("[CYBER NEON]");
-    app.sleep(700);
-    app.typeText("k");
-    app.expectText("[CLASSIC]");
-    app.sleep(500);
 
     // Load Media modal (L opens, Escape closes)
     app.marker("Load Media Dialog");
@@ -38,19 +27,19 @@ function main(app) {
     app.expectNoText("LOAD / ADD MEDIA");
     app.sleep(500);
 
-    // Visualizer modes (W): 24-Band Spectrum -> Phosphor Scope -> Combo
-    app.marker("24-Band Spectrum");
-    app.typeText("w");
-    app.expectText("VISUALIZER // 24-BAND SPECTRUM");
-    app.sleep(800);
-
+    // Visualizer modes (W): Stereo Scope -> Phosphor Scope -> Radial Scope -> Stereo Scope
     app.marker("Phosphor Scope");
     app.typeText("w");
     app.expectText("VISUALIZER // PHOSPHOR SCOPE");
     app.sleep(800);
 
+    app.marker("Radial Scope");
     app.typeText("w");
-    app.expectText("VISUALIZER // SPECTRUM + SCOPE");
+    app.expectText("VISUALIZER // RADIAL SCOPE");
+    app.sleep(800);
+
+    app.typeText("w");
+    app.expectText("VISUALIZER // STEREO SCOPE");
     app.sleep(700);
     app.stopRecording();
 }

@@ -47,6 +47,7 @@ public:
     Q_PROPERTY(QVariantList peakLevels READ peakLevels NOTIFY levelsChanged)
     Q_PROPERTY(qreal vuLeft READ vuLeft NOTIFY levelsChanged)
     Q_PROPERTY(qreal vuRight READ vuRight NOTIFY levelsChanged)
+    Q_PROPERTY(qreal bassEnergy READ bassEnergy NOTIFY levelsChanged)
     Q_PROPERTY(qreal beatPulse READ beatPulse NOTIFY levelsChanged)
     // Plain double lists: QML hands them to WaveformTrace without per-element boxing.
     Q_PROPERTY(QList<double> waveformLeft READ waveformLeft NOTIFY levelsChanged)
@@ -101,6 +102,7 @@ public:
     QVariantList peakLevels() const { return m_peakLevels; }
     qreal vuLeft() const { return m_vuLeft; }
     qreal vuRight() const { return m_vuRight; }
+    qreal bassEnergy() const { return m_bassEnergy; }
     QList<double> waveformMono() const { return m_waveformMono; }
     qreal correlation() const { return m_correlation; }
     qreal beatPulse() const { return m_beatPulse; }
@@ -218,6 +220,7 @@ private:
     std::array<float, cyber::kScopePoints> m_scopeRight{};
     float m_vuLeft = 0.f;
     float m_vuRight = 0.f;
+    float m_bassEnergy = 0.f;
     float m_beatPulse = 0.f;
     QVariantList m_bandLevels;
     QVariantList m_peakLevels;

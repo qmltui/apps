@@ -2,8 +2,8 @@ pragma ComponentBehavior: Bound
 import QtQml
 import QmlTui
 
-// Modal dialog opened with L or the [⏏ L] / [+ADD L] buttons to load or append
-// local files, directories, stream URLs, or the Synthwave Demo Album.
+// Minimalist modal dialog opened with L to load or append local files,
+// directories, stream URLs, or the Synthwave Demo Album.
 Popup {
     id: dialog
 
@@ -28,8 +28,8 @@ Popup {
     dimBackground: true
     closePolicy: Popup.CloseOnEscape
     anchors.centerIn: parent
-    width: Math.min(64, Math.max(44, parent ? parent.width - 8 : 56))
-    height: 11
+    width: Math.min(60, Math.max(42, parent ? parent.width - 8 : 54))
+    height: 9
 
     onOpened: {
         pathInput.focus = true;
@@ -55,54 +55,32 @@ Popup {
     Rectangle {
         anchors.fill: parent
         color: Theme.panel
-        border.style: Border.Double
-        border.color: Theme.activeFrame
+        border.style: Border.Rounded
+        border.color: Theme.border
     }
 
     Column {
         anchors.fill: parent
-        anchors.margins: 1
+        anchors.topMargin: 1
+        anchors.bottomMargin: 1
+        anchors.leftMargin: 2
+        anchors.rightMargin: 2
         spacing: 1
 
-        Text {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: "═══ AUDIO PLAYER // LOAD / ADD MEDIA ═══"
-            color: Theme.titleBarGold
-            bold: true
-        }
-
-        Text {
-            text: "File, folder, or stream URL:"
-            color: Theme.subtle
-        }
-
-        Rectangle {
-            width: parent.width - 2
+        Item {
+            width: parent.width
             height: 1
-            color: Theme.playlistSelectedBg
-            border.style: Border.None
-
-            TextInput {
-                id: pathInput
-                anchors.fill: parent
-                color: Theme.playlistActive
-                cursorVisible: true
-                cursorColor: Theme.ledGreen
-                onAccepted: dialog.submitPath()
-            }
-        }
-
-        Row {
-            spacing: 2
 
             Text {
-                text: "Action [Tab]:"
-                color: Theme.muted
-            }
-            Text {
-                text: dialog.appendMode ? "▸ APPEND TO PLAYLIST" : "▸ REPLACE PLAYLIST"
-                color: Theme.ledGreen
+                anchors.left: parent.left
+                text: "LOAD / ADD MEDIA"
+                color: Theme.header
                 bold: true
+            }
+            Text {
+                anchors.right: parent.right
+                text: dialog.appendMode ? "mode: append" : "mode: replace"
+                color: Theme.accent
                 MouseArea {
                     anchors.fill: parent
                     onClicked: dialog.appendMode = !dialog.appendMode
@@ -110,12 +88,34 @@ Popup {
             }
         }
 
+        Text {
+            text: "Path or stream URL:"
+            color: Theme.text
+            dim: true
+        }
+
+        Rectangle {
+            width: parent.width
+            height: 1
+            color: Theme.playlistSelectedBg
+            border.style: Border.None
+
+            TextInput {
+                id: pathInput
+                anchors.fill: parent
+                color: Theme.text
+                cursorVisible: true
+                cursorColor: Theme.accent
+                onAccepted: dialog.submitPath()
+            }
+        }
+
         Row {
-            spacing: 2
+            spacing: 3
 
             Text {
-                text: "[Enter: Load Path]"
-                color: Theme.ledGreen
+                text: "load"
+                color: Theme.accent
                 bold: true
                 MouseArea {
                     anchors.fill: parent
@@ -123,9 +123,8 @@ Popup {
                 }
             }
             Text {
-                text: "[Demo Album]"
-                color: Theme.titleBarGold
-                bold: true
+                text: "demo album"
+                color: Theme.header
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
@@ -135,8 +134,9 @@ Popup {
                 }
             }
             Text {
-                text: "[Esc: Cancel]"
-                color: Theme.subtle
+                text: "cancel"
+                color: Theme.text
+                dim: true
                 MouseArea {
                     anchors.fill: parent
                     onClicked: dialog.close()

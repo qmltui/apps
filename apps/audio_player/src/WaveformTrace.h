@@ -11,7 +11,7 @@
 //
 //   Canvas {
 //       renderMode: Canvas.RenderMode.Braille
-//       WaveformTrace { samples: engine.waveformLeft; color: "#ffb700" }
+//       WaveformTrace { samples: engine.waveformLeft; color: "ansi:brightgreen" }
 //   }
 class WaveformTrace : public qmltui::CanvasShape
 {

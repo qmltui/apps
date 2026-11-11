@@ -1,10 +1,11 @@
 # Terminal Audio Player & Visualizer (`audio_player`)
 
-A retained-mode terminal audio player and real-time spectrum/oscilloscope visualizer built on QmlTui. It uses the terminal's default palette (`"default"` + 16-color `"ansi:*"` colors) and arranges three docked decks in a responsive split layout:
+A retained-mode terminal audio player and real-time spectrum/oscilloscope visualizer built on QmlTui. It uses strictly the terminal's default palette (`"default"` + 16-color `"ansi:*"` colors) and arranges its views in a responsive single-hairline divided grid (`Playlist │ Visualizer` above a full-width player bar):
 
-1. **Main Player Deck (`MainDeck.qml`):** Play/pause/stop LED status, digital elapsed/remaining clock, clickable Mini-Visualizer (`Mini Spectrum` / `Mini Scope` / `Status`), scrolling LED track marquee, `kbps` / `kHz` / `MONO` / `STEREO` badges, interactive `VOL` and `BAL` sliders, Seek bar, Transport buttons (`Z X C V B L`), `SHUF` & `REP` toggles, and `[PL]` `[VIS]` deck switches.
-2. **Playlist Editor (`PlaylistDeck.qml`):** Scrollable tracklist (`1. Artist - Title   02:45`) with active playing track indicator (`▶`), cursor selection, mouse click / `Up` / `Down` / `Enter` / `Delete` controls, total duration summary, and an interactive **Load / Add Media Modal (`AddTrackDialog.qml`)** (`L` key) to load files, folders, stream URLs, or the 5-track procedural Synthwave Demo Album.
-3. **Visualizer Deck (`VisualizerDeck.qml`):** High-resolution 24-band FFT Spectrum Analyzer (`1/8`-cell resolution with peak-hold caps), Braille Stereo Oscilloscope (`WaveformTrace`), and CRT Phosphor Persistence (`PersistenceTrace`), plus Stereo VU meters and L/R phase correlation.
+1. **Playlist Pane (`PlaylistDeck.qml`):** Left-column scrollable tracklist (`1. Artist - Title   02:45`) with inline `+add`/`-rem`/`demo`/`clr` actions, active playing track highlight (`▶`), cursor selection, total duration summary, and a **Load / Add Media Modal (`AddTrackDialog.qml`)** (`L` key).
+2. **Spectrum Pane (`SpectrumDeck.qml`):** Dedicated top-right 24-band FFT Spectrum Analyzer (`1/8`-cell resolution with peak-hold caps) and compact 1-row Stereo VU bar.
+3. **Visualizer / Oscilloscope Pane (`VisualizerDeck.qml`):** Dedicated bottom-right Braille Oscilloscope panel where `W` cycles between **Stereo Scope** (`WaveformTrace`), **Phosphor Scope** (`PersistenceTrace`), and **Radial Scope** (`RadialScopeTrace` wrapping 512 samples around a bass-reactive circle with 16-sample seam blending and glowing stroke).
+4. **Bottom Player Bar (`MainDeck.qml`):** Full-width 2-row deck beneath a dimmed `───┴───` hairline with play/pause/stop state, track & status readout, bitrate/sample-rate info, `SHUF`/`REP` toggles, volume/balance readouts, transport controls, and a full-width dotted seek bar.
 
 Two audio sources feed the same engine:
 
@@ -38,11 +39,9 @@ qmltui_audio_player                           # idle: press L to load media
 | `←` / `→` | Seek 5 s backward / forward |
 | `+` / `-` | Volume in 5 % steps |
 | `T` | Toggle digital clock between elapsed and remaining track time |
-| `1` / `2` / `3` | Toggle the Main Player (`1`), Playlist (`2`), and Visualizer (`3`) decks |
-| `W` | Cycle Visualizer mode: `Spectrum + Scope` → `24-Band Spectrum` → `Phosphor Scope` |
-| `[` / `]` | Oscilloscope low-pass filter (`off` → `8 kHz` → `4 kHz` → `2 kHz` → `1 kHz` → `600` → `300` → `150 Hz`) |
+| `1` / `2` / `3` / `4` | Toggle the Main Player (`1`), Playlist (`2`), Spectrum (`3`), and Oscilloscope (`4`) decks |
+| `W` | Cycle Oscilloscope visualization mode: `Stereo Scope` → `Phosphor Scope` → `Radial Scope` |
 | `A` | Toggle Braille cell color averaging on shared oscilloscope dots |
-| `K` | Cycle ANSI Skins: `CLASSIC` → `AMBER AMP` → `CYBER NEON` |
 | `Q` / `Esc` | Contextual Escape (closes modal → quits application) |
 
 ## Building and Testing

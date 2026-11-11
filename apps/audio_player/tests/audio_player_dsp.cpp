@@ -516,6 +516,33 @@ void TestAudioPlayerDsp::shapesDrawIntoBrailleCanvas()
         glow->setSamples(sine);
     cols = paintedColumns(canvas, buf);
     QVERIFY(cols.front() && cols.back());
+    glow->setVisible(false);
+
+    // RadialScopeTrace: silent draws nothing; active signal draws a circular ring
+    // that expands horizontally when bassEnergy increases from 0.0 to 1.0.
+    auto* radial = new RadialScopeTrace(&canvas);
+    radial->setParentItem(&canvas);
+    radial->setDepth(1);
+    radial->setSamples(QList<double>(kScopePoints, 0.0));
+    cols = paintedColumns(canvas, buf);
+    QVERIFY(std::none_of(cols.begin(), cols.end(), [](bool b) { return b; }));
+
+    radial->setBassEnergy(0.0);
+    radial->setSamples(sine);
+    cols = paintedColumns(canvas, buf);
+    int spanLowBass = 0;
+    for (bool b : cols)
+        if (b) ++spanLowBass;
+    QVERIFY(spanLowBass > 0);
+
+    radial->setBassEnergy(1.0);
+    radial->setSamples(sine);
+    cols = paintedColumns(canvas, buf);
+    int spanHighBass = 0;
+    for (bool b : cols)
+        if (b) ++spanHighBass;
+    QVERIFY2(spanHighBass > spanLowBass,
+             qPrintable(QString("low=%1 high=%2").arg(spanLowBass).arg(spanHighBass)));
 }
 
 void TestAudioPlayerDsp::playlistEditorAndDemoAlbumOperations()

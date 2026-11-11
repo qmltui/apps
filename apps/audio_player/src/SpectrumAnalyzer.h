@@ -11,8 +11,8 @@ namespace cyber {
 
 constexpr int kBandCount = 24;
 constexpr int kFftSize = 2048;       // power of two
-constexpr int kScopePoints = 256;
-constexpr int kScopeStride = 4;      // scope covers kScopePoints * kScopeStride frames (~21 ms at 48 kHz)
+constexpr int kScopePoints = 512;
+constexpr int kScopeStride = 2;      // scope covers kScopePoints * kScopeStride frames (~21 ms at 48 kHz)
 constexpr int kScopeTriggerSearch = kFftSize - kScopePoints * kScopeStride;  // frames searched for a trigger
 constexpr double kBandLowHz = 40.0;
 constexpr double kBandHighHz = 18000.0;

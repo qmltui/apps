@@ -235,6 +235,9 @@ void AudioEngine::tick()
     };
     smoothVu(m_vuLeft, vuTargetLeft);
     smoothVu(m_vuRight, vuTargetRight);
+    m_bassEnergy = std::clamp(
+        m_levels[0] * 0.35f + m_levels[1] * 0.30f + m_levels[2] * 0.20f + m_levels[3] * 0.15f,
+        0.f, 1.f);
     active = active || m_vuLeft > 0.f || m_vuRight > 0.f || m_beatPulse > 0.f;
 
     if (haveWaveform) {
@@ -274,7 +277,7 @@ void AudioEngine::resetLevels()
     m_peaks.fill(0.f);
     m_scopeLeft.fill(0.f);
     m_scopeRight.fill(0.f);
-    m_vuLeft = m_vuRight = m_beatPulse = 0.f;
+    m_vuLeft = m_vuRight = m_bassEnergy = m_beatPulse = 0.f;
     m_bandLevels = toVariantList(m_levels);
     m_peakLevels = toVariantList(m_peaks);
     m_waveformLeft = toDoubleList(m_scopeLeft);
@@ -290,7 +293,7 @@ void AudioEngine::updateMonoAndCorrelation()
     for (int i = 0; i < kScopePoints; ++i) {
         const double l = m_scopeLeft[i];
         const double r = m_scopeRight[i];
-        m_waveformMono[i] = 0.5 * (l + r);
+        m_waveformMono[i] = std::clamp((l + r) * 0.70710678, -1.0, 1.0);
         sumLR += l * r;
         sumLL += l * l;
         sumRR += r * r;

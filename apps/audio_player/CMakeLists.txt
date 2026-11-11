@@ -29,6 +29,7 @@ set(audio_player_qml_files
     qml/Theme.qml
     qml/MainDeck.qml
     qml/PlaylistDeck.qml
+    qml/SpectrumDeck.qml
     qml/VisualizerDeck.qml
     qml/AddTrackDialog.qml
     qml/KeyMapBar.qml

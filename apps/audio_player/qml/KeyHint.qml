@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 import QmlTui
 
-// A footer key chip: reversed key cap followed by its action label.
+// Minimal footer key hint: bold key followed by dimmed label.
 Row {
     id: hint
     property string key: ""
@@ -11,14 +11,14 @@ Row {
     spacing: 1
 
     Text {
-        text: " " + hint.key + " "
-        reversed: true
+        text: hint.key
         bold: true
-        color: hint.active ? hint.activeColor : Theme.subtle
+        color: hint.active ? hint.activeColor : Theme.text
+        dim: !hint.active
     }
     Text {
         text: hint.label
-        bold: hint.active
-        color: hint.active ? hint.activeColor : Theme.muted
+        color: hint.active ? hint.activeColor : Theme.text
+        dim: !hint.active
     }
 }
