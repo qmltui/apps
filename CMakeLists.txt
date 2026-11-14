@@ -14,7 +14,7 @@ if(UNIX)
     set(QMLTUI_ENABLE_PTYVIEW ON CACHE BOOL "" FORCE)
 endif()
 FetchContent_Declare(qmltui
-    GIT_REPOSITORY https://github.com/yosriayed/qml-tui.git
+    GIT_REPOSITORY https://github.com/qmltui/qmltui.git
     GIT_TAG  main
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(qmltui)

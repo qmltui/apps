@@ -1,6 +1,6 @@
 # Retro Screensaver Showcase
 
-A collection of classic demoscene and retro OS screensavers built with [QmlTui](https://github.com/qmltui-dev/qmltui), showcasing multiple diverse terminal rendering paradigms: solid 1:1 half-block subpixels (**`Canvas.HalfBlock`**), ultra-high-resolution 2x4 dot subpixels (**`Canvas.Braille`**), authentic Unicode box-drawing characters, mathematical ASCII luminance raymarching, and cellular automata.
+A collection of classic demoscene and retro OS screensavers built with [QmlTui](https://github.com/qmltui/qmltui), showcasing multiple diverse terminal rendering paradigms: solid 1:1 half-block subpixels (**`Canvas.HalfBlock`**), ultra-high-resolution 2x4 dot subpixels (**`Canvas.Braille`**), authentic Unicode box-drawing characters, mathematical ASCII luminance raymarching, and cellular automata.
 
 ## Screensaver Modes
 

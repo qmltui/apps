@@ -1,7 +1,6 @@
 # QmlTui applications
 
-The larger QmlTui example applications live here. The framework repository keeps
-component demos, topic examples, tutorials, the gallery, and the WebAssembly site.
+The larger QmlTui showcase applications live here (`qmltui/apps`). The core framework repository ([`qmltui/qmltui`](https://github.com/qmltui/qmltui)) keeps the library, component gallery, focused recipes, and Markdown documentation; the documentation portal and WebAssembly playground live in [`qmltui/website`](https://github.com/qmltui/website).
 
 Requires C++20, Qt 6.8+ with QmlPrivate, and CMake 3.21+. Private Qt features
 (Behavior and StateGroup) are enabled; PtyView is enabled on Unix. Optional
@@ -20,7 +19,7 @@ To record `.cast` and `.gif` showcase previews into `docs/assets/casts/` (requir
 ctest --test-dir build -L Demo --output-on-failure
 ```
 
-Without the source override, FetchContent uses `yosriayed/qml-tui` tag `main`.
+Without the source override, FetchContent uses `qmltui/qmltui` tag `main`.
 The release CI job is gated by `QMLTUI_RELEASE_AVAILABLE` until that tag is public.
 Use `-DQMLTUI_BUILD_MARKDOWN_VIEWER=OFF` to configure without downloading md4qt.
 
