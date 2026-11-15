@@ -43,6 +43,7 @@ Column {
             to: 1.0
             style: "segmented"
             color: "#34d399"
+            trackColor: "#334155"
             width: 14
         }
         Text {

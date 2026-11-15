@@ -1,64 +1,67 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 import IndustrialPlcHmi
 
 Rectangle {
     id: root
+
     property int currentTab: PlcTypes.Dashboard
     property int alarmCount: 0
 
+    signal tabSelected(int tab)
+
     height: 1
-    color: "#181a1f"
+    color: HmiTheme.recessedBg
 
     Row {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
-            width: Math.floor(parent.width / 4)
-            height: 1
-            color: root.currentTab === PlcTypes.Dashboard ? HmiTheme.borderActive : "#282c34"
-            Text {
-                anchors.centerIn: parent
-                text: root.currentTab === PlcTypes.Dashboard ? "▶ [F1] DASHBOARD" : "  [F1] DASHBOARD"
-                color: root.currentTab === PlcTypes.Dashboard ? "black" : HmiTheme.textSecondary
-                bold: root.currentTab === PlcTypes.Dashboard
-            }
-        }
+        Repeater {
+            model: 4
 
-        Rectangle {
-            width: Math.floor(parent.width / 4)
-            height: 1
-            color: root.currentTab === PlcTypes.Alarms ? HmiTheme.borderActive : (root.alarmCount > 0 ? "#4b1818" : "#282c34")
-            Text {
-                anchors.centerIn: parent
-                text: (root.currentTab === PlcTypes.Alarms ? "▶ [F2] ALARMS (" : "  [F2] ALARMS (") + root.alarmCount + ")"
-                color: root.currentTab === PlcTypes.Alarms ? "black" : (root.alarmCount > 0 ? HmiTheme.textDanger : HmiTheme.textSecondary)
-                bold: root.currentTab === PlcTypes.Alarms || root.alarmCount > 0
-            }
-        }
+            delegate: Rectangle {
+                id: tabItem
 
-        Rectangle {
-            width: Math.floor(parent.width / 4)
-            height: 1
-            color: root.currentTab === PlcTypes.Diagnostics ? HmiTheme.borderActive : "#282c34"
-            Text {
-                anchors.centerIn: parent
-                text: root.currentTab === PlcTypes.Diagnostics ? "▶ [F3] DIAGNOSTICS" : "  [F3] DIAGNOSTICS"
-                color: root.currentTab === PlcTypes.Diagnostics ? "black" : HmiTheme.textSecondary
-                bold: root.currentTab === PlcTypes.Diagnostics
-            }
-        }
+                required property int index
 
-        Rectangle {
-            width: parent.width - Math.floor(parent.width / 4) * 3
-            height: 1
-            color: root.currentTab === PlcTypes.Settings ? HmiTheme.borderActive : "#282c34"
-            Text {
-                anchors.centerIn: parent
-                text: root.currentTab === PlcTypes.Settings ? "▶ [F4] SETTINGS" : "  [F4] SETTINGS"
-                color: root.currentTab === PlcTypes.Settings ? "black" : HmiTheme.textSecondary
-                bold: root.currentTab === PlcTypes.Settings
+                readonly property bool active: root.currentTab === index
+                readonly property bool hasFaultAlert: index === PlcTypes.Alarms && root.alarmCount > 0 && !active
+                readonly property int baseWidth: Math.floor(root.width / 4)
+
+                width: index === 3 ? (root.width - baseWidth * 3) : baseWidth
+                height: 1
+                color: active ? HmiTheme.borderActive : (hasFaultAlert ? HmiTheme.headerBgError : HmiTheme.panelAltBg)
+
+                Text {
+                    anchors.left: parent.left
+                    visible: tabItem.index > 0 && !tabItem.active
+                    text: "│"
+                    color: HmiTheme.borderSubtle
+                }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: {
+                        const prefix = tabItem.active ? "▸ " : "  ";
+                        if (tabItem.index === 0)
+                            return prefix + "[F1] DASHBOARD";
+                        if (tabItem.index === 1)
+                            return prefix + "[F2] ALARMS (" + root.alarmCount + ")";
+                        if (tabItem.index === 2)
+                            return prefix + "[F3] DIAGNOSTICS";
+                        return prefix + "[F4] SETTINGS";
+                    }
+                    color: tabItem.active ? HmiTheme.badgeInk : (tabItem.hasFaultAlert ? HmiTheme.textDanger : HmiTheme.textSecondary)
+                    bold: tabItem.active || tabItem.hasFaultAlert
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: root.tabSelected(tabItem.index)
+                }
             }
         }
     }

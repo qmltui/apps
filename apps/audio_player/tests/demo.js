@@ -1,10 +1,11 @@
 /** @param {Runner} app */
 function main(app) {
     app.waitForText("AUDIO PLAYER");
-    app.marker("Docked Studio Decks");
+    app.marker("Classic Winamp Deck & Visualizers");
     // Wall time: C++ DemoSynth timer drives real-time audio visualization
     app.sleep(600);
     app.expectText("DEMO");
+    app.expectText("[CLASSIC]");
     app.expectText("SYNTHWAVE RUNNER");
     app.expectText("PLAYLIST");
     app.expectText("SPECTRUM // 24-BAND FFT");
@@ -17,6 +18,18 @@ function main(app) {
     app.press("Return");
     app.expectText("ACID OVERDRIVE");
     app.sleep(700);
+
+    // ANSI Skin Cycling (K)
+    app.marker("ANSI Skins");
+    app.typeText("k");
+    app.expectText("[AMBER AMP]");
+    app.sleep(500);
+    app.typeText("k");
+    app.expectText("[CYBER NEON]");
+    app.sleep(500);
+    app.typeText("k");
+    app.expectText("[CLASSIC]");
+    app.sleep(400);
 
     // Load Media modal (L opens, Escape closes)
     app.marker("Load Media Dialog");

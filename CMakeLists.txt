@@ -22,7 +22,14 @@ set(QMLTUI_RECORD_DIR "${PROJECT_SOURCE_DIR}/docs/assets/casts")
 file(MAKE_DIRECTORY "${QMLTUI_RECORD_DIR}")
 find_program(QMLTUI_AGG_EXECUTABLE NAMES agg HINTS "$ENV{HOME}/.cargo/bin")
 if(QMLTUI_AGG_EXECUTABLE)
-    set(QMLTUI_RECORD_POST_COMMAND "${QMLTUI_AGG_EXECUTABLE}" --theme asciinema --quiet "<CAST>" "<CAST_STEM>.gif")
+    set(QMLTUI_RECORD_POST_COMMAND
+        "${QMLTUI_AGG_EXECUTABLE}"
+        --theme asciinema
+        --text-font-family "JetBrains Mono,Fira Code,SF Mono,Menlo,Consolas,Adwaita Mono,JetBrainsMono Nerd Font,Noto Sans Symbols 2,DejaVu Sans Mono,Liberation Mono"
+        --quiet
+        "<CAST>"
+        "<CAST_STEM>.gif"
+    )
 endif()
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Qml)
 if(BUILD_TESTING)

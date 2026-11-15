@@ -1,64 +1,35 @@
-# Terminal File Manager
+# Terminal File Manager (`file_manager`)
 
-A modern, fast, 3-column Miller column terminal file manager written in C++20 and pure QmlTui/QML. It features reactive directory navigation, an embedded shell in the current folder, real-time syntax-previewed text inspection, directory subtree exploration, metadata cards, and Vim keybindings.
+Three-column Miller file manager (Parent, Current, Preview) built with C++20 and QmlTui:
 
-## Architecture
+- **Streaming filesystem backend**: Enumerates entries via `QDirListing` and reports mount usage via `QStorageInfo`.
+- **Multi-format live preview**: Renders syntax-highlighted text/Markdown, directory subtrees, binary metadata, and asynchronous off-thread image, SVG, and multi-page PDF previews via `qmltui::AsyncImageProvider` (`Qt6::Gui`, `Qt6::Svg`, `Qt6::Pdf`).
+- **Integrated shell**: Hosts an interactive Unix shell drawer (`QmlTui.PtyView`) synchronized with the active directory.
 
-- **Three-Column Miller Navigation**:
-  - **Parent Column**: Shows parent directory context, with active directory highlighted.
-  - **Current Column**: Interactive file explorer with cursor indicator, selection checkboxes `[✓]`, file type icons (📁, ⚡, 🦀, 🐍, 📄, ⚙️, 📦, 🖼️), and sizes.
-  - **Preview Column**: Dynamic live preview pane:
-    - Text/Code files: Line-numbered content preview.
-    - Directories: Subtree items and folder stats.
-    - Images, Vector SVGs & Multi-Page PDFs: Off-thread asynchronous preview rendering via `qmltui::AsyncImageProvider` (`Qt6::Gui`, `Qt6::Svg`, `Qt6::Pdf`) with automatic Kitty/Sixel/HalfBlock/Braille/ASCII support.
-    - Binary/Archives: MIME type, file size, permissions, owner, and metadata cards.
-- **Modern Qt 6.8+ Core Backend**:
-  - Uses `QDirListing` for low-overhead C++20 range-based directory entry streaming.
-  - Uses `QStorageInfo` for real-time filesystem capacity and mount point metrics.
-- **Top Header Bar**: User@host badge, path breadcrumbs (`~ ❯ projects ❯ QmlTui`), drive usage, and mode badges (`NORMAL`, `SELECT`, `FILTER`).
-- **Bottom Status Bar**: File permissions/owner, toast notifications, selection count, sorting mode indicator, cursor position, and quick shortcuts cheatsheet.
-- **Interactive Modals**:
-  - **Live Filter**: Instant substring filtering with `/` or `f`.
-  - **Help Modal**: Comprehensive keybindings cheat sheet (`?` or `F1`).
-  - **Create / Rename Dialog**: Input modal (`a` or `r`).
-  - **Confirm Delete Dialog**: Confirmation modal (`d` or `Delete`).
+```sh
+./build/apps/file_manager/qmltui_file_manager
+```
 
-## Keybindings
+## Controls
 
 | Key | Action |
-| --- | --- |
+| :--- | :--- |
 | `h` / `Left` | Navigate to parent directory (`cd ..`) |
-| `l` / `Right` / `Enter` | Enter directory / open file |
-| `j` / `Down` | Move cursor down |
-| `k` / `Up` | Move cursor up |
-| `g` / `Home` | Jump to first item |
-| `G` / `End` | Jump to last item |
-| `Space` / `v` | Toggle selection mark on current item |
-| `V` / `Ctrl+A` | Select all / invert selection |
-| `y` / `x` / `p` | Yank (copy) / Cut / Paste |
-| `a` / `n` | Create new file or directory |
+| `l` / `Right` / `Enter` | Enter directory or open file |
+| `j` / `Down`, `k` / `Up` | Move cursor down or up |
+| `g` / `Home`, `G` / `End` | Jump to first or last item |
+| `Space` / `v` | Toggle selection on current item |
+| `V` / `Ctrl+A` | Select all or invert selection |
+| `y` / `x` / `p` | Copy (yank), Cut, or Paste |
+| `a` / `n` | Create file or directory |
 | `r` / `F2` | Rename item |
 | `d` / `Delete` | Delete selected or current item |
-| `/` / `f` | Open live filter bar |
+| `/` / `f` | Filter current directory |
 | `.` | Toggle hidden dotfiles |
-| `s` | Cycle sort mode (Name, Size, Modified Time, Type) |
-| `m` | Cycle image preview render mode (`Auto`, `HalfBlock`, `Braille`, `ASCII`) |
-| `[` / `]` | Previous / Next PDF document page in preview pane |
-| `!` / `!!` | Open/focus split shell drawer (`!`) / double-press (`!!`) for fullscreen shell |
-| `Esc` / `Ctrl+\` | Step back: unfocus shell to `NORMAL` navigation (`Esc` passes through when a foreground app like `vim` is running; `Ctrl+\` always unfocuses) → hide shell drawer |
-| `?` / `F1` | Open keybindings help modal |
-| `q` | Quit application |
-
-## Building & Running
-
-```bash
-# Build
-rtk cmake -S . -B build -DQMLTUI_BUILD_EXAMPLES=ON -DQMLTUI_BUILD_TESTS=ON
-rtk cmake --build build --target qmltui_file_manager
-
-# Run live
-./build/examples/apps/file_manager/qmltui_file_manager
-
-# Run automated scenarios
-rtk ctest --test-dir build -R '^file_manager_' --output-on-failure
-```
+| `s` | Cycle sort order (Name, Size, Modified Time, Type) |
+| `m` | Cycle image preview mode (`Auto`, `HalfBlock`, `Braille`, `ASCII`) |
+| `[` / `]` | Previous or next PDF page in preview pane |
+| `!` / `!!` | Focus split shell drawer (`!`) or toggle fullscreen shell (`!!`) |
+| `Esc` / `Ctrl+\` | Unfocus shell (`Ctrl+\` always unfocuses; `Esc` passes through to foreground TUIs), then hide drawer |
+| `?` / `F1` | Open keybindings help dialog |
+| `q` | Quit |

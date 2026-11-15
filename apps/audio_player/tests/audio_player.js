@@ -1,12 +1,14 @@
+/** @param {Runner} terminal */
 // Audio Player TUI demo-mode smoke scenario (120x36).
-// Verifies the single-hairline divided grid layout with dedicated Playlist,
-// Spectrum, and Visualizer panels, transport controls, modal Load dialog,
+// Verifies the revived 8-row Classic Winamp MainDeck, Hybrid Chrome workspace
+// (Left Stack: MainDeck + Playlist | Right Wing: Spectrum + Visualizer),
+// ANSI skins, action-hijacked marquee readouts, transport, Load Media modal,
 // and W cycling Stereo Scope -> Phosphor Scope -> Radial Scope.
 function main(terminal) {
     terminal.waitForText("AUDIO PLAYER");
     terminal.sleep(300); // wall time: C++ synth timer builds up levels
     terminal.expectText("DEMO");
-    terminal.expectText("SYNTHWAVE RUNNER");
+    terminal.expectText("[CLASSIC]");
     terminal.expectText("PLAYLIST");
     terminal.expectText("1. Neon Pulse - Synthwave Runner");
     terminal.expectText("2. SubGrid - Acid Overdrive");
@@ -14,11 +16,41 @@ function main(terminal) {
     terminal.expectText("VISUALIZER // STEREO SCOPE");
     terminal.expectText("PLAYING");
     terminal.expectText("├");
-    terminal.expectText("┴");
     terminal.expectText("Quit");
     terminal.captureText("audio_player/initial.txt");
 
-    // 1 hides the Main Player deck: upper panels expand vertically
+    // Winamp Action Marquee: Volume, Balance, Skin cycling, and Llama Easter egg
+    terminal.typeText("+");
+    terminal.expectText("VOLUME: 85%");
+    terminal.typeText("-");
+    terminal.expectText("VOLUME: 80%");
+
+    terminal.typeText(".");
+    terminal.expectText("BALANCE: 10% RIGHT");
+    terminal.typeText(",");
+    terminal.expectText("BALANCE: CENTER");
+
+    terminal.typeText("k");
+    terminal.expectText("[AMBER AMP]");
+    terminal.expectText("SKIN: AMBER AMP");
+    terminal.typeText("k");
+    terminal.expectText("[CYBER NEON]");
+    terminal.typeText("k");
+    terminal.expectText("[CLASSIC]");
+
+    terminal.clickText("⚡ AUDIO PLAYER");
+    terminal.expectText("WHIPS THE LLAMA'S ASS!");
+
+    // Clicking LCD mini-visualizer cycles to Braille Oscilloscope inside the recessed LCD
+    terminal.click(8, 3);
+    terminal.expectText("LCD ANALYZER: OSCILLOSCOPE");
+    terminal.captureText("audio_player/lcd_scope.txt");
+    terminal.click(8, 3);
+    terminal.expectText("LCD ANALYZER: OFF");
+    terminal.click(8, 3);
+    terminal.expectText("LCD ANALYZER: SPECTRUM");
+
+    // 1 hides the Main Player deck: Playlist expands to full left column height
     terminal.typeText("1");
     terminal.expectNoText("⚡ AUDIO PLAYER");
     terminal.expectText("PLAYLIST");
@@ -26,28 +58,27 @@ function main(terminal) {
     terminal.typeText("1");
     terminal.expectText("⚡ AUDIO PLAYER");
 
-    // 2 hides the Playlist deck: Spectrum and Visualizer expand to full width
+    // 2 hides the Playlist deck: MainDeck centers vertically in left column
     terminal.typeText("2");
-    terminal.expectNoText("PLAYLIST");
+    terminal.expectNoText("+add");
+    terminal.expectText("⚡ AUDIO PLAYER");
     terminal.expectText("SPECTRUM // 24-BAND FFT");
-    terminal.expectText("VISUALIZER");
     terminal.typeText("2");
-    terminal.expectText("PLAYLIST");
+    terminal.expectText("+add");
 
-    // 3 hides the Spectrum deck: Visualizer takes full right column height
+    // 3 and 4 hide the right visualizer wing: Winamp stack centers at hardware width
     terminal.typeText("3");
     terminal.expectNoText("SPECTRUM // 24-BAND FFT");
-    terminal.expectText("VISUALIZER");
-    terminal.typeText("3");
-    terminal.expectText("SPECTRUM // 24-BAND FFT");
-
-    // 4 hides the Visualizer deck: Spectrum takes full right column height
+    terminal.expectText("VISUALIZER // STEREO SCOPE");
     terminal.typeText("4");
-    terminal.expectNoText("VISUALIZER");
-    terminal.expectText("SPECTRUM // 24-BAND FFT");
+    terminal.expectNoText("VISUALIZER //");
+    terminal.expectText("⚡ AUDIO PLAYER");
+    terminal.expectText("PLAYLIST");
     terminal.captureText("audio_player/visualizer_hidden.txt");
+    terminal.typeText("3");
     terminal.typeText("4");
-    terminal.expectText("VISUALIZER");
+    terminal.expectText("SPECTRUM // 24-BAND FFT");
+    terminal.expectText("VISUALIZER // STEREO SCOPE");
 
     // Hiding all 4 decks shows the restore hint, then restoring brings them back
     terminal.typeText("1");

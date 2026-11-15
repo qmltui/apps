@@ -3,16 +3,25 @@ set_source_files_properties(qml/PlcTypes.qml PROPERTIES QT_QML_SINGLETON_TYPE TR
 
 set(plc_qml_files
     qml/Main.qml
+    qml/PlcController.qml
     qml/HmiTheme.qml
     qml/PlcTypes.qml
+    qml/HeaderPanel.qml
+    qml/NavTabBar.qml
+    qml/StatusAnnunciatorBar.qml
+    qml/KeyHint.qml
+    qml/KeyMapBar.qml
+    qml/DashboardView.qml
+    qml/TelemetryPanel.qml
+    qml/TrendScopePanel.qml
+    qml/ProcessMimicPanel.qml
+    qml/ControlsPanel.qml
     qml/Gauge.qml
     qml/ActuatorLed.qml
-    qml/HeaderPanel.qml
-    qml/ConfirmDialog.qml
-    qml/NavTabBar.qml
     qml/AlarmsView.qml
     qml/DiagnosticsView.qml
     qml/SettingsView.qml
+    qml/ConfirmDialog.qml
 )
 
 qt_add_executable(qmltui_industrial_plc_hmi src/main.cpp)

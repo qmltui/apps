@@ -150,8 +150,8 @@ Terminal {
                 showColumnGrid: true
                 headerColor: root.colorAccentCyan
                 headerBackgroundColor: "#181825"
-                selectionColor: root.colorAccentYellow
-                selectionBackgroundColor: root.colorCardSelBg
+                selectedTextColor: root.colorAccentYellow
+                selectionColor: root.colorCardSelBg
                 alternatingRows: true
                 alternatingRowBackgroundColor: root.colorCardAltBg
                 rowBackgroundColor: root.colorCardBg

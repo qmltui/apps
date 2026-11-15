@@ -615,7 +615,7 @@ Terminal {
                 height: Math.max(1, (root.shellLayout === "fullscreen" ? root.centerHeight : root.targetShellHeight) - 1)
                 program: defaultUserShell()
                 workingDirectory: backend.currentPath
-                foregroundColor: QmlTui.defaultColor
+                textColor: QmlTui.defaultColor
                 backgroundColor: QmlTui.defaultColor
                 palette: root.capabilities.ansiPalette
                 focusPolicy: root.isShellOpen ? Qt.StrongFocus : Qt.NoFocus
@@ -864,7 +864,7 @@ Terminal {
                 program: backend.editorProgram
                 arguments: backend.editorArgumentsFor(root.editorFilePath)
                 workingDirectory: backend.currentPath
-                foregroundColor: QmlTui.defaultColor
+                textColor: QmlTui.defaultColor
                 backgroundColor: QmlTui.defaultColor
                 palette: root.capabilities.ansiPalette
                 focusPolicy: root.isEditorOpen ? Qt.StrongFocus : Qt.NoFocus

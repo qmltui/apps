@@ -1,4 +1,6 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
+
 import QtQml
 
 QtObject {
@@ -22,5 +24,11 @@ QtObject {
         NoAction,
         Reset,
         ToggleMaintenance
+    }
+
+    enum TraceMode {
+        AllTraces,
+        TempOnly,
+        SpeedOnly
     }
 }

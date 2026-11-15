@@ -13,8 +13,8 @@ Rectangle {
     property int visMode: 0
     property bool blendOverlaps: false
 
-    readonly property bool compact: width < 100
-    readonly property bool tiny: width < 80
+    readonly property bool compact: width < 104
+    readonly property bool tiny: width < 84
 
     height: 1
     color: Theme.barBackground
@@ -71,6 +71,13 @@ Rectangle {
             label: "Blend"
             active: bar.blendOverlaps
             activeColor: Theme.scopeRight
+        }
+        KeyHint {
+            visible: !bar.tiny
+            key: "K"
+            label: "Skin"
+            active: Theme.skinIndex !== 0
+            activeColor: Theme.titleBarGold
         }
         KeyHint {
             key: "Q"
