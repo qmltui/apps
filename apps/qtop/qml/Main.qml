@@ -27,7 +27,7 @@ Terminal {
     readonly property bool upperPanelsVisible: processPanelVisible || sidePanelsVisible
     readonly property bool cpuFocusMode: cpuPanelVisible && !upperPanelsVisible
 
-    BtopModel {
+    QtopModel {
         id: systemModel
     }
 
@@ -114,7 +114,7 @@ Terminal {
 
         Text {
             anchors.centerIn: parent
-            text: systemModel.paused ? qsTr("btop  PAUSED") : qsTr("btop  %1@%2").arg(systemModel.userName).arg(systemModel.hostName)
+            text: systemModel.paused ? qsTr("qtop  PAUSED") : qsTr("qtop  %1@%2").arg(systemModel.userName).arg(systemModel.hostName)
             color: systemModel.paused ? root.pinkColor : root.textColor
             bold: true
         }
@@ -144,7 +144,7 @@ Terminal {
             anchors.right: parent.right
             height: Math.max(0, parent.height - cpuPanel.height)
 
-            BtopPanel {
+            QtopPanel {
                 id: processPanel
 
                 anchors.top: parent.top
@@ -254,8 +254,8 @@ Terminal {
                     }
                     headerColor: root.textColor
                     headerBackgroundColor: root.panelColor
-                    selectionColor: root.textColor
-                    selectionBackgroundColor: "#344318"
+                    selectedTextColor: root.textColor
+                    selectionColor: "#344318"
                     textColor: root.textColor
                     rowBackgroundColor: root.panelColor
                     alternatingRowBackgroundColor: "#101411"
@@ -298,7 +298,7 @@ Terminal {
                 anchors.left: processPanel.right
                 anchors.right: parent.right
 
-                BtopPanel {
+                QtopPanel {
                     id: networkPanel
 
                     anchors.top: parent.top
@@ -362,7 +362,7 @@ Terminal {
                     }
                 }
 
-                BtopPanel {
+                QtopPanel {
                     id: memoryPanel
 
                     active: root.memoryPanelVisible || (root.networkPanelVisible && networkPanel.height < parent.height)
@@ -439,7 +439,7 @@ Terminal {
                     }
                 }
 
-                BtopPanel {
+                QtopPanel {
                     active: root.memoryPanelVisible || (root.networkPanelVisible && networkPanel.height < parent.height)
                     anchors.top: networkPanel.bottom
                     anchors.bottom: parent.bottom
@@ -514,7 +514,7 @@ Terminal {
             }
         }
 
-        BtopPanel {
+        QtopPanel {
             id: cpuPanel
 
             anchors.bottom: parent.bottom
@@ -588,7 +588,7 @@ Terminal {
                         }
                     }
 
-                    BtopCpuGraph {
+                    QtopCpuGraph {
                         values: systemModel.cpuHistory
                     }
                 }

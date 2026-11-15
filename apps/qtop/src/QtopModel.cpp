@@ -1,4 +1,4 @@
-#include "BtopModel.h"
+#include "QtopModel.h"
 
 #include <QDir>
 #include <QFile>
@@ -39,11 +39,11 @@ constexpr int kMaximumVisibleProcesses = 256;
 
 using namespace qmltui;
 
-QHash<uid_t, QString> BtopModel::s_uidCache;
+QHash<uid_t, QString> QtopModel::s_uidCache;
 
-BtopCpuGraph::BtopCpuGraph(QObject *parent) : CanvasShape(parent) {}
+QtopCpuGraph::QtopCpuGraph(QObject *parent) : CanvasShape(parent) {}
 
-void BtopCpuGraph::setValues(const QVariantList &values) {
+void QtopCpuGraph::setValues(const QVariantList &values) {
   if (m_values == values)
     return;
   m_values = values;
@@ -52,7 +52,7 @@ void BtopCpuGraph::setValues(const QVariantList &values) {
     parentItem()->markDirty();
 }
 
-void BtopCpuGraph::draw(CanvasPainter &painter) const {
+void QtopCpuGraph::draw(CanvasPainter &painter) const {
   if (!visible() || m_values.isEmpty())
     return;
 
@@ -108,7 +108,7 @@ void BtopCpuGraph::draw(CanvasPainter &painter) const {
   }
 }
 
-BtopModel::BtopModel(QObject *parent)
+QtopModel::QtopModel(QObject *parent)
     : QAbstractTableModel(parent), m_hostName(QSysInfo::machineHostName()),
       m_userName(qEnvironmentVariable("USER", QStringLiteral("user"))),
       m_osName(QSysInfo::prettyProductName()) {
@@ -116,25 +116,25 @@ BtopModel::BtopModel(QObject *parent)
     m_hostName = qEnvironmentVariable("HOSTNAME", QStringLiteral("localhost"));
 
   m_networkClock.start();
-  connect(&m_timer, &QTimer::timeout, this, &BtopModel::refresh);
+  connect(&m_timer, &QTimer::timeout, this, &QtopModel::refresh);
   m_timer.start(m_refreshInterval);
   refresh();
 }
 
-int BtopModel::rowCount(const QModelIndex &parent) const {
+int QtopModel::rowCount(const QModelIndex &parent) const {
   return parent.isValid() ? 0 : m_processes.size();
 }
 
-int BtopModel::columnCount(const QModelIndex &parent) const {
+int QtopModel::columnCount(const QModelIndex &parent) const {
   return parent.isValid() ? 0 : 7;
 }
 
-QVariant BtopModel::data(const QModelIndex &index, int role) const {
+QVariant QtopModel::data(const QModelIndex &index, int role) const {
   if (!index.isValid() || role != Qt::DisplayRole ||
       index.row() >= m_processes.size())
     return {};
 
-  const BtopProcessRow &process = m_processes.at(index.row());
+  const QtopProcessRow &process = m_processes.at(index.row());
   switch (index.column()) {
   case 0:
     return process.pid;
@@ -155,7 +155,7 @@ QVariant BtopModel::data(const QModelIndex &index, int role) const {
   }
 }
 
-QVariant BtopModel::headerData(int section, Qt::Orientation orientation,
+QVariant QtopModel::headerData(int section, Qt::Orientation orientation,
                                int role) const {
   if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
     return {};
@@ -168,7 +168,7 @@ QVariant BtopModel::headerData(int section, Qt::Orientation orientation,
                                                   : QVariant();
 }
 
-QVariantList BtopModel::columnDefinitions() const {
+QVariantList QtopModel::columnDefinitions() const {
   return {QVariantMap{{"title", "PID"},
                       {"width", 8},
                       {"align", "left"},
@@ -199,14 +199,14 @@ QVariantList BtopModel::columnDefinitions() const {
                       {"alignment", "right"}}};
 }
 
-void BtopModel::togglePaused() {
+void QtopModel::togglePaused() {
   m_paused = !m_paused;
   emit pausedChanged();
   if (!m_paused)
     refresh();
 }
 
-void BtopModel::sortByCpu() {
+void QtopModel::sortByCpu() {
   if (m_sortMode == SortMode::Cpu)
     return;
   m_sortMode = SortMode::Cpu;
@@ -216,7 +216,7 @@ void BtopModel::sortByCpu() {
   emit sortModeChanged();
 }
 
-void BtopModel::sortByMemory() {
+void QtopModel::sortByMemory() {
   if (m_sortMode == SortMode::Memory)
     return;
   m_sortMode = SortMode::Memory;
@@ -226,7 +226,7 @@ void BtopModel::sortByMemory() {
   emit sortModeChanged();
 }
 
-void BtopModel::sortByPid() {
+void QtopModel::sortByPid() {
   if (m_sortMode == SortMode::Pid)
     return;
   m_sortMode = SortMode::Pid;
@@ -236,7 +236,7 @@ void BtopModel::sortByPid() {
   emit sortModeChanged();
 }
 
-void BtopModel::cycleRefreshInterval() {
+void QtopModel::cycleRefreshInterval() {
   static constexpr int intervals[] = {500, 1000, 2000, 5000};
   auto it =
       std::find(std::begin(intervals), std::end(intervals), m_refreshInterval);
@@ -249,7 +249,7 @@ void BtopModel::cycleRefreshInterval() {
   emit refreshIntervalChanged();
 }
 
-void BtopModel::refresh() {
+void QtopModel::refresh() {
   if (m_paused)
     return;
   readCpuStats();
@@ -260,28 +260,28 @@ void BtopModel::refresh() {
   emit statsChanged();
 }
 
-QString BtopModel::memoryUsedText() const { return formatBytes(m_memoryUsed); }
-QString BtopModel::memoryTotalText() const {
+QString QtopModel::memoryUsedText() const { return formatBytes(m_memoryUsed); }
+QString QtopModel::memoryTotalText() const {
   return formatBytes(m_memoryTotal);
 }
-QString BtopModel::memoryAvailableText() const {
+QString QtopModel::memoryAvailableText() const {
   return formatBytes(m_memoryAvailable);
 }
-QString BtopModel::memoryCachedText() const {
+QString QtopModel::memoryCachedText() const {
   return formatBytes(m_memoryCached);
 }
-QString BtopModel::swapUsedText() const { return formatBytes(m_swapUsed); }
-QString BtopModel::swapTotalText() const { return formatBytes(m_swapTotal); }
-QString BtopModel::diskUsedText() const { return formatBytes(m_diskUsed); }
-QString BtopModel::diskTotalText() const { return formatBytes(m_diskTotal); }
-QString BtopModel::downloadRateText() const {
+QString QtopModel::swapUsedText() const { return formatBytes(m_swapUsed); }
+QString QtopModel::swapTotalText() const { return formatBytes(m_swapTotal); }
+QString QtopModel::diskUsedText() const { return formatBytes(m_diskUsed); }
+QString QtopModel::diskTotalText() const { return formatBytes(m_diskTotal); }
+QString QtopModel::downloadRateText() const {
   return formatBytes(m_downloadBytesPerSecond) + QStringLiteral("/s");
 }
-QString BtopModel::uploadRateText() const {
+QString QtopModel::uploadRateText() const {
   return formatBytes(m_uploadBytesPerSecond) + QStringLiteral("/s");
 }
 
-QString BtopModel::sortMode() const {
+QString QtopModel::sortMode() const {
   switch (m_sortMode) {
   case SortMode::Cpu:
     return QStringLiteral("cpu");
@@ -293,11 +293,11 @@ QString BtopModel::sortMode() const {
   return QStringLiteral("cpu");
 }
 
-double BtopModel::percent(quint64 part, quint64 total) {
+double QtopModel::percent(quint64 part, quint64 total) {
   return total == 0 ? 0.0 : std::clamp(part * 100.0 / total, 0.0, 100.0);
 }
 
-QString BtopModel::formatBytes(double bytes) {
+QString QtopModel::formatBytes(double bytes) {
   static const char *units[] = {"B", "KiB", "MiB", "GiB", "TiB"};
   int unit = 0;
   while (bytes >= 1024.0 && unit < 4) {
@@ -310,7 +310,7 @@ QString BtopModel::formatBytes(double bytes) {
       .arg(QString::fromLatin1(units[unit]));
 }
 
-QString BtopModel::formatBrailleHistory(const QVariantList &history,
+QString QtopModel::formatBrailleHistory(const QVariantList &history,
                                         int cellWidth) {
   static constexpr int leftMasks[] = {0x40, 0x40, 0x44, 0x46, 0x47};
   static constexpr int rightMasks[] = {0x80, 0x80, 0xA0, 0xB0, 0xB8};
@@ -341,13 +341,13 @@ QString BtopModel::formatBrailleHistory(const QVariantList &history,
   return graph;
 }
 
-void BtopModel::appendHistory(QVariantList &history, double value) {
+void QtopModel::appendHistory(QVariantList &history, double value) {
   history.append(value);
   while (history.size() > kHistoryLength)
     history.removeFirst();
 }
 
-QString BtopModel::usernameForUid(uid_t uid) {
+QString QtopModel::usernameForUid(uid_t uid) {
   auto it = s_uidCache.find(uid);
   if (it != s_uidCache.end())
     return it.value();
@@ -366,7 +366,7 @@ QString BtopModel::usernameForUid(uid_t uid) {
   return name;
 }
 
-void BtopModel::readCpuStats() {
+void QtopModel::readCpuStats() {
 #ifdef Q_OS_LINUX
   int fd = ::open("/proc/stat", O_RDONLY);
   if (fd >= 0) {
@@ -586,7 +586,7 @@ void BtopModel::readCpuStats() {
   appendHistory(m_cpuHistory, m_cpuUsage);
 }
 
-void BtopModel::readMemoryStats() {
+void QtopModel::readMemoryStats() {
 #ifdef Q_OS_LINUX
   int fd = ::open("/proc/meminfo", O_RDONLY);
   if (fd >= 0) {
@@ -635,7 +635,7 @@ void BtopModel::readMemoryStats() {
 #endif
 }
 
-void BtopModel::readDiskStats() {
+void QtopModel::readDiskStats() {
   QStorageInfo rootStorage = QStorageInfo::root();
   rootStorage.refresh();
   m_diskTotal = rootStorage.bytesTotal();
@@ -643,7 +643,7 @@ void BtopModel::readDiskStats() {
   m_diskUsed = m_diskTotal > available ? m_diskTotal - available : 0;
 }
 
-void BtopModel::readNetworkStats() {
+void QtopModel::readNetworkStats() {
   quint64 rxBytes = 0;
   quint64 txBytes = 0;
   QString selectedInterface;
@@ -729,8 +729,8 @@ void BtopModel::readNetworkStats() {
   appendHistory(m_uploadHistory, m_uploadBytesPerSecond / 1024.0);
 }
 
-void BtopModel::readProcessStats() {
-  QList<BtopProcessRow> processes;
+void QtopModel::readProcessStats() {
+  QList<QtopProcessRow> processes;
   QHash<int, quint64> currentTicks;
   m_totalProcesses = 0;
 
@@ -802,7 +802,7 @@ void BtopModel::readProcessStats() {
         continue;
 
       ++m_totalProcesses;
-      BtopProcessRow process;
+      QtopProcessRow process;
       process.pid = pid;
       process.threads = threads;
       process.cpuTicks = utime + stime;
@@ -885,7 +885,7 @@ void BtopModel::readProcessStats() {
       const QStringList fields = line.simplified().split(' ');
       if (fields.size() < 5)
         continue;
-      BtopProcessRow process;
+      QtopProcessRow process;
       process.pid = fields.at(0).toInt();
       process.program = QFileInfo(fields.at(1)).fileName();
       process.command = fields.at(1);
@@ -909,9 +909,9 @@ void BtopModel::readProcessStats() {
   endResetModel();
 }
 
-void BtopModel::sortProcesses() {
+void QtopModel::sortProcesses() {
   std::sort(m_processes.begin(), m_processes.end(),
-            [this](const BtopProcessRow &left, const BtopProcessRow &right) {
+            [this](const QtopProcessRow &left, const QtopProcessRow &right) {
               switch (m_sortMode) {
               case SortMode::Cpu:
                 if (!qFuzzyCompare(left.cpuPercent, right.cpuPercent))

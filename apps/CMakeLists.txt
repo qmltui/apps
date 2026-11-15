@@ -9,7 +9,7 @@ add_subdirectory(plotting_dashboard)
 # /proc readers and Linux system providers: POSIX only.
 if(UNIX)
     if(QMLTUI_ENABLE_PRIVATE_QT)
-        add_subdirectory(btop)
+        add_subdirectory(qtop)
     endif()
 endif()
 add_subdirectory(snake_game)

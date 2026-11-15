@@ -11,7 +11,7 @@
 
 #include <sys/types.h>
 
-struct BtopProcessRow {
+struct QtopProcessRow {
   int pid = 0;
   QString program;
   QString command;
@@ -23,7 +23,7 @@ struct BtopProcessRow {
   quint64 cpuTicks = 0;
 };
 
-class BtopCpuGraph : public qmltui::CanvasShape {
+class QtopCpuGraph : public qmltui::CanvasShape {
   Q_OBJECT
   QML_ELEMENT
 
@@ -31,7 +31,7 @@ class BtopCpuGraph : public qmltui::CanvasShape {
       QVariantList values READ values WRITE setValues NOTIFY valuesChanged)
 
 public:
-  explicit BtopCpuGraph(QObject *parent = nullptr);
+  explicit QtopCpuGraph(QObject *parent = nullptr);
 
   QVariantList values() const { return m_values; }
   void setValues(const QVariantList &values);
@@ -45,7 +45,7 @@ private:
   QVariantList m_values;
 };
 
-class BtopModel : public QAbstractTableModel {
+class QtopModel : public QAbstractTableModel {
   Q_OBJECT
   QML_ELEMENT
 
@@ -88,7 +88,7 @@ class BtopModel : public QAbstractTableModel {
       int refreshInterval READ refreshInterval NOTIFY refreshIntervalChanged)
 
 public:
-  explicit BtopModel(QObject *parent = nullptr);
+  explicit QtopModel(QObject *parent = nullptr);
 
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
   int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -172,7 +172,7 @@ private:
   void readProcessStats();
   void sortProcesses();
 
-  QList<BtopProcessRow> m_processes;
+  QList<QtopProcessRow> m_processes;
   QHash<int, quint64> m_previousProcessTicks;
   QHash<int, ProcessStaticInfo> m_processStaticCache;
   static QHash<uid_t, QString> s_uidCache;

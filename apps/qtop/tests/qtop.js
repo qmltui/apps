@@ -1,5 +1,5 @@
 function main(terminal) {
-    terminal.expectText("btop")
+    terminal.expectText("qtop")
     terminal.expectText("PROCESSES")
     terminal.expectText("NETWORK")
     terminal.expectText("MEMORY")

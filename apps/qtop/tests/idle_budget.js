@@ -1,6 +1,6 @@
 // An idle application must not keep rendering. terminal.sleep() runs the event
 // loop without requesting a render, so every frame committed during the sleep
-// was scheduled by the application itself. btop has a 1 s clock timer and a
+// was scheduled by the application itself. qtop has a 1 s clock timer and a
 // periodic model refresh, so at most two frames may legitimately land in a
 // 500 ms window.
 function main(terminal) {

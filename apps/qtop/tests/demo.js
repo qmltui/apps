@@ -1,6 +1,6 @@
 /** @param {Runner} app */
 function main(app) {
-    app.expectText("btop");
+    app.expectText("qtop");
     app.expectText("PROCESSES");
     app.expectText("NETWORK");
     app.expectText("MEMORY");
