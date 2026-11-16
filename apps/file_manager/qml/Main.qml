@@ -56,9 +56,7 @@ Terminal {
         }
         root.isFilterMode = false;
         filterTextInput.focus = false;
-        if (backend.shellWorkingDirectory !== ""
-            && backend.shellWorkingDirectory !== backend.currentPath
-            && !backend.isShellForegroundBusy(shellPty.processId)) {
+        if (backend.shellWorkingDirectory !== "" && backend.shellWorkingDirectory !== backend.currentPath && !backend.isShellForegroundBusy(shellPty.processId)) {
             root.syncShellToCurrentDir();
         }
         root.isShellFocused = true;
@@ -139,8 +137,16 @@ Terminal {
             return;
         }
 
+        const hasCtrlOrAlt = (event.modifiers & (Qt.ControlModifier | Qt.AltModifier)) !== 0;
+
+        if ((event.modifiers & Qt.ControlModifier) && !(event.modifiers & Qt.AltModifier) && event.key === Qt.Key_A) {
+            backend.selectAll();
+            event.accepted = true;
+            return;
+        }
+
         // 1. Exit / Quit Handling (q only; Escape never exits the app)
-        if (event.key === Qt.Key_Q) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_Q) {
             Qt.quit();
             event.accepted = true;
             return;
@@ -168,7 +174,7 @@ Terminal {
         }
 
         // 2. Navigation Keys
-        if (event.key === Qt.Key_J || event.key === Qt.Key_Down) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_J) || event.key === Qt.Key_Down) {
             if (backend.currentEntries.length > 0) {
                 backend.currentIndex = Math.min(backend.currentEntries.length - 1, backend.currentIndex + 1);
             }
@@ -176,7 +182,7 @@ Terminal {
             return;
         }
 
-        if (event.key === Qt.Key_K || event.key === Qt.Key_Up) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_K) || event.key === Qt.Key_Up) {
             if (backend.currentEntries.length > 0) {
                 backend.currentIndex = Math.max(0, backend.currentIndex - 1);
             }
@@ -184,13 +190,13 @@ Terminal {
             return;
         }
 
-        if (event.key === Qt.Key_H || event.key === Qt.Key_Left) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_H) || event.key === Qt.Key_Left) {
             backend.navigateUp();
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_L || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_L) || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
             if (backend.currentEntries.length > 0) {
                 if (backend.isCurrentItemDir) {
                     backend.navigateIntoCurrent();
@@ -211,7 +217,7 @@ Terminal {
             return;
         }
 
-        if (event.key === Qt.Key_G && (event.modifiers & Qt.ShiftModifier)) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_G && (event.modifiers & Qt.ShiftModifier)) {
             // Capital G -> Bottom
             if (backend.currentEntries.length > 0) {
                 backend.currentIndex = backend.currentEntries.length - 1;
@@ -220,7 +226,7 @@ Terminal {
             return;
         }
 
-        if (event.key === Qt.Key_G || event.key === Qt.Key_Home) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_G) || event.key === Qt.Key_Home) {
             backend.currentIndex = 0;
             event.accepted = true;
             return;
@@ -251,7 +257,7 @@ Terminal {
         }
 
         // 3. Selection & Marking
-        if (event.key === Qt.Key_Space || event.key === Qt.Key_V) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_Space) || (!hasCtrlOrAlt && event.key === Qt.Key_V)) {
             if (event.modifiers & Qt.ShiftModifier) {
                 backend.selectAll();
             } else {
@@ -262,25 +268,25 @@ Terminal {
         }
 
         // 4. File Operations
-        if (event.key === Qt.Key_Y) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_Y) {
             backend.copyMarked();
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_X) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_X) {
             backend.cutMarked();
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_P) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_P) {
             backend.pasteClipboard();
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_A || event.key === Qt.Key_N) {
+        if (!hasCtrlOrAlt && (event.key === Qt.Key_A || event.key === Qt.Key_N)) {
             inputDialog.dialogTitle = "Create New Item";
             inputDialog.promptText = "Enter name for new file or folder:";
             inputDialog.inputValue = "";
@@ -291,7 +297,7 @@ Terminal {
             return;
         }
 
-        if (event.key === Qt.Key_R || event.key === Qt.Key_F2) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_R) || event.key === Qt.Key_F2) {
             if (backend.previewData && backend.previewData.name) {
                 inputDialog.dialogTitle = "Rename Item";
                 inputDialog.promptText = "Enter new name:";
@@ -304,7 +310,7 @@ Terminal {
             return;
         }
 
-        if (event.key === Qt.Key_D || event.key === Qt.Key_Delete) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_D) || event.key === Qt.Key_Delete) {
             confirmDialog.dialogTitle = "Delete Item(s)";
             if (backend.markedCount > 0) {
                 confirmDialog.message = "Delete " + backend.markedCount + " marked item(s)?";
@@ -319,7 +325,7 @@ Terminal {
         }
 
         // 5. Search / Filter
-        if (event.key === Qt.Key_Slash || event.key === Qt.Key_F) {
+        if (!hasCtrlOrAlt && (event.key === Qt.Key_Slash || event.key === Qt.Key_F)) {
             root.isFilterMode = true;
             filterTextInput.focus = true;
             event.accepted = true;
@@ -327,40 +333,40 @@ Terminal {
         }
 
         // 6. Dotfiles & Sorting
-        if (event.key === Qt.Key_Period) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_Period) {
             backend.toggleShowHidden();
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_S) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_S) {
             backend.cycleSort();
             event.accepted = true;
             return;
         }
 
         // 6b. Visual Preview Controls (m = render mode, [ / ] = document pages)
-        if (event.key === Qt.Key_M) {
+        if (!hasCtrlOrAlt && event.key === Qt.Key_M) {
             const nextMode = previewCol.cycleRenderMode();
             backend.showToast("Preview render mode: " + nextMode);
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_BracketRight || event.text === "]") {
+        if (!hasCtrlOrAlt && (event.key === Qt.Key_BracketRight || event.text === "]")) {
             backend.nextPreviewPage();
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_BracketLeft || event.text === "[") {
+        if (!hasCtrlOrAlt && (event.key === Qt.Key_BracketLeft || event.text === "[")) {
             backend.previousPreviewPage();
             event.accepted = true;
             return;
         }
 
         // 7. Embedded Shell Drawer ('!' = open/focus split shell, '!!' = fullscreen shell)
-        if (event.text === "!" || event.key === Qt.Key_Exclam) {
+        if (!hasCtrlOrAlt && (event.text === "!" || event.key === Qt.Key_Exclam)) {
             root.lastExclamMs = Date.now();
             if (root.isShellOpen && !root.isShellFocused) {
                 root.focusShell();
@@ -372,7 +378,7 @@ Terminal {
         }
 
         // 8. Help Modal
-        if (event.key === Qt.Key_Question || event.key === Qt.Key_F1) {
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_Question) || event.key === Qt.Key_F1) {
             helpDialog.open();
             event.accepted = true;
             return;
@@ -584,9 +590,7 @@ Terminal {
                     anchors.left: parent.left
                     anchors.leftMargin: 2
                     text: {
-                        const prefix = root.isShellFocused
-                            ? (root.shellLayout === "fullscreen" ? " 🐚 SHELL (FULL) ● · " : " 🐚 SHELL ● · ")
-                            : " 🐚 SHELL ○ · ";
+                        const prefix = root.isShellFocused ? (root.shellLayout === "fullscreen" ? " 🐚 SHELL (FULL) ● · " : " 🐚 SHELL ● · ") : " 🐚 SHELL ○ · ";
                         return prefix + (backend.shellWorkingDirectory || backend.currentPath) + " ";
                     }
                     color: Theme.textSecondary
@@ -627,9 +631,7 @@ Terminal {
 
                 onActiveFocusChanged: {
                     if (shellPty.activeFocus && root.isShellOpen) {
-                        if (backend.shellWorkingDirectory !== ""
-                            && backend.shellWorkingDirectory !== backend.currentPath
-                            && !backend.isShellForegroundBusy(shellPty.processId)) {
+                        if (backend.shellWorkingDirectory !== "" && backend.shellWorkingDirectory !== backend.currentPath && !backend.isShellForegroundBusy(shellPty.processId)) {
                             root.syncShellToCurrentDir();
                         }
                         root.isShellFocused = true;
@@ -641,9 +643,7 @@ Terminal {
                 Keys.priority: Keys.BeforeItem
                 Keys.onPressed: event => {
                     // Double '!!' within 350ms promotes split shell to fullscreen without sending '!' to the PTY
-                    if ((event.text === "!" || event.key === Qt.Key_Exclam)
-                        && root.lastExclamMs > 0
-                        && (Date.now() - root.lastExclamMs) <= 350) {
+                    if ((event.text === "!" || event.key === Qt.Key_Exclam) && root.lastExclamMs > 0 && (Date.now() - root.lastExclamMs) <= 350) {
                         root.lastExclamMs = 0;
                         root.openShellDrawer(true);
                         event.accepted = true;

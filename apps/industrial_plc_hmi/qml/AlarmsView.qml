@@ -15,10 +15,19 @@ Panel {
     readonly property bool wide: width >= 92
     readonly property bool showKpi: height >= 19
 
+    function focusAuditTable() {
+        auditTable.forceActiveFocus();
+    }
+
     anchors.fill: parent
     color: HmiTheme.panelBg
     border.style: Border.Rounded
     border.color: root.machineState === PlcTypes.Error ? HmiTheme.borderError : HmiTheme.borderNormal
+
+    onVisibleChanged: {
+        if (root.visible)
+            auditTable.forceActiveFocus();
+    }
 
     title: Text {
         text: "◆ ALARM HISTORY & AUDIT LOG (" + root.errorCount + " FAULTS RECORDED)"
@@ -120,6 +129,7 @@ Panel {
 
         TableView {
             id: auditTable
+            focus: true
             width: parent.width
             height: Math.max(4, parent.height - (root.showKpi ? 4 : 0))
             showColumnGrid: true

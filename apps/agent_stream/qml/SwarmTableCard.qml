@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 
@@ -32,24 +34,56 @@ Column {
         alternatingRows: false
 
         columns: [
-            { title: "Subagent", width: 18, align: "left" },
-            { title: "Scope", width: 20, align: "left" },
-            { title: "Status", width: 10, align: "center" },
-            { title: "Findings", width: 26, align: "left" }
+            {
+                title: "Subagent",
+                width: 18,
+                align: "left"
+            },
+            {
+                title: "Scope",
+                width: 20,
+                align: "left"
+            },
+            {
+                title: "Status",
+                width: 10,
+                align: "center"
+            },
+            {
+                title: "Findings",
+                width: 26,
+                align: "left"
+            }
         ]
 
-        model: swarmCard.tableModel ? swarmCard.tableModel : [
-            ["MemoryAuditor", "src/QmlTui/engine/", "Pass", "0 leaks (checked 18)"],
-            ["QmlProfiler", "examples/agent/", "Pass", "0 binding loops"],
-            ["RaceVerifier", "Terminal.cpp", "Pass", "Thread-affinity safe"]
-        ]
+        model: swarmCard.tableModel ? swarmCard.tableModel : [["MemoryAuditor", "src/QmlTui/engine/", "Pass", "0 leaks (checked 18)"], ["QmlProfiler", "examples/agent/", "Pass", "0 binding loops"], ["RaceVerifier", "Terminal.cpp", "Pass", "Thread-affinity safe"]]
 
         cellFormat: (row, col, value) => {
-            if (col === 0) return { text: value, color: "#a78bfa", bold: true }
-            if (col === 1) return { text: value, color: "#94a3b8" }
-            if (col === 2) return { text: "✔ " + value, color: "#34d399", bold: true }
-            if (col === 3) return { text: value, color: "#e2e8f0" }
-            return { text: value }
+            if (col === 0)
+                return {
+                    text: value,
+                    color: "#a78bfa",
+                    bold: true
+                };
+            if (col === 1)
+                return {
+                    text: value,
+                    color: "#94a3b8"
+                };
+            if (col === 2)
+                return {
+                    text: "✔ " + value,
+                    color: "#34d399",
+                    bold: true
+                };
+            if (col === 3)
+                return {
+                    text: value,
+                    color: "#e2e8f0"
+                };
+            return {
+                text: value
+            };
         }
     }
 }

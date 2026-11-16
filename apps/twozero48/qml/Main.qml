@@ -72,7 +72,7 @@ Terminal {
     }
 
     function move(direction) {
-        if (gameOver)
+        if (gameOver || (won && !keepPlaying))
             return;
 
         let prevBoard = [...board];
@@ -157,6 +157,11 @@ Terminal {
 
     // Key handlers
     Keys.onPressed: event => {
+        if (event.key === Qt.Key_Escape && won && !keepPlaying && !gameOver) {
+            keepPlaying = true;
+            event.accepted = true;
+            return;
+        }
         if (event.key === Qt.Key_Q || event.key === Qt.Key_Escape) {
             Qt.quit();
             event.accepted = true;
@@ -384,7 +389,7 @@ Terminal {
 
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
-                        text: rootWindow.gameOver ? "Press [R] to try again" : "Press [C] to keep going  •  [R] reset"
+                        text: rootWindow.gameOver ? "Press [R] to try again" : "[C/Esc] keep going • [R] reset"
                         color: rootWindow.won ? "#f9f6f2" : "#8f7a66"
                     }
                 }

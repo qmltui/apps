@@ -7,12 +7,15 @@ import QmlTui.Controls
 Popup {
     id: modelPicker
 
-    Theme { id: theme }
+    Theme {
+        id: theme
+    }
 
     property string currentModel: "claude-3-7-sonnet"
     property int selectedIndex: 0
 
     signal modelSelected(string modelId)
+    signal switchToDiffRequested
 
     readonly property var models: [
         {
@@ -65,17 +68,17 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnOutsideClick
 
     function selectNext() {
-        selectedIndex = (selectedIndex + 1) % models.length
+        selectedIndex = (selectedIndex + 1) % models.length;
     }
 
     function selectPrev() {
-        selectedIndex = (selectedIndex - 1 + models.length) % models.length
+        selectedIndex = (selectedIndex - 1 + models.length) % models.length;
     }
 
     function chooseCurrent() {
         if (selectedIndex >= 0 && selectedIndex < models.length) {
-            modelSelected(models[selectedIndex].id)
-            close()
+            modelSelected(models[selectedIndex].id);
+            close();
         }
     }
 
@@ -83,8 +86,8 @@ Popup {
         if (visible) {
             for (let i = 0; i < models.length; ++i) {
                 if (models[i].id === currentModel) {
-                    selectedIndex = i
-                    break
+                    selectedIndex = i;
+                    break;
                 }
             }
         }
@@ -240,8 +243,8 @@ Popup {
                     hoverEnabled: true
                     onEntered: modelPicker.selectedIndex = modelEntry.index
                     onClicked: {
-                        modelPicker.selectedIndex = modelEntry.index
-                        modelPicker.chooseCurrent()
+                        modelPicker.selectedIndex = modelEntry.index;
+                        modelPicker.chooseCurrent();
                     }
                 }
             }
@@ -249,35 +252,38 @@ Popup {
     }
 
     Keys.priority: Keys.BeforeItem
-    Keys.onPressed: (event) => {
+    Keys.onPressed: event => {
         if (event.key === Qt.Key_1) {
-            selectedIndex = 0
-            chooseCurrent()
-            event.accepted = true
+            selectedIndex = 0;
+            chooseCurrent();
+            event.accepted = true;
         } else if (event.key === Qt.Key_2) {
-            selectedIndex = 1
-            chooseCurrent()
-            event.accepted = true
+            selectedIndex = 1;
+            chooseCurrent();
+            event.accepted = true;
         } else if (event.key === Qt.Key_3) {
-            selectedIndex = 2
-            chooseCurrent()
-            event.accepted = true
+            selectedIndex = 2;
+            chooseCurrent();
+            event.accepted = true;
         } else if (event.key === Qt.Key_4) {
-            selectedIndex = 3
-            chooseCurrent()
-            event.accepted = true
+            selectedIndex = 3;
+            chooseCurrent();
+            event.accepted = true;
         } else if (event.key === Qt.Key_Up) {
-            selectPrev()
-            event.accepted = true
+            selectPrev();
+            event.accepted = true;
         } else if (event.key === Qt.Key_Down) {
-            selectNext()
-            event.accepted = true
+            selectNext();
+            event.accepted = true;
         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-            chooseCurrent()
-            event.accepted = true
-        } else if (event.key === Qt.Key_Escape) {
-            close()
-            event.accepted = true
+            chooseCurrent();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_F2) {
+            close();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_F3) {
+            switchToDiffRequested();
+            event.accepted = true;
         }
     }
 }

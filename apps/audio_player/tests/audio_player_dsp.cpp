@@ -15,44 +15,41 @@
 #include <QmlTui/Core/Primitives/TextGridBuffer.h>
 
 #include <cmath>
-#include <numbers>
 
 using namespace cyber;
 
 namespace {
 
+constexpr double kPi = 3.14159265358979323846;
+constexpr float kSqrt2f = 1.41421356f;
+
 // Interleaved stereo sine, one frequency per channel.
-std::vector<float> stereoSine(int frames, int rate, double hzLeft, double ampLeft,
-                              double hzRight, double ampRight)
-{
+std::vector<float> stereoSine(int frames, int rate, double hzLeft, double ampLeft, double hzRight,
+                              double ampRight) {
     std::vector<float> data(size_t(frames) * 2);
     for (int n = 0; n < frames; ++n) {
         const double t = double(n) / rate;
-        data[size_t(n) * 2] = float(ampLeft * std::sin(2.0 * std::numbers::pi * hzLeft * t));
-        data[size_t(n) * 2 + 1] = float(ampRight * std::sin(2.0 * std::numbers::pi * hzRight * t));
+        data[size_t(n) * 2] = float(ampLeft * std::sin(2.0 * kPi * hzLeft * t));
+        data[size_t(n) * 2 + 1] = float(ampRight * std::sin(2.0 * kPi * hzRight * t));
     }
     return data;
 }
 
-int argMax(const std::array<float, kBandCount>& bands)
-{
+int argMax(const std::array<float, kBandCount>& bands) {
     int best = 0;
     for (int b = 1; b < kBandCount; ++b)
-        if (bands[b] > bands[best])
-            best = b;
+        if (bands[b] > bands[best]) best = b;
     return best;
 }
 
-bool touch(const QString& path)
-{
+bool touch(const QString& path) {
     QFile f(path);
     return f.open(QIODevice::WriteOnly) && f.write("x") == 1;
 }
 
 } // namespace
 
-class TestAudioPlayerDsp : public QObject
-{
+class TestAudioPlayerDsp : public QObject {
     Q_OBJECT
 
 private slots:
@@ -78,14 +75,15 @@ private slots:
     void balanceScalesChannels();
 };
 
-void TestAudioPlayerDsp::bandEdgesAreLogSpaced()
-{
+void TestAudioPlayerDsp::bandEdgesAreLogSpaced() {
     QCOMPARE(SpectrumAnalyzer::bandLowerEdgeHz(0), kBandLowHz);
     QVERIFY(std::abs(SpectrumAnalyzer::bandLowerEdgeHz(kBandCount) - kBandHighHz) < 1e-6);
 
-    const double ratio = SpectrumAnalyzer::bandLowerEdgeHz(1) / SpectrumAnalyzer::bandLowerEdgeHz(0);
+    const double ratio =
+        SpectrumAnalyzer::bandLowerEdgeHz(1) / SpectrumAnalyzer::bandLowerEdgeHz(0);
     for (int b = 1; b < kBandCount; ++b) {
-        const double r = SpectrumAnalyzer::bandLowerEdgeHz(b + 1) / SpectrumAnalyzer::bandLowerEdgeHz(b);
+        const double r =
+            SpectrumAnalyzer::bandLowerEdgeHz(b + 1) / SpectrumAnalyzer::bandLowerEdgeHz(b);
         QVERIFY2(std::abs(r - ratio) < 1e-9, qPrintable(QString::number(r)));
     }
 
@@ -100,8 +98,7 @@ void TestAudioPlayerDsp::bandEdgesAreLogSpaced()
         QCOMPARE(SpectrumAnalyzer::bandIndexForFrequency(SpectrumAnalyzer::bandCenterHz(b)), b);
 }
 
-void TestAudioPlayerDsp::labelsFitUnderNarrowBars()
-{
+void TestAudioPlayerDsp::labelsFitUnderNarrowBars() {
     const QStringList labels = SpectrumAnalyzer::bandLabels();
     QCOMPARE(labels.size(), kBandCount);
     for (const QString& label : labels) {
@@ -114,13 +111,12 @@ void TestAudioPlayerDsp::labelsFitUnderNarrowBars()
     QCOMPARE(SpectrumAnalyzer::formatFrequencyLabel(12408.0), QStringLiteral("12k"));
 }
 
-void TestAudioPlayerDsp::fftResolvesBinAlignedCosine()
-{
+void TestAudioPlayerDsp::fftResolvesBinAlignedCosine() {
     const int n = 64;
     const int bin = 5;
     std::vector<std::complex<float>> data(n);
     for (int i = 0; i < n; ++i)
-        data[i] = { float(std::cos(2.0 * std::numbers::pi * bin * i / n)), 0.f };
+        data[i] = {float(std::cos(2.0 * kPi * bin * i / n)), 0.f};
     SpectrumAnalyzer::fft(data);
 
     for (int k = 0; k <= n / 2; ++k) {
@@ -132,8 +128,7 @@ void TestAudioPlayerDsp::fftResolvesBinAlignedCosine()
     }
 }
 
-void TestAudioPlayerDsp::sineIsDetectedInItsBand()
-{
+void TestAudioPlayerDsp::sineIsDetectedInItsBand() {
     SpectrumAnalyzer analyzer(48000);
     const auto pcm = stereoSine(4096, 48000, 1000.0, 0.5, 1000.0, 0.5);
     analyzer.pushInterleaved(pcm.data(), 4096, 2);
@@ -144,25 +139,26 @@ void TestAudioPlayerDsp::sineIsDetectedInItsBand()
 
     const int expected = SpectrumAnalyzer::bandIndexForFrequency(1000.0);
     QCOMPARE(argMax(a.bands), expected);
-    QVERIFY(a.bands[expected] > 0.8f);            // -6 dBFS sine sits high in the 0..1 range
+    QVERIFY(a.bands[expected] > 0.8f); // -6 dBFS sine sits high in the 0..1 range
     QVERIFY(a.bands[expected - 1] < a.bands[expected]);
     QVERIFY(a.bands[expected + 1] < a.bands[expected]);
     for (int b = 0; b < kBandCount; ++b) {
         if (std::abs(b - expected) >= 3)
-            QVERIFY2(a.bands[b] < 0.35f, qPrintable(QString("band %1 = %2").arg(b).arg(a.bands[b])));
+            QVERIFY2(a.bands[b] < 0.35f,
+                     qPrintable(QString("band %1 = %2").arg(b).arg(a.bands[b])));
     }
     QCOMPARE(a.scopeLeft.size(), size_t(kScopePoints));
 }
 
-void TestAudioPlayerDsp::rmsFollowsAmplitude()
-{
+void TestAudioPlayerDsp::rmsFollowsAmplitude() {
     SpectrumAnalyzer analyzer(48000);
     const auto pcm = stereoSine(48000, 48000, 1000.0, 0.5, 440.0, 0.25);
     analyzer.pushInterleaved(pcm.data(), 48000, 2);
     const Analysis a = analyzer.analyze();
 
-    QVERIFY2(std::abs(a.rmsLeft - 0.5f / std::numbers::sqrt2_v<float>) < 0.01f, qPrintable(QString::number(a.rmsLeft)));
-    QVERIFY2(std::abs(a.rmsRight - 0.25f / std::numbers::sqrt2_v<float>) < 0.01f, qPrintable(QString::number(a.rmsRight)));
+    QVERIFY2(std::abs(a.rmsLeft - 0.5f / kSqrt2f) < 0.01f, qPrintable(QString::number(a.rmsLeft)));
+    QVERIFY2(std::abs(a.rmsRight - 0.25f / kSqrt2f) < 0.01f,
+             qPrintable(QString::number(a.rmsRight)));
 
     // RMS accumulators reset after each analysis.
     const Analysis b = analyzer.analyze();
@@ -170,12 +166,11 @@ void TestAudioPlayerDsp::rmsFollowsAmplitude()
     QCOMPARE(b.rmsRight, 0.f);
 }
 
-void TestAudioPlayerDsp::monoIsDuplicatedToBothChannels()
-{
+void TestAudioPlayerDsp::monoIsDuplicatedToBothChannels() {
     SpectrumAnalyzer analyzer(44100);
     std::vector<float> mono(4096);
     for (int n = 0; n < 4096; ++n)
-        mono[n] = float(0.3 * std::sin(2.0 * std::numbers::pi * 200.0 * n / 44100.0));
+        mono[n] = float(0.3 * std::sin(2.0 * kPi * 200.0 * n / 44100.0));
     analyzer.pushInterleaved(mono.data(), 4096, 1);
     const Analysis a = analyzer.analyze();
     QCOMPARE(a.rmsLeft, a.rmsRight);
@@ -183,14 +178,13 @@ void TestAudioPlayerDsp::monoIsDuplicatedToBothChannels()
     QCOMPARE(argMax(a.bands), SpectrumAnalyzer::bandIndexForFrequency(200.0));
 }
 
-void TestAudioPlayerDsp::scopeWindowIsTriggerAligned()
-{
+void TestAudioPlayerDsp::scopeWindowIsTriggerAligned() {
     SpectrumAnalyzer analyzer(48000);
     // Feed the same 100 Hz tone in three chunks of unrelated length: without a trigger
     // the window phase would differ every time.
     const auto pcm = stereoSine(48000, 48000, 100.0, 0.8, 100.0, 0.8);
     std::array<float, kScopePoints> previous{};
-    const int chunks[] = { 4096, 1337, 2911 };
+    const int chunks[] = {4096, 1337, 2911};
     int offset = 0;
     for (int c = 0; c < 3; ++c) {
         analyzer.pushInterleaved(pcm.data() + size_t(offset) * 2, chunks[c], 2);
@@ -203,7 +197,8 @@ void TestAudioPlayerDsp::scopeWindowIsTriggerAligned()
         if (c > 0) {
             for (int i = 0; i < kScopePoints; ++i)
                 QVERIFY2(std::abs(a.scopeLeft[i] - previous[i]) < 0.02f,
-                         qPrintable(QString("i=%1 %2 vs %3").arg(i).arg(a.scopeLeft[i]).arg(previous[i])));
+                         qPrintable(
+                             QString("i=%1 %2 vs %3").arg(i).arg(a.scopeLeft[i]).arg(previous[i])));
         }
         previous = a.scopeLeft;
     }
@@ -215,15 +210,14 @@ void TestAudioPlayerDsp::scopeWindowIsTriggerAligned()
     QVERIFY(!quiet.analyze().scopeTriggered);
 }
 
-void TestAudioPlayerDsp::scopeIsLowPassFiltered()
-{
+void TestAudioPlayerDsp::scopeIsLowPassFiltered() {
     SpectrumAnalyzer analyzer(48000);
     QCOMPARE(analyzer.scopeLowPassHz(), 0.0);
     std::vector<float> pcm(48000 * 2);
     for (int n = 0; n < 48000; ++n) {
         const double t = double(n) / 48000.0;
-        const float v = float(0.5 * std::sin(2.0 * std::numbers::pi * 100.0 * t)
-                              + 0.4 * std::sin(2.0 * std::numbers::pi * 5000.0 * t));
+        const float v =
+            float(0.5 * std::sin(2.0 * kPi * 100.0 * t) + 0.4 * std::sin(2.0 * kPi * 5000.0 * t));
         pcm[size_t(n) * 2] = v;
         pcm[size_t(n) * 2 + 1] = v;
     }
@@ -259,8 +253,7 @@ void TestAudioPlayerDsp::scopeIsLowPassFiltered()
     QCOMPARE(analyzer.scopeLowPassHz(), 20.0);
 }
 
-void TestAudioPlayerDsp::silenceIsFloor()
-{
+void TestAudioPlayerDsp::silenceIsFloor() {
     SpectrumAnalyzer analyzer;
     std::vector<float> zeros(4096 * 2, 0.f);
     analyzer.pushInterleaved(zeros.data(), 4096, 2);
@@ -271,8 +264,7 @@ void TestAudioPlayerDsp::silenceIsFloor()
     QCOMPARE(a.rmsRight, 0.f);
 }
 
-void TestAudioPlayerDsp::demoSynthIsDeterministic()
-{
+void TestAudioPlayerDsp::demoSynthIsDeterministic() {
     DemoSynth a, b;
     DemoSynth::Frame first = a.step();
     b.step();
@@ -297,8 +289,7 @@ void TestAudioPlayerDsp::demoSynthIsDeterministic()
     QCOMPARE(a.step().bandTargets, first.bandTargets);
 }
 
-void TestAudioPlayerDsp::playlistScanFiltersAndSorts()
-{
+void TestAudioPlayerDsp::playlistScanFiltersAndSorts() {
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
     QVERIFY(QDir(dir.path()).mkpath("sub"));
@@ -308,7 +299,7 @@ void TestAudioPlayerDsp::playlistScanFiltersAndSorts()
     QVERIFY(touch(dir.filePath("sub/c.ogg")));
     QVERIFY(touch(dir.filePath("weird.xyz")));
 
-    const PlaylistScan scan = collectPlaylist({ dir.path(), dir.filePath("weird.xyz") });
+    const PlaylistScan scan = collectPlaylist({dir.path(), dir.filePath("weird.xyz")});
     QVERIFY2(scan.warnings.isEmpty(), qPrintable(scan.warnings.join("; ")));
     QCOMPARE(scan.entries.size(), 4);
     QCOMPARE(displayNameFor(scan.entries[0]), QStringLiteral("a"));
@@ -319,10 +310,9 @@ void TestAudioPlayerDsp::playlistScanFiltersAndSorts()
         QVERIFY(url.isLocalFile());
 }
 
-void TestAudioPlayerDsp::playlistReportsMissingInputs()
-{
-    const PlaylistScan scan = collectPlaylist({ QStringLiteral("/definitely/not/here.mp3"),
-                                                QStringLiteral("https://example.com/stream.mp3") });
+void TestAudioPlayerDsp::playlistReportsMissingInputs() {
+    const PlaylistScan scan = collectPlaylist({QStringLiteral("/definitely/not/here.mp3"),
+                                               QStringLiteral("https://example.com/stream.mp3")});
     QCOMPARE(scan.entries.size(), 1);
     QVERIFY(!scan.entries.first().isLocalFile());
     QCOMPARE(displayNameFor(scan.entries.first()), QStringLiteral("stream.mp3"));
@@ -330,13 +320,12 @@ void TestAudioPlayerDsp::playlistReportsMissingInputs()
     QVERIFY(scan.warnings.first().contains(QStringLiteral("Not found")));
 
     QTemporaryDir empty;
-    const PlaylistScan none = collectPlaylist({ empty.path() });
+    const PlaylistScan none = collectPlaylist({empty.path()});
     QVERIFY(none.entries.isEmpty());
     QCOMPARE(none.warnings.size(), 1);
 }
 
-void TestAudioPlayerDsp::engineRunsDemoAndSettlesWhenPaused()
-{
+void TestAudioPlayerDsp::engineRunsDemoAndSettlesWhenPaused() {
     AudioEngine engine;
     // Idle until a source is chosen: no ticks, nothing to show.
     QCOMPARE(engine.source(), AudioEngine::Source::Idle);
@@ -345,7 +334,7 @@ void TestAudioPlayerDsp::engineRunsDemoAndSettlesWhenPaused()
     QVERIFY(engine.statusText().contains(QStringLiteral("press L")));
     {
         QSignalSpy idle(&engine, &AudioEngine::levelsChanged);
-        engine.play();                                   // nothing to play
+        engine.play(); // nothing to play
         QTest::qWait(200);
         QCOMPARE(idle.count(), 0);
         QVERIFY(!engine.playing());
@@ -386,8 +375,7 @@ void TestAudioPlayerDsp::engineRunsDemoAndSettlesWhenPaused()
     QTRY_VERIFY_WITH_TIMEOUT(levels.count() > settled + 2, 1000);
 }
 
-void TestAudioPlayerDsp::engineRejectsUnavailableSources()
-{
+void TestAudioPlayerDsp::engineRejectsUnavailableSources() {
     AudioEngine engine;
     engine.loadPlaylist({});
     QCOMPARE(engine.source(), AudioEngine::Source::Idle);
@@ -410,12 +398,11 @@ void TestAudioPlayerDsp::engineRejectsUnavailableSources()
     QCOMPARE(engine.volume(), 0.75);
 }
 
-void TestAudioPlayerDsp::engineStepsScopeLowPass()
-{
+void TestAudioPlayerDsp::engineStepsScopeLowPass() {
     AudioEngine engine;
     QCOMPARE(engine.scopeLowPassHz(), 0.0);
     QCOMPARE(engine.scopeLowPassLabel(), QStringLiteral("off"));
-    engine.stepScopeLowPass(1);                       // already off: stays off
+    engine.stepScopeLowPass(1); // already off: stays off
     QCOMPARE(engine.scopeLowPassLabel(), QStringLiteral("off"));
     engine.stepScopeLowPass(-1);
     QCOMPARE(engine.scopeLowPassHz(), 8000.0);
@@ -425,14 +412,13 @@ void TestAudioPlayerDsp::engineStepsScopeLowPass()
     QCOMPARE(engine.scopeLowPassHz(), 300.0);
     QCOMPARE(engine.scopeLowPassLabel(), QStringLiteral("300 Hz"));
     engine.stepScopeLowPass(-1);
-    engine.stepScopeLowPass(-1);                      // clamps at the lowest preset
+    engine.stepScopeLowPass(-1); // clamps at the lowest preset
     QCOMPARE(engine.scopeLowPassHz(), 150.0);
     engine.setScopeLowPassHz(0.0);
     QCOMPARE(engine.scopeLowPassLabel(), QStringLiteral("off"));
 }
 
-void TestAudioPlayerDsp::engineFormatsTime()
-{
+void TestAudioPlayerDsp::engineFormatsTime() {
     QCOMPARE(AudioEngine::formatTime(0), QStringLiteral("00:00"));
     QCOMPARE(AudioEngine::formatTime(6000), QStringLiteral("00:06"));
     QCOMPARE(AudioEngine::formatTime(61999), QStringLiteral("01:01"));
@@ -440,8 +426,7 @@ void TestAudioPlayerDsp::engineFormatsTime()
     QCOMPARE(AudioEngine::formatTime(-5), QStringLiteral("00:00"));
 }
 
-void TestAudioPlayerDsp::correlationTracksStereoWidth()
-{
+void TestAudioPlayerDsp::correlationTracksStereoWidth() {
     SpectrumAnalyzer analyzer(48000);
     const auto mono = stereoSine(4096, 48000, 440.0, 0.5, 440.0, 0.5);
     analyzer.pushInterleaved(mono.data(), 4096, 2);
@@ -462,24 +447,22 @@ void TestAudioPlayerDsp::correlationTracksStereoWidth()
 namespace {
 
 // Paints the canvas and returns, per column, whether any Braille dot was drawn.
-std::vector<bool> paintedColumns(qmltui::Canvas& canvas, qmltui::TextGridBuffer& buf)
-{
+std::vector<bool> paintedColumns(qmltui::Canvas& canvas, qmltui::TextGridBuffer& buf) {
     buf.resize(canvas.width(), canvas.height());
-    const qmltui::ClipRect clip{ 0, 0, canvas.width(), canvas.height() };
+    const qmltui::ClipRect clip{0, 0, canvas.width(), canvas.height()};
     canvas.paint(buf, 0, 0, clip);
     std::vector<bool> columns(size_t(canvas.width()), false);
     for (int y = 0; y < canvas.height(); ++y)
         for (int x = 0; x < canvas.width(); ++x)
-            if (buf.cellAt(x, y).character().toByteArray() != QByteArray(" ")
-                && !buf.cellAt(x, y).character().toByteArray().isEmpty())
+            if (buf.cellAt(x, y).character().toByteArray() != QByteArray(" ") &&
+                !buf.cellAt(x, y).character().toByteArray().isEmpty())
                 columns[size_t(x)] = true;
     return columns;
 }
 
 } // namespace
 
-void TestAudioPlayerDsp::shapesDrawIntoBrailleCanvas()
-{
+void TestAudioPlayerDsp::shapesDrawIntoBrailleCanvas() {
     qmltui::Canvas canvas;
     canvas.setRenderMode(qmltui::Canvas::RenderMode::Braille);
     canvas.setWidth(40);
@@ -488,7 +471,7 @@ void TestAudioPlayerDsp::shapesDrawIntoBrailleCanvas()
 
     QList<double> sine(kScopePoints);
     for (int i = 0; i < kScopePoints; ++i)
-        sine[i] = 0.8 * std::sin(2.0 * std::numbers::pi * 3.0 * i / kScopePoints);
+        sine[i] = 0.8 * std::sin(2.0 * kPi * 3.0 * i / kScopePoints);
 
     // WaveformTrace spans the full width.
     auto* trace = new WaveformTrace(&canvas);
@@ -545,8 +528,7 @@ void TestAudioPlayerDsp::shapesDrawIntoBrailleCanvas()
              qPrintable(QString("low=%1 high=%2").arg(spanLowBass).arg(spanHighBass)));
 }
 
-void TestAudioPlayerDsp::playlistEditorAndDemoAlbumOperations()
-{
+void TestAudioPlayerDsp::playlistEditorAndDemoAlbumOperations() {
     AudioEngine engine;
     engine.loadDemoAlbum();
     QCOMPARE(engine.source(), AudioEngine::Source::Demo);
@@ -587,8 +569,7 @@ void TestAudioPlayerDsp::playlistEditorAndDemoAlbumOperations()
     QCOMPARE(engine.playlistCount(), cyber::kDemoTrackCount - 1);
 }
 
-void TestAudioPlayerDsp::balanceScalesChannels()
-{
+void TestAudioPlayerDsp::balanceScalesChannels() {
     AudioEngine rightOnly;
     rightOnly.setBalance(1.0); // full right
     rightOnly.useDemo();

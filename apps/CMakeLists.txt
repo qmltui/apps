@@ -25,6 +25,6 @@ if(QMLTUI_BUILD_MARKDOWN_VIEWER)
     add_subdirectory(markdown_viewer)
 endif()
 
-if(QMLTUI_ENABLE_PTYVIEW)
+if(QMLTUI_ENABLE_PTYVIEW AND TARGET qmltui::image)
     add_subdirectory(file_manager)
 endif()

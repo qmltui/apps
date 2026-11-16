@@ -7,12 +7,11 @@ qt_add_qml_module(qmltui_twozero48
         qml/Main.qml
     DEPENDENCIES
         TARGET qmltui::core
-        TARGET qmltui::controls
 )
 
-target_link_libraries(qmltui_twozero48 PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
+target_link_libraries(qmltui_twozero48 PRIVATE Qt6::Core Qt6::Qml qmltui::core)
 
-if(COMMAND qmltui_wasm_app)   # browser build, see examples/wasm and docs/guide/webassembly.md
+if(COMMAND qmltui_wasm_app)   # browser build, see docs/guide/webassembly.md
     qmltui_wasm_app(qmltui_twozero48)
 endif()
 

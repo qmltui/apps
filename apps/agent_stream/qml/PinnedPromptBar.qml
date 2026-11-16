@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 import QmlTui.Controls
@@ -34,6 +36,7 @@ Column {
 
     signal requestSubmitted(string text)
     signal permissionChosen(int index)
+    signal permissionHovered(int index)
     signal openModelPickerRequested
     signal openDiffInspectorRequested
     signal interruptRequested
@@ -380,7 +383,7 @@ Column {
                 id: perm0Mouse
                 anchors.fill: parent
                 hoverEnabled: true
-                onEntered: promptBar.permissionIndex = 0
+                onEntered: promptBar.permissionHovered(0)
                 onClicked: promptBar.permissionChosen(0)
             }
         }
@@ -399,7 +402,7 @@ Column {
                 id: perm1Mouse
                 anchors.fill: parent
                 hoverEnabled: true
-                onEntered: promptBar.permissionIndex = 1
+                onEntered: promptBar.permissionHovered(1)
                 onClicked: promptBar.permissionChosen(1)
             }
         }
@@ -418,7 +421,7 @@ Column {
                 id: perm2Mouse
                 anchors.fill: parent
                 hoverEnabled: true
-                onEntered: promptBar.permissionIndex = 2
+                onEntered: promptBar.permissionHovered(2)
                 onClicked: promptBar.permissionChosen(2)
             }
         }
@@ -437,7 +440,7 @@ Column {
                 id: perm3Mouse
                 anchors.fill: parent
                 hoverEnabled: true
-                onEntered: promptBar.permissionIndex = 3
+                onEntered: promptBar.permissionHovered(3)
                 onClicked: promptBar.permissionChosen(3)
             }
         }

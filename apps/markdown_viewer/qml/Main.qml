@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 import QmlTui.Examples.MarkdownViewer 1.0
@@ -5,7 +7,7 @@ import QmlTui.Examples.MarkdownViewer 1.0
 Terminal {
     id: root
     color: theme.bg
-    mouseReporting: false
+    focus: true
 
     Theme {
         id: theme
@@ -56,7 +58,7 @@ Terminal {
 
     readonly property var activeDocStyle: (root.currentStyleName === "modern") ? modernDocStyle : (root.currentStyleName === "classic") ? classicDocStyle : (root.currentStyleName === "minimal") ? minimalDocStyle : liveCustomDocStyle
 
-    readonly property bool isEditorActive: (root.currentStyleName === "custom" || root.editorOpen)
+    readonly property bool isEditorActive: root.editorOpen
 
     MdViewStyle {
         id: mdViewStyle
@@ -106,16 +108,22 @@ Terminal {
     }
 
     Keys.onPressed: event => {
-        // Esc handling: close search bar or editor, else quit
+        // Esc handling: close search input, clear active search matches, or close editor before quitting
         if (event.key === Qt.Key_Escape) {
             if (root.isSearching) {
-                root.isSearching = false;
+                root.finishSearchInput();
+                event.accepted = true;
+                return;
+            }
+            if (root.searchMatches.length > 0) {
                 root.clearSearch();
+                root.statusToast = "";
                 event.accepted = true;
                 return;
             }
             if (root.editorOpen) {
                 root.editorOpen = false;
+                root.statusToast = "Live Style Editor: CLOSED";
                 event.accepted = true;
                 return;
             }
@@ -124,8 +132,18 @@ Terminal {
             return;
         }
 
-        // Q key to quit (unless typing in search bar)
-        if (event.key === Qt.Key_Q && !root.isSearching) {
+        // If typing in search bar, let search input handle keys
+        if (root.isSearching) {
+            if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
+                root.finishSearchInput();
+                event.accepted = true;
+                return;
+            }
+            return;
+        }
+
+        // Q key to quit
+        if (event.key === Qt.Key_Q) {
             Qt.quit();
             event.accepted = true;
             return;
@@ -135,16 +153,6 @@ Terminal {
         if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
             root.jumpSection((event.key === Qt.Key_Backtab || (event.modifiers & Qt.ShiftModifier)) ? -1 : 1);
             event.accepted = true;
-            return;
-        }
-
-        // If typing in search bar, let search input handle keys
-        if (root.isSearching) {
-            if (event.key === Qt.Key_Enter || event.key === Qt.Key_Return) {
-                root.nextSearchMatch();
-                event.accepted = true;
-                return;
-            }
             return;
         }
 
@@ -201,13 +209,13 @@ Terminal {
             return;
         }
 
-        if (event.key === Qt.Key_Home || (event.key === Qt.Key_G && !(event.modifiers & Qt.ShiftModifier))) {
+        if (event.key === Qt.Key_Home || (event.key === Qt.Key_G && !((event.modifiers & Qt.ShiftModifier) || event.text === "G"))) {
             mdView.scrollToLine(0);
             event.accepted = true;
             return;
         }
 
-        if (event.key === Qt.Key_End || (event.key === Qt.Key_G && (event.modifiers & Qt.ShiftModifier))) {
+        if (event.key === Qt.Key_End || (event.key === Qt.Key_G && ((event.modifiers & Qt.ShiftModifier) || event.text === "G"))) {
             mdView.scrollToLine(mdDoc.lineCount);
             event.accepted = true;
             return;
@@ -215,10 +223,10 @@ Terminal {
 
         // Live Editor toggle 'e'
         if (event.key === Qt.Key_E) {
-            if (root.currentStyleName !== "custom")
+            if (!root.editorOpen && root.currentStyleName !== "custom")
                 root.currentStyleName = "custom";
             root.editorOpen = !root.editorOpen;
-            root.statusToast = "Live Style Editor: " + (root.isEditorActive ? "ACTIVE" : "CLOSED");
+            root.statusToast = "Live Style Editor: " + (root.editorOpen ? "ACTIVE" : "CLOSED");
             event.accepted = true;
             return;
         }
@@ -232,7 +240,7 @@ Terminal {
 
         // Next / Previous match
         if (event.key === Qt.Key_N) {
-            if (event.modifiers & Qt.ShiftModifier) {
+            if ((event.modifiers & Qt.ShiftModifier) || event.text === "N") {
                 root.previousSearchMatch();
             } else {
                 root.nextSearchMatch();
@@ -251,14 +259,19 @@ Terminal {
 
         // Style toggle 's' (cycles modern -> classic -> minimal -> custom -> modern)
         if (event.key === Qt.Key_S) {
-            if (root.currentStyleName === "modern")
+            if (root.currentStyleName === "modern") {
                 root.currentStyleName = "classic";
-            else if (root.currentStyleName === "classic")
+                root.editorOpen = false;
+            } else if (root.currentStyleName === "classic") {
                 root.currentStyleName = "minimal";
-            else if (root.currentStyleName === "minimal")
+                root.editorOpen = false;
+            } else if (root.currentStyleName === "minimal") {
                 root.currentStyleName = "custom";
-            else
+                root.editorOpen = true;
+            } else {
                 root.currentStyleName = "modern";
+                root.editorOpen = false;
+            }
             root.statusToast = "Style: " + root.currentStyleName;
             event.accepted = true;
             return;
@@ -327,6 +340,15 @@ Terminal {
         statusToast = "Section: " + section.title + " (line " + (section.line + 1) + ")";
     }
 
+    function finishSearchInput() {
+        root.isSearching = false;
+        root.focus = true;
+        if (root.searchMatches.length === 0)
+            root.clearSearch();
+        else
+            root.statusToast = "";
+    }
+
     function clearSearch() {
         searchMatches = [];
         currentMatchIndex = 0;
@@ -349,6 +371,7 @@ Terminal {
     function nextSearchMatch() {
         if (searchMatches.length === 0)
             return;
+        statusToast = "";
         currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length;
         mdView.activeMatchIndex = currentMatchIndex;
         var match = searchMatches[currentMatchIndex];
@@ -358,6 +381,7 @@ Terminal {
     function previousSearchMatch() {
         if (searchMatches.length === 0)
             return;
+        statusToast = "";
         currentMatchIndex = (currentMatchIndex - 1 + searchMatches.length) % searchMatches.length;
         mdView.activeMatchIndex = currentMatchIndex;
         var match = searchMatches[currentMatchIndex];
@@ -437,6 +461,10 @@ Terminal {
                 root.runSearch(query);
             }
 
+            onSearchAccepted: {
+                root.finishSearchInput();
+            }
+
             onNextMatch: {
                 root.nextSearchMatch();
             }
@@ -447,6 +475,7 @@ Terminal {
 
             onCloseSearch: {
                 root.isSearching = false;
+                root.focus = true;
                 root.clearSearch();
             }
         }
@@ -457,7 +486,7 @@ Terminal {
             width: parent.width
             theme: theme
             statusMessage: root.statusToast
-            activeSearchInfo: (root.isSearching && root.searchMatches.length > 0) ? ("Match " + (root.currentMatchIndex + 1) + "/" + root.searchMatches.length) : ""
+            activeSearchInfo: (root.searchMatches.length > 0) ? ("Match " + (root.currentMatchIndex + 1) + "/" + root.searchMatches.length) : ""
         }
     }
 }

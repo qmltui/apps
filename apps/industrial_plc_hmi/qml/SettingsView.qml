@@ -24,13 +24,11 @@ Panel {
     signal defaultsRequested
 
     onTargetSpeedChanged: {
-        if (!setRpmInput.activeFocus)
-            setRpmInput.text = root.targetSpeed.toString();
+        setRpmInput.text = root.targetSpeed.toString();
     }
 
     onMaxTempLimitChanged: {
-        if (!setTempInput.activeFocus)
-            setTempInput.text = root.maxTempLimit.toString();
+        setTempInput.text = root.maxTempLimit.toString();
     }
 
     anchors.fill: parent
@@ -122,6 +120,7 @@ Panel {
                                 onClicked: {
                                     const nextVal = Math.max(0, root.targetSpeed - 100);
                                     root.targetSpeedRequested(String(nextVal));
+                                    setRpmInput.text = root.targetSpeed.toString();
                                 }
                             }
                         }
@@ -190,6 +189,7 @@ Panel {
                                 onClicked: {
                                     const nextVal = Math.min(3000, root.targetSpeed + 100);
                                     root.targetSpeedRequested(String(nextVal));
+                                    setRpmInput.text = root.targetSpeed.toString();
                                 }
                             }
                         }
@@ -248,7 +248,10 @@ Panel {
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    onClicked: root.targetSpeedRequested(String(speedPreset.modelData))
+                                    onClicked: {
+                                        root.targetSpeedRequested(String(speedPreset.modelData));
+                                        setRpmInput.text = root.targetSpeed.toString();
+                                    }
                                 }
                             }
                         }
@@ -303,6 +306,7 @@ Panel {
                                 onClicked: {
                                     const nextVal = Math.max(30.0, root.maxTempLimit - 5.0);
                                     root.tempLimitRequested(nextVal.toFixed(1));
+                                    setTempInput.text = root.maxTempLimit.toString();
                                 }
                             }
                         }
@@ -371,6 +375,7 @@ Panel {
                                 onClicked: {
                                     const nextVal = Math.min(110.0, root.maxTempLimit + 5.0);
                                     root.tempLimitRequested(nextVal.toFixed(1));
+                                    setTempInput.text = root.maxTempLimit.toString();
                                 }
                             }
                         }
@@ -429,7 +434,10 @@ Panel {
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    onClicked: root.tempLimitRequested(String(tempPreset.modelData))
+                                    onClicked: {
+                                        root.tempLimitRequested(String(tempPreset.modelData));
+                                        setTempInput.text = root.maxTempLimit.toString();
+                                    }
                                 }
                             }
                         }
@@ -656,7 +664,11 @@ Panel {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: root.defaultsRequested()
+                        onClicked: {
+                            root.defaultsRequested();
+                            setRpmInput.text = root.targetSpeed.toString();
+                            setTempInput.text = root.maxTempLimit.toString();
+                        }
                     }
                 }
 

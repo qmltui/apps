@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 import QmlTui.Controls
@@ -5,9 +7,13 @@ import QmlTui.Controls
 Popup {
     id: diffModal
 
-    Theme { id: theme }
+    Theme {
+        id: theme
+    }
 
     property string targetFile: "src/QmlTui/engine/InlineRenderer.cpp"
+
+    signal switchToModelRequested
 
     width: parent ? parent.width : 78
     height: 13
@@ -130,9 +136,19 @@ Popup {
                 width: parent.width
                 height: 1
                 spacing: 0
-                Text { width: 36; text: " 72: void InlineRenderer::render() {"; color: theme.slate }
-                Text { text: "  "; color: theme.muted }
-                Text { text: " 72: void InlineRenderer::render() {"; color: theme.slate }
+                Text {
+                    width: 36
+                    text: " 72: void InlineRenderer::render() {"
+                    color: theme.slate
+                }
+                Text {
+                    text: "  "
+                    color: theme.muted
+                }
+                Text {
+                    text: " 72: void InlineRenderer::render() {"
+                    color: theme.slate
+                }
             }
         }
 
@@ -144,9 +160,19 @@ Popup {
                 width: parent.width
                 height: 1
                 spacing: 0
-                Text { width: 36; text: " 73:   const int h = buffer.height();"; color: theme.slate }
-                Text { text: "  "; color: theme.muted }
-                Text { text: " 73:   const int h = buffer.height();"; color: theme.slate }
+                Text {
+                    width: 36
+                    text: " 73:   const int h = buffer.height();"
+                    color: theme.slate
+                }
+                Text {
+                    text: "  "
+                    color: theme.muted
+                }
+                Text {
+                    text: " 73:   const int h = buffer.height();"
+                    color: theme.slate
+                }
             }
         }
 
@@ -158,9 +184,19 @@ Popup {
                 width: parent.width
                 height: 1
                 spacing: 0
-                Text { width: 36; text: "-74:   device.write(buffer.data());"; color: theme.rose }
-                Text { text: "  "; color: theme.muted }
-                Text { text: "    (replaced with bounds check)"; color: theme.muted }
+                Text {
+                    width: 36
+                    text: "-74:   device.write(buffer.data());"
+                    color: theme.rose
+                }
+                Text {
+                    text: "  "
+                    color: theme.muted
+                }
+                Text {
+                    text: "    (replaced with bounds check)"
+                    color: theme.muted
+                }
             }
         }
 
@@ -172,9 +208,19 @@ Popup {
                 width: parent.width
                 height: 1
                 spacing: 0
-                Text { width: 36; text: "                                    "; color: theme.muted }
-                Text { text: "  "; color: theme.muted }
-                Text { text: "+74:   const int safeHeight = clamp(h);"; color: theme.green }
+                Text {
+                    width: 36
+                    text: "                                    "
+                    color: theme.muted
+                }
+                Text {
+                    text: "  "
+                    color: theme.muted
+                }
+                Text {
+                    text: "+74:   const int safeHeight = clamp(h);"
+                    color: theme.green
+                }
             }
         }
 
@@ -186,9 +232,19 @@ Popup {
                 width: parent.width
                 height: 1
                 spacing: 0
-                Text { width: 36; text: "                                    "; color: theme.muted }
-                Text { text: "  "; color: theme.muted }
-                Text { text: "+75:   markDirty(safeHeight);"; color: theme.green }
+                Text {
+                    width: 36
+                    text: "                                    "
+                    color: theme.muted
+                }
+                Text {
+                    text: "  "
+                    color: theme.muted
+                }
+                Text {
+                    text: "+75:   markDirty(safeHeight);"
+                    color: theme.green
+                }
             }
         }
 
@@ -200,9 +256,19 @@ Popup {
                 width: parent.width
                 height: 1
                 spacing: 0
-                Text { width: 36; text: "                                    "; color: theme.muted }
-                Text { text: "  "; color: theme.muted }
-                Text { text: "+76:   device.write(buffer.slice(...));"; color: theme.green }
+                Text {
+                    width: 36
+                    text: "                                    "
+                    color: theme.muted
+                }
+                Text {
+                    text: "  "
+                    color: theme.muted
+                }
+                Text {
+                    text: "+76:   device.write(buffer.slice(...));"
+                    color: theme.green
+                }
             }
         }
 
@@ -214,18 +280,31 @@ Popup {
                 width: parent.width
                 height: 1
                 spacing: 0
-                Text { width: 36; text: " 77: }"; color: theme.slate }
-                Text { text: "  "; color: theme.muted }
-                Text { text: " 77: }"; color: theme.slate }
+                Text {
+                    width: 36
+                    text: " 77: }"
+                    color: theme.slate
+                }
+                Text {
+                    text: "  "
+                    color: theme.muted
+                }
+                Text {
+                    text: " 77: }"
+                    color: theme.slate
+                }
             }
         }
     }
 
     Keys.priority: Keys.BeforeItem
-    Keys.onPressed: (event) => {
+    Keys.onPressed: event => {
         if (event.key === Qt.Key_Escape || event.key === Qt.Key_F3) {
-            close()
-            event.accepted = true
+            diffModal.close();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_F2) {
+            diffModal.switchToModelRequested();
+            event.accepted = true;
         }
     }
 }

@@ -33,38 +33,63 @@ Terminal {
     readonly property string colorAccentYellow: "#f9e2af"
     readonly property string colorAccentPurple: "#cba6f7"
 
+    function headerLabel(title: string, col: int): string {
+        if (fleetModel.sortColumn !== col)
+            return title;
+        return title + (fleetModel.sortAscending ? " ▲" : " ▼");
+    }
+
     // MANDATORY QMLTUI RULE: Explicit key handling for Q/Escape to quit
     Keys.onPressed: event => {
-        if (event.key === Qt.Key_Q || (event.key === Qt.Key_Escape && searchInput.text === "")) {
+        if (searchInput.activeFocus) {
+            if (event.key === Qt.Key_Escape) {
+                if (searchInput.text !== "") {
+                    searchInput.text = "";
+                    fleetModel.searchQuery = "";
+                } else {
+                    tableView.forceActiveFocus();
+                }
+                event.accepted = true;
+            }
+            return;
+        }
+
+        const hasCtrlOrAlt = (event.modifiers & (Qt.ControlModifier | Qt.AltModifier)) !== 0;
+
+        if ((!hasCtrlOrAlt && event.key === Qt.Key_Q) || ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Q) || (event.key === Qt.Key_Escape && searchInput.text === "")) {
             Qt.quit();
             event.accepted = true;
         } else if (event.key === Qt.Key_Escape) {
             searchInput.text = "";
             fleetModel.searchQuery = "";
-            tableView.focus = true;
+            tableView.forceActiveFocus();
             event.accepted = true;
-        } else if (event.key === Qt.Key_Slash) {
-            searchInput.focus = true;
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_Slash) {
+            searchInput.forceActiveFocus();
             event.accepted = true;
-        } else if (event.key === Qt.Key_1) {
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_1) {
             fleetModel.activeFilter = 0;
             tableView.selectedRow = 0;
             event.accepted = true;
-        } else if (event.key === Qt.Key_2) {
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_2) {
             fleetModel.activeFilter = 1;
             tableView.selectedRow = 0;
             event.accepted = true;
-        } else if (event.key === Qt.Key_3) {
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_3) {
             fleetModel.activeFilter = 2;
             tableView.selectedRow = 0;
             event.accepted = true;
-        } else if (event.key === Qt.Key_R) {
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_S) {
+            fleetModel.cycleSortMode();
+            tableView.selectedRow = 0;
+            event.accepted = true;
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_R) {
             fleetModel.toggleNodeStatus(tableView.selectedRow);
             event.accepted = true;
-        } else if (event.key === Qt.Key_A) {
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_A) {
             fleetModel.restartAllCritical();
             event.accepted = true;
-        } else if (event.key === Qt.Key_L) {
+        } else if (!hasCtrlOrAlt && event.key === Qt.Key_L) {
             root.showLogs = !root.showLogs;
             event.accepted = true;
         }
@@ -128,7 +153,7 @@ Terminal {
                             text: ""
                             color: root.colorTextPrimary
                             onTextChanged: fleetModel.searchQuery = searchInput.text
-                            onAccepted: tableView.focus = true
+                            onAccepted: tableView.forceActiveFocus()
                         }
                     }
                 }
@@ -158,38 +183,43 @@ Terminal {
 
                 columns: [
                     {
-                        title: "NODE NAME",
+                        title: root.headerLabel("NODE NAME", 0),
                         width: 19,
                         align: "left"
                     },
                     {
-                        title: "IP ADDRESS",
+                        title: root.headerLabel("IP ADDRESS", 1),
                         width: 14,
                         align: "left"
                     },
                     {
-                        title: "STATUS",
+                        title: root.headerLabel("STATUS", 2),
                         width: 12,
                         align: "center"
                     },
                     {
-                        title: "CPU LOAD",
+                        title: root.headerLabel("CPU LOAD", 3),
                         width: 17,
                         align: "left"
                     },
                     {
-                        title: "MEMORY",
+                        title: root.headerLabel("MEMORY", 4),
                         width: 17,
                         align: "left"
                     },
                     {
-                        title: "TAGS & SERVICES",
+                        title: root.headerLabel("TAGS & SERVICES", 5),
                         width: 22,
                         align: "left"
                     }
                 ]
 
                 model: fleetModel.tableData
+
+                onHeaderClicked: col => {
+                    fleetModel.sortByColumn(col);
+                    tableView.selectedRow = 0;
+                }
 
                 cellFormat: (row, col, value) => {
                     if (col === 2) {
@@ -300,6 +330,7 @@ Terminal {
             }
 
             Column {
+                id: logColumn
                 x: 1
                 y: 1
                 width: Math.max(0, parent.width - 2)
@@ -309,7 +340,7 @@ Terminal {
                     model: root.selectedLogs
                     delegate: Text {
                         required property string modelData
-                        width: parent.width
+                        width: logColumn.width
                         text: "  > " + modelData
                         color: modelData.indexOf("ALERT") !== -1 ? root.colorAccentRed : modelData.indexOf("WARN") !== -1 ? root.colorAccentYellow : root.colorTextMuted
                     }
@@ -333,7 +364,7 @@ Terminal {
                 y: 1
                 spacing: 2
                 Text {
-                    text: "[1-3]Filter [/]Search [Headers]Sort [R]Restart [A]FixAll [L]Logs [Q/Esc]Quit"
+                    text: "[1-3]Filter [/]Search [Headers/S]Sort [R]Restart [A]FixAll [L]Logs [Q/Esc]Quit"
                     color: root.colorAccentGreen
                     bold: true
                 }

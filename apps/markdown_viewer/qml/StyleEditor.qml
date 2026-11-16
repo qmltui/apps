@@ -1,229 +1,201 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 import QmlTui.Examples.MarkdownViewer 1.0
 
 Rectangle {
     id: editor
-    color: theme.surface
-    border.style: Border.Single
-    border.color: theme.accent
 
     required property var theme
     required property MdDocStyle docStyle
     property int selectedRow: 0
 
-    readonly property var hrPresets: [
-        "───────── ❖ ─────────",
-        "────────────────────",
-        "--------------------",
-        "════════════════════",
-        "· · · · · · · · · · ",
-        "* * * * * * * * * * ",
-        "- - - - - - - - - - ",
-        "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ",
-        "- - - - - ◈ - - - - -"
-    ]
+    readonly property var hrPresets: ["───────── ❖ ─────────", "────────────────────", "--------------------", "════════════════════", "· · · · · · · · · · ", "* * * * * * * * * * ", "- - - - - - - - - - ", "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ", "- - - - - ◈ - - - - -"]
     property int hrPresetIndex: 0
 
-    readonly property var bullet1Presets: [
-        "✦ ", "• ", "▸ ", "◆ ", "■ ", "- ", "❯ ", "→ ", "* "
-    ]
+    readonly property var bullet1Presets: ["✦ ", "• ", "▸ ", "◆ ", "■ ", "- ", "❯ ", "→ ", "* "]
     property int bullet1Index: 0
 
-    readonly property var bullet2Presets: [
-        "▸ ", "▪ ", "▫ ", "* ", "› ", "– ", "- "
-    ]
+    readonly property var bullet2Presets: ["▸ ", "▪ ", "▫ ", "* ", "› ", "– ", "- "]
     property int bullet2Index: 0
 
-    readonly property var taskCheckedPresets: [
-        "[✔] ", "[✓] ", "[x] ", "[X] ", "[+] ", "☑ ", "[ok] "
-    ]
+    readonly property var taskCheckedPresets: ["[✔] ", "[✓] ", "[x] ", "[X] ", "[+] ", "☑ ", "[ok] "]
     property int taskCheckedIndex: 0
 
-    readonly property var taskUncheckedPresets: [
-        "[ ] ", "( ) ", "☐ ", "[·] ", "[?] "
-    ]
+    readonly property var taskUncheckedPresets: ["[ ] ", "( ) ", "☐ ", "[·] ", "[?] "]
     property int taskUncheckedIndex: 0
 
-    readonly property var quotePresets: [
-        "▍ ", "│ ", "┃ ", "▌ ", "▎ ", "> ", "» ", "  "
-    ]
+    readonly property var quotePresets: ["▍ ", "│ ", "┃ ", "▌ ", "▎ ", "> ", "» ", "  "]
     property int quoteIndex: 0
 
     readonly property int totalRows: 14
 
     function selectNext() {
-        selectedRow = (selectedRow + 1) % totalRows
+        editor.selectedRow = (editor.selectedRow + 1) % editor.totalRows;
     }
 
     function selectPrev() {
-        selectedRow = (selectedRow - 1 + totalRows) % totalRows
+        editor.selectedRow = (editor.selectedRow - 1 + editor.totalRows) % editor.totalRows;
     }
 
-    function applyBasePreset(presetName) {
+    function applyBasePreset(presetName: string) {
         if (presetName === "Modern") {
-            docStyle.h1Format = MdDocStyle.Badge
-            docStyle.h1BadgePadding = 1
-            docStyle.headingFormat = MdDocStyle.Bullets
-            docStyle.headingBanners = false
-            docStyle.codeBlockFormat = MdDocStyle.Indented
-            docStyle.codeBlockIndent = 2
-            docStyle.tableFormat = MdDocStyle.Open
-            docStyle.horizontalRuleText = "--------"
-            docStyle.listBulletLevel1 = "• "
-            docStyle.listBulletLevel2 = "▪ "
-            docStyle.taskListChecked = "[✓] "
-            docStyle.taskListUnchecked = "[ ] "
-            docStyle.blockquotePrefix = "│ "
+            editor.docStyle.h1Format = MdDocStyle.Badge;
+            editor.docStyle.h1BadgePadding = 1;
+            editor.docStyle.headingFormat = MdDocStyle.Bullets;
+            editor.docStyle.headingBanners = false;
+            editor.docStyle.codeBlockFormat = MdDocStyle.Indented;
+            editor.docStyle.codeBlockIndent = 2;
+            editor.docStyle.tableFormat = MdDocStyle.Open;
+            editor.docStyle.horizontalRuleText = "--------";
+            editor.docStyle.listBulletLevel1 = "• ";
+            editor.docStyle.listBulletLevel2 = "▪ ";
+            editor.docStyle.taskListChecked = "[✓] ";
+            editor.docStyle.taskListUnchecked = "[ ] ";
+            editor.docStyle.blockquotePrefix = "│ ";
         } else if (presetName === "Classic") {
-            docStyle.h1Format = MdDocStyle.Banner
-            docStyle.h1BadgePadding = 0
-            docStyle.headingFormat = MdDocStyle.Hashes
-            docStyle.headingBanners = true
-            docStyle.codeBlockFormat = MdDocStyle.Boxed
-            docStyle.codeBlockIndent = 0
-            docStyle.tableFormat = MdDocStyle.Boxed
-            docStyle.horizontalRuleText = "════════════════════"
-            docStyle.listBulletLevel1 = "- "
-            docStyle.listBulletLevel2 = "  * "
-            docStyle.taskListChecked = "[x] "
-            docStyle.taskListUnchecked = "[ ] "
-            docStyle.blockquotePrefix = "> "
+            editor.docStyle.h1Format = MdDocStyle.Banner;
+            editor.docStyle.h1BadgePadding = 0;
+            editor.docStyle.headingFormat = MdDocStyle.Hashes;
+            editor.docStyle.headingBanners = true;
+            editor.docStyle.codeBlockFormat = MdDocStyle.Boxed;
+            editor.docStyle.codeBlockIndent = 0;
+            editor.docStyle.tableFormat = MdDocStyle.Boxed;
+            editor.docStyle.horizontalRuleText = "════════════════════";
+            editor.docStyle.listBulletLevel1 = "- ";
+            editor.docStyle.listBulletLevel2 = "  * ";
+            editor.docStyle.taskListChecked = "[x] ";
+            editor.docStyle.taskListUnchecked = "[ ] ";
+            editor.docStyle.blockquotePrefix = "> ";
         } else if (presetName === "Minimal") {
-            docStyle.h1Format = MdDocStyle.Plain
-            docStyle.h1BadgePadding = 0
-            docStyle.headingFormat = MdDocStyle.Plain
-            docStyle.headingBanners = false
-            docStyle.codeBlockFormat = MdDocStyle.Borderless
-            docStyle.codeBlockIndent = 0
-            docStyle.tableFormat = MdDocStyle.Minimal
-            docStyle.horizontalRuleText = "---"
-            docStyle.listBulletLevel1 = "* "
-            docStyle.listBulletLevel2 = "* "
-            docStyle.taskListChecked = "[x] "
-            docStyle.taskListUnchecked = "[ ] "
-            docStyle.blockquotePrefix = "  "
-        } else { // Fancy / Cyber
-            docStyle.h1Format = MdDocStyle.Badge
-            docStyle.h1BadgePadding = 3
-            docStyle.headingFormat = MdDocStyle.Bullets
-            docStyle.headingBanners = true
-            docStyle.codeBlockFormat = MdDocStyle.Indented
-            docStyle.codeBlockIndent = 4
-            docStyle.tableFormat = MdDocStyle.Open
-            docStyle.horizontalRuleText = "───────── ❖ ─────────"
-            docStyle.listBulletLevel1 = "✦ "
-            docStyle.listBulletLevel2 = "▸ "
-            docStyle.taskListChecked = "[✔] "
-            docStyle.taskListUnchecked = "[ ] "
-            docStyle.blockquotePrefix = "▍ "
+            editor.docStyle.h1Format = MdDocStyle.Plain;
+            editor.docStyle.h1BadgePadding = 0;
+            editor.docStyle.headingFormat = MdDocStyle.Plain;
+            editor.docStyle.headingBanners = false;
+            editor.docStyle.codeBlockFormat = MdDocStyle.Borderless;
+            editor.docStyle.codeBlockIndent = 0;
+            editor.docStyle.tableFormat = MdDocStyle.Minimal;
+            editor.docStyle.horizontalRuleText = "---";
+            editor.docStyle.listBulletLevel1 = "* ";
+            editor.docStyle.listBulletLevel2 = "* ";
+            editor.docStyle.taskListChecked = "[x] ";
+            editor.docStyle.taskListUnchecked = "[ ] ";
+            editor.docStyle.blockquotePrefix = "  ";
+        } else {
+            editor.docStyle.h1Format = MdDocStyle.Badge;
+            editor.docStyle.h1BadgePadding = 3;
+            editor.docStyle.headingFormat = MdDocStyle.Bullets;
+            editor.docStyle.headingBanners = true;
+            editor.docStyle.codeBlockFormat = MdDocStyle.Indented;
+            editor.docStyle.codeBlockIndent = 4;
+            editor.docStyle.tableFormat = MdDocStyle.Open;
+            editor.docStyle.horizontalRuleText = "───────── ❖ ─────────";
+            editor.docStyle.listBulletLevel1 = "✦ ";
+            editor.docStyle.listBulletLevel2 = "▸ ";
+            editor.docStyle.taskListChecked = "[✔] ";
+            editor.docStyle.taskListUnchecked = "[ ] ";
+            editor.docStyle.blockquotePrefix = "▍ ";
         }
     }
 
-    function adjustSelected(delta) {
-        switch (selectedRow) {
-        case 0: // Quick base preset
+    function adjustSelected(delta: int) {
+        switch (editor.selectedRow) {
+        case 0:
             if (delta > 0)
-                applyBasePreset("Fancy")
+                editor.applyBasePreset("Fancy");
             else
-                applyBasePreset("Modern")
-            break
-
-        case 1: // H1 Format
-            if (docStyle.h1Format === MdDocStyle.Badge)
-                docStyle.h1Format = delta > 0 ? MdDocStyle.Banner : MdDocStyle.Plain
-            else if (docStyle.h1Format === MdDocStyle.Banner)
-                docStyle.h1Format = delta > 0 ? MdDocStyle.Plain : MdDocStyle.Badge
+                editor.applyBasePreset("Modern");
+            break;
+        case 1:
+            if (editor.docStyle.h1Format === MdDocStyle.Badge)
+                editor.docStyle.h1Format = delta > 0 ? MdDocStyle.Banner : MdDocStyle.Plain;
+            else if (editor.docStyle.h1Format === MdDocStyle.Banner)
+                editor.docStyle.h1Format = delta > 0 ? MdDocStyle.Plain : MdDocStyle.Badge;
             else
-                docStyle.h1Format = delta > 0 ? MdDocStyle.Badge : MdDocStyle.Banner
-            break
-
-        case 2: // H1 Padding
-            docStyle.h1BadgePadding = Math.max(0, Math.min(8, docStyle.h1BadgePadding + delta))
-            break
-
-        case 3: // Heading Format
-            if (docStyle.headingFormat === MdDocStyle.Bullets)
-                docStyle.headingFormat = delta > 0 ? MdDocStyle.Hashes : MdDocStyle.Plain
-            else if (docStyle.headingFormat === MdDocStyle.Hashes)
-                docStyle.headingFormat = delta > 0 ? MdDocStyle.Plain : MdDocStyle.Bullets
+                editor.docStyle.h1Format = delta > 0 ? MdDocStyle.Badge : MdDocStyle.Banner;
+            break;
+        case 2:
+            editor.docStyle.h1BadgePadding = Math.max(0, Math.min(8, editor.docStyle.h1BadgePadding + delta));
+            break;
+        case 3:
+            if (editor.docStyle.headingFormat === MdDocStyle.Bullets)
+                editor.docStyle.headingFormat = delta > 0 ? MdDocStyle.Hashes : MdDocStyle.Plain;
+            else if (editor.docStyle.headingFormat === MdDocStyle.Hashes)
+                editor.docStyle.headingFormat = delta > 0 ? MdDocStyle.Plain : MdDocStyle.Bullets;
             else
-                docStyle.headingFormat = delta > 0 ? MdDocStyle.Bullets : MdDocStyle.Hashes
-            break
-
-        case 4: // Heading Banners
-            docStyle.headingBanners = !docStyle.headingBanners
-            break
-
-        case 5: // Code Block Format
-            if (docStyle.codeBlockFormat === MdDocStyle.Indented)
-                docStyle.codeBlockFormat = delta > 0 ? MdDocStyle.Boxed : MdDocStyle.Borderless
-            else if (docStyle.codeBlockFormat === MdDocStyle.Boxed)
-                docStyle.codeBlockFormat = delta > 0 ? MdDocStyle.Borderless : MdDocStyle.Indented
+                editor.docStyle.headingFormat = delta > 0 ? MdDocStyle.Bullets : MdDocStyle.Hashes;
+            break;
+        case 4:
+            editor.docStyle.headingBanners = !editor.docStyle.headingBanners;
+            break;
+        case 5:
+            if (editor.docStyle.codeBlockFormat === MdDocStyle.Indented)
+                editor.docStyle.codeBlockFormat = delta > 0 ? MdDocStyle.Boxed : MdDocStyle.Borderless;
+            else if (editor.docStyle.codeBlockFormat === MdDocStyle.Boxed)
+                editor.docStyle.codeBlockFormat = delta > 0 ? MdDocStyle.Borderless : MdDocStyle.Indented;
             else
-                docStyle.codeBlockFormat = delta > 0 ? MdDocStyle.Indented : MdDocStyle.Boxed
-            break
-
-        case 6: // Code Block Indent
-            docStyle.codeBlockIndent = Math.max(0, Math.min(8, docStyle.codeBlockIndent + delta))
-            break
-
-        case 7: // Table Format
-            if (docStyle.tableFormat === MdDocStyle.Open)
-                docStyle.tableFormat = delta > 0 ? MdDocStyle.Boxed : MdDocStyle.Minimal
-            else if (docStyle.tableFormat === MdDocStyle.Boxed)
-                docStyle.tableFormat = delta > 0 ? MdDocStyle.Minimal : MdDocStyle.Open
+                editor.docStyle.codeBlockFormat = delta > 0 ? MdDocStyle.Indented : MdDocStyle.Boxed;
+            break;
+        case 6:
+            editor.docStyle.codeBlockIndent = Math.max(0, Math.min(8, editor.docStyle.codeBlockIndent + delta));
+            break;
+        case 7:
+            if (editor.docStyle.tableFormat === MdDocStyle.Open)
+                editor.docStyle.tableFormat = delta > 0 ? MdDocStyle.Boxed : MdDocStyle.Minimal;
+            else if (editor.docStyle.tableFormat === MdDocStyle.Boxed)
+                editor.docStyle.tableFormat = delta > 0 ? MdDocStyle.Minimal : MdDocStyle.Open;
             else
-                docStyle.tableFormat = delta > 0 ? MdDocStyle.Open : MdDocStyle.Boxed
-            break
-
-        case 8: // HR text preset
-            hrPresetIndex = (hrPresetIndex + delta + hrPresets.length) % hrPresets.length
-            docStyle.horizontalRuleText = hrPresets[hrPresetIndex]
-            break
-
-        case 9: // Bullet L1
-            bullet1Index = (bullet1Index + delta + bullet1Presets.length) % bullet1Presets.length
-            docStyle.listBulletLevel1 = bullet1Presets[bullet1Index]
-            break
-
-        case 10: // Bullet L2
-            bullet2Index = (bullet2Index + delta + bullet2Presets.length) % bullet2Presets.length
-            docStyle.listBulletLevel2 = bullet2Presets[bullet2Index]
-            break
-
-        case 11: // Task Checked
-            taskCheckedIndex = (taskCheckedIndex + delta + taskCheckedPresets.length) % taskCheckedPresets.length
-            docStyle.taskListChecked = taskCheckedPresets[taskCheckedIndex]
-            break
-
-        case 12: // Task Unchecked
-            taskUncheckedIndex = (taskUncheckedIndex + delta + taskUncheckedPresets.length) % taskUncheckedPresets.length
-            docStyle.taskListUnchecked = taskUncheckedPresets[taskUncheckedIndex]
-            break
-
-        case 13: // Quote prefix
-            quoteIndex = (quoteIndex + delta + quotePresets.length) % quotePresets.length
-            docStyle.blockquotePrefix = quotePresets[quoteIndex]
-            break
+                editor.docStyle.tableFormat = delta > 0 ? MdDocStyle.Open : MdDocStyle.Boxed;
+            break;
+        case 8:
+            editor.hrPresetIndex = (editor.hrPresetIndex + delta + editor.hrPresets.length) % editor.hrPresets.length;
+            editor.docStyle.horizontalRuleText = editor.hrPresets[editor.hrPresetIndex];
+            break;
+        case 9:
+            editor.bullet1Index = (editor.bullet1Index + delta + editor.bullet1Presets.length) % editor.bullet1Presets.length;
+            editor.docStyle.listBulletLevel1 = editor.bullet1Presets[editor.bullet1Index];
+            break;
+        case 10:
+            editor.bullet2Index = (editor.bullet2Index + delta + editor.bullet2Presets.length) % editor.bullet2Presets.length;
+            editor.docStyle.listBulletLevel2 = editor.bullet2Presets[editor.bullet2Index];
+            break;
+        case 11:
+            editor.taskCheckedIndex = (editor.taskCheckedIndex + delta + editor.taskCheckedPresets.length) % editor.taskCheckedPresets.length;
+            editor.docStyle.taskListChecked = editor.taskCheckedPresets[editor.taskCheckedIndex];
+            break;
+        case 12:
+            editor.taskUncheckedIndex = (editor.taskUncheckedIndex + delta + editor.taskUncheckedPresets.length) % editor.taskUncheckedPresets.length;
+            editor.docStyle.taskListUnchecked = editor.taskUncheckedPresets[editor.taskUncheckedIndex];
+            break;
+        case 13:
+            editor.quoteIndex = (editor.quoteIndex + delta + editor.quotePresets.length) % editor.quotePresets.length;
+            editor.docStyle.blockquotePrefix = editor.quotePresets[editor.quoteIndex];
+            break;
         }
+    }
+
+    color: editor.theme.surface
+    border {
+        style: Border.Single
+        color: editor.theme.accent
     }
 
     Column {
         id: mainColumn
+
         anchors.fill: parent
         spacing: 0
 
-        // Header Title
         Rectangle {
             width: mainColumn.width
             height: 2
-            color: theme.bg
+            color: editor.theme.bg
 
             Text {
                 anchors.fill: parent
                 text: " ⚙ LIVE STYLE EDITOR "
-                color: theme.accent
+                color: editor.theme.accent
                 bold: true
                 verticalAlignment: Qt.AlignVCenter
             }
@@ -232,60 +204,109 @@ Rectangle {
         Text {
             width: mainColumn.width
             text: " [↑/↓] Select  [←/→/Enter] Tweak"
-            color: theme.textMuted
+            color: editor.theme.textMuted
         }
 
         Rectangle {
             width: mainColumn.width
             height: 1
-            color: theme.border
+            color: editor.theme.border
         }
 
-        // Options List
         Column {
             id: optionsColumn
+
             width: mainColumn.width
             spacing: 0
 
             Repeater {
                 model: [
-                    { label: "1. Quick Base", value: "Modern / Cyber" },
-                    { label: "2. H1 Format", value: (docStyle.h1Format === MdDocStyle.Badge ? "Badge" : (docStyle.h1Format === MdDocStyle.Banner ? "Banner" : "Plain")) },
-                    { label: "3. H1 Padding", value: docStyle.h1BadgePadding + " sp" },
-                    { label: "4. Headings", value: (docStyle.headingFormat === MdDocStyle.Bullets ? "Bullets" : (docStyle.headingFormat === MdDocStyle.Hashes ? "Hashes" : "Plain")) },
-                    { label: "5. H-Banners", value: docStyle.headingBanners ? "ON" : "OFF" },
-                    { label: "6. Code Format", value: (docStyle.codeBlockFormat === MdDocStyle.Indented ? "Indented" : (docStyle.codeBlockFormat === MdDocStyle.Boxed ? "Boxed" : "Borderless")) },
-                    { label: "7. Code Indent", value: docStyle.codeBlockIndent + " sp" },
-                    { label: "8. Table Format", value: (docStyle.tableFormat === MdDocStyle.Open ? "Open" : (docStyle.tableFormat === MdDocStyle.Boxed ? "Boxed" : "Minimal")) },
-                    { label: "9. Divider HR", value: docStyle.horizontalRuleText.substring(0, Math.min(8, docStyle.horizontalRuleText.length)) + "…" },
-                    { label: "10. Bullet L1", value: "'" + docStyle.listBulletLevel1 + "'" },
-                    { label: "11. Bullet L2", value: "'" + docStyle.listBulletLevel2 + "'" },
-                    { label: "12. Task [x]", value: "'" + docStyle.taskListChecked.trim() + "'" },
-                    { label: "13. Task [ ]", value: "'" + docStyle.taskListUnchecked.trim() + "'" },
-                    { label: "14. Quote Pre", value: "'" + docStyle.blockquotePrefix + "'" }
+                    {
+                        label: "1. Quick Base",
+                        value: "Modern / Cyber"
+                    },
+                    {
+                        label: "2. H1 Format",
+                        value: (editor.docStyle.h1Format === MdDocStyle.Badge ? "Badge" : (editor.docStyle.h1Format === MdDocStyle.Banner ? "Banner" : "Plain"))
+                    },
+                    {
+                        label: "3. H1 Padding",
+                        value: editor.docStyle.h1BadgePadding + " sp"
+                    },
+                    {
+                        label: "4. Headings",
+                        value: (editor.docStyle.headingFormat === MdDocStyle.Bullets ? "Bullets" : (editor.docStyle.headingFormat === MdDocStyle.Hashes ? "Hashes" : "Plain"))
+                    },
+                    {
+                        label: "5. H-Banners",
+                        value: editor.docStyle.headingBanners ? "ON" : "OFF"
+                    },
+                    {
+                        label: "6. Code Format",
+                        value: (editor.docStyle.codeBlockFormat === MdDocStyle.Indented ? "Indented" : (editor.docStyle.codeBlockFormat === MdDocStyle.Boxed ? "Boxed" : "Borderless"))
+                    },
+                    {
+                        label: "7. Code Indent",
+                        value: editor.docStyle.codeBlockIndent + " sp"
+                    },
+                    {
+                        label: "8. Table Format",
+                        value: (editor.docStyle.tableFormat === MdDocStyle.Open ? "Open" : (editor.docStyle.tableFormat === MdDocStyle.Boxed ? "Boxed" : "Minimal"))
+                    },
+                    {
+                        label: "9. Divider HR",
+                        value: editor.docStyle.horizontalRuleText.substring(0, Math.min(8, editor.docStyle.horizontalRuleText.length)) + "…"
+                    },
+                    {
+                        label: "10. Bullet L1",
+                        value: "'" + editor.docStyle.listBulletLevel1 + "'"
+                    },
+                    {
+                        label: "11. Bullet L2",
+                        value: "'" + editor.docStyle.listBulletLevel2 + "'"
+                    },
+                    {
+                        label: "12. Task [x]",
+                        value: "'" + editor.docStyle.taskListChecked.trim() + "'"
+                    },
+                    {
+                        label: "13. Task [ ]",
+                        value: "'" + editor.docStyle.taskListUnchecked.trim() + "'"
+                    },
+                    {
+                        label: "14. Quote Pre",
+                        value: "'" + editor.docStyle.blockquotePrefix + "'"
+                    }
                 ]
 
                 Rectangle {
+                    id: rowRect
+
+                    required property int index
+                    required property var modelData
+
                     width: optionsColumn.width
                     height: 1
-                    color: (index === editor.selectedRow) ? theme.accentSecondary : "transparent"
+                    color: (rowRect.index === editor.selectedRow) ? editor.theme.accentSecondary : "transparent"
 
                     Row {
-                        anchors.fill: parent
-                        anchors.leftMargin: 1
-                        anchors.rightMargin: 1
-
-                        Text {
-                            width: 15
-                            text: (index === editor.selectedRow ? "▶ " : "  ") + modelData.label
-                            color: (index === editor.selectedRow) ? theme.bg : theme.textPrimary
-                            bold: (index === editor.selectedRow)
+                        anchors {
+                            fill: parent
+                            leftMargin: 1
+                            rightMargin: 1
                         }
 
                         Text {
-                            text: " ‹ " + modelData.value + " ›"
-                            color: (index === editor.selectedRow) ? theme.bg : theme.warning
-                            bold: (index === editor.selectedRow)
+                            width: 15
+                            text: (rowRect.index === editor.selectedRow ? "▶ " : "  ") + rowRect.modelData.label
+                            color: (rowRect.index === editor.selectedRow) ? editor.theme.bg : editor.theme.textPrimary
+                            bold: (rowRect.index === editor.selectedRow)
+                        }
+
+                        Text {
+                            text: " ‹ " + rowRect.modelData.value + " ›"
+                            color: (rowRect.index === editor.selectedRow) ? editor.theme.bg : editor.theme.warning
+                            bold: (rowRect.index === editor.selectedRow)
                         }
                     }
                 }

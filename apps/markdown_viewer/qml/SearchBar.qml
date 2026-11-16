@@ -1,10 +1,10 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 
 Rectangle {
     id: searchBar
-    height: 3
-    color: theme.surface
 
     required property var theme
     property string queryText: ""
@@ -13,68 +13,74 @@ Rectangle {
     property bool isSearching: false
 
     signal queryChanged(string query)
-    signal nextMatch()
-    signal previousMatch()
-    signal closeSearch()
+    signal searchAccepted
+    signal nextMatch
+    signal previousMatch
+    signal closeSearch
 
-    border.style: Border.Single
-    border.color: theme.warning
+    height: 3
+    color: searchBar.theme.surface
+    border {
+        style: Border.Single
+        color: searchBar.theme.warning
+    }
 
     Row {
-        anchors.fill: parent
-        anchors.leftMargin: 1
-        anchors.rightMargin: 1
+        anchors {
+            fill: parent
+            leftMargin: 1
+            rightMargin: 1
+        }
         spacing: 2
         clip: true
 
         Text {
             text: "🔍 Search:"
-            color: theme.warning
+            color: searchBar.theme.warning
             bold: true
         }
 
         TextInput {
             id: input
+
             width: 30
             height: 1
             focus: searchBar.isSearching
-            color: theme.textPrimary
-            cursorColor: theme.warning
+            color: searchBar.theme.textPrimary
+            cursorColor: searchBar.theme.warning
             placeholderText: "Type search phrase..."
-            placeholderColor: theme.textMuted
+            placeholderColor: searchBar.theme.textMuted
             text: searchBar.queryText
 
             onTextChanged: {
-                searchBar.queryText = text
-                searchBar.queryChanged(text)
+                searchBar.queryText = input.text;
+                searchBar.queryChanged(input.text);
             }
 
             onAccepted: {
-                searchBar.nextMatch()
+                searchBar.searchAccepted();
             }
         }
 
         Text {
             text: "│"
-            color: theme.border
+            color: searchBar.theme.border
         }
 
         Text {
-            text: (searchBar.totalMatches > 0) ?
-                  ("Match " + (searchBar.currentMatch + 1) + " of " + searchBar.totalMatches) :
-                  (searchBar.queryText.length > 0 ? "No matches" : "")
-            color: (searchBar.totalMatches > 0) ? theme.accent : theme.textMuted
+            text: (searchBar.totalMatches > 0) ? ("Match " + (searchBar.currentMatch + 1) + " of " + searchBar.totalMatches) : (searchBar.queryText.length > 0 ? "No matches" : "")
+            color: (searchBar.totalMatches > 0) ? searchBar.theme.accent : searchBar.theme.textMuted
             bold: true
         }
 
         Text {
             text: "│"
-            color: theme.border
+            color: searchBar.theme.border
         }
 
         Text {
-            text: "[Enter/n] Next  [N] Prev  [Esc] Close"
-            color: theme.textMuted
+            text: "[Enter] Done  [n/N] Next/Prev  [Esc] Close"
+            color: searchBar.theme.textMuted
         }
     }
 }

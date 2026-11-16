@@ -1,4 +1,4 @@
-/** @param {Terminal} terminal */
+/** @param {Runner} terminal */
 function main(terminal) {
     function expectPromptAcceptsText(text) {
         terminal.expectText("Ask anything")

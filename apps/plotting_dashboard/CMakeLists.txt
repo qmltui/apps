@@ -17,10 +17,6 @@ target_link_libraries(qmltui_plotting_dashboard PRIVATE
     qmltui::controls
 )
 
-if(QMLTUI_INSTALL_EXAMPLES)
-    install(TARGETS qmltui_plotting_dashboard RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
 if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_plotting_dashboard PRIVATE qmltui::runner)
     qmltui_add_scenario(

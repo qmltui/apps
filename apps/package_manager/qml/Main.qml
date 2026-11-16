@@ -20,10 +20,10 @@ Terminal {
         return "qpm install " + engine.targetName + " (" + Math.round(engine.overallProgress * 100) + "%)";
     }
     progress: engine.overallProgress
-    progressState: root.isRunning ? (engine.paused ? Terminal.ProgressPaused : Terminal.ProgressNormal) : Terminal.ProgressNone
+    progressState: root.isRunning ? (engine.paused ? Terminal.ProgressWarning : Terminal.ProgressNormal) : Terminal.ProgressNone
 
     Keys.onPressed: event => {
-        if (event.key === Qt.Key_Q || event.key === Qt.Key_Escape || ((event.modifiers & Qt.ControlModifier) && (event.key === Qt.Key_C || event.key === Qt.Key_Q))) {
+        if (event.key === Qt.Key_Q || (root.isPrompt && event.key === Qt.Key_N) || event.key === Qt.Key_Escape || ((event.modifiers & Qt.ControlModifier) && (event.key === Qt.Key_C || event.key === Qt.Key_Q))) {
             Qt.quit();
             event.accepted = true;
             return;

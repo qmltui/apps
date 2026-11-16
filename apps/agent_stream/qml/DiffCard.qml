@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 
@@ -10,8 +12,7 @@ Column {
     width: parent ? parent.width : 80
     spacing: 0
 
-
-   Row {
+    Row {
         spacing: 1
         Text {
             text: diffCard.collapsed ? "▶ Patch:" : "▼ Patch:"

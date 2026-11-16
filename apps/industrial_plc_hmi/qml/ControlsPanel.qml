@@ -23,13 +23,11 @@ Panel {
     signal maintRequested
 
     onTargetSpeedChanged: {
-        if (!rpmInput.activeFocus)
-            rpmInput.text = root.targetSpeed.toString();
+        rpmInput.text = root.targetSpeed.toString();
     }
 
     onMaxTempLimitChanged: {
-        if (!tempLimitInput.activeFocus)
-            tempLimitInput.text = root.maxTempLimit.toString();
+        tempLimitInput.text = root.maxTempLimit.toString();
     }
 
     color: HmiTheme.panelBg
@@ -107,7 +105,10 @@ Panel {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: root.targetSpeedRequested(String(Math.max(0, root.targetSpeed - 100)))
+                        onClicked: {
+                            root.targetSpeedRequested(String(Math.max(0, root.targetSpeed - 100)));
+                            rpmInput.text = root.targetSpeed.toString();
+                        }
                     }
                 }
 
@@ -132,8 +133,14 @@ Panel {
                         height: 1
                         text: root.targetSpeed.toString()
                         color: HmiTheme.textPrimary
-                        Keys.onUpPressed: root.targetSpeedRequested(String(Math.min(3000, root.targetSpeed + 100)))
-                        Keys.onDownPressed: root.targetSpeedRequested(String(Math.max(0, root.targetSpeed - 100)))
+                        Keys.onUpPressed: {
+                            root.targetSpeedRequested(String(Math.min(3000, root.targetSpeed + 100)));
+                            rpmInput.text = root.targetSpeed.toString();
+                        }
+                        Keys.onDownPressed: {
+                            root.targetSpeedRequested(String(Math.max(0, root.targetSpeed - 100)));
+                            rpmInput.text = root.targetSpeed.toString();
+                        }
                         onAccepted: {
                             root.targetSpeedRequested(rpmInput.text);
                             rpmInput.text = root.targetSpeed.toString();
@@ -155,7 +162,10 @@ Panel {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: root.targetSpeedRequested(String(Math.min(3000, root.targetSpeed + 100)))
+                        onClicked: {
+                            root.targetSpeedRequested(String(Math.min(3000, root.targetSpeed + 100)));
+                            rpmInput.text = root.targetSpeed.toString();
+                        }
                     }
                 }
             }
@@ -214,7 +224,10 @@ Panel {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: root.tempLimitRequested(Math.max(30.0, root.maxTempLimit - 5.0).toFixed(1))
+                        onClicked: {
+                            root.tempLimitRequested(Math.max(30.0, root.maxTempLimit - 5.0).toFixed(1));
+                            tempLimitInput.text = root.maxTempLimit.toString();
+                        }
                     }
                 }
 
@@ -239,8 +252,14 @@ Panel {
                         height: 1
                         text: root.maxTempLimit.toString()
                         color: HmiTheme.textPrimary
-                        Keys.onUpPressed: root.tempLimitRequested(Math.min(110.0, root.maxTempLimit + 2.5).toFixed(1))
-                        Keys.onDownPressed: root.tempLimitRequested(Math.max(30.0, root.maxTempLimit - 2.5).toFixed(1))
+                        Keys.onUpPressed: {
+                            root.tempLimitRequested(Math.min(110.0, root.maxTempLimit + 2.5).toFixed(1));
+                            tempLimitInput.text = root.maxTempLimit.toString();
+                        }
+                        Keys.onDownPressed: {
+                            root.tempLimitRequested(Math.max(30.0, root.maxTempLimit - 2.5).toFixed(1));
+                            tempLimitInput.text = root.maxTempLimit.toString();
+                        }
                         onAccepted: {
                             root.tempLimitRequested(tempLimitInput.text);
                             tempLimitInput.text = root.maxTempLimit.toString();
@@ -262,7 +281,10 @@ Panel {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: root.tempLimitRequested(Math.min(110.0, root.maxTempLimit + 5.0).toFixed(1))
+                        onClicked: {
+                            root.tempLimitRequested(Math.min(110.0, root.maxTempLimit + 5.0).toFixed(1));
+                            tempLimitInput.text = root.maxTempLimit.toString();
+                        }
                     }
                 }
             }

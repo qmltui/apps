@@ -1,10 +1,10 @@
 # QmlTui Applications
 
-Full-scale showcase applications built with [QmlTui](https://github.com/qmltui/qmltui). Core libraries, component examples, recipes, and reference documentation live in [`qmltui/qmltui`](https://github.com/qmltui/qmltui); the documentation portal and WebAssembly playground live in [`qmltui/website`](https://github.com/qmltui/website).
+Full-scale showcase applications built with [QmlTui](https://github.com/qmltui/qmltui). Browse the rendered [Application Showcase](https://qmltui.github.io/website/showcase.html), read the [Documentation Portal](https://qmltui.github.io/website/), or try the [Live WebAssembly Playground](https://qmltui.github.io/website/playground.html) (site source in [`qmltui/website`](https://github.com/qmltui/website)). Core libraries, component examples, recipes, and reference documentation live in [`qmltui/qmltui`](https://github.com/qmltui/qmltui).
 
 ## Build and Test
 
-Requires CMake 3.21+, a C++20 compiler, and Qt 6.8+ (`Core`, `Qml`, and `QmlPrivate` for `Behavior`-enabled apps; `PtyView` requires Linux or macOS; optional features use `Gui`, `Svg`, `Pdf`, `Multimedia`, or `Network`).
+Requires CMake 3.21+, a C++17 compiler, and Qt 6.8+ (`Core`, `Qml`, and `QmlPrivate` for `Behavior`-enabled apps; `PtyView` requires Linux or macOS; optional features use `Gui`, `Svg`, `Pdf`, `Multimedia`, or `Network`).
 
 ```sh
 cmake -S . -B build -G Ninja

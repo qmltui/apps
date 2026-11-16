@@ -75,10 +75,6 @@ endif()
 
 audio_player_add_executable(qmltui_audio_player AudioPlayer src/main.cpp)
 
-if(QMLTUI_INSTALL_EXAMPLES)
-    install(TARGETS qmltui_audio_player RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
 if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_audio_player PRIVATE qmltui::runner)
 

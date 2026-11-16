@@ -1,4 +1,4 @@
-/** @param {Terminal} terminal */
+/** @param {Runner} terminal */
 function main(terminal) {
     terminal.waitForText("REAL-TIME VECTOR PLOTTING DASHBOARD");
     terminal.expectText("OSCILLOSCOPE WAVEFORM VIEW");

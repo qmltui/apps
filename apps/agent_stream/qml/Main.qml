@@ -59,7 +59,7 @@ Terminal {
     property string currentToolName: ""
     property string currentToolTarget: ""
     property string currentToolAction: ""
-    property string currentDiffFile: ""
+    property string currentDiffFile: "src/QmlTui/engine/InlineRenderer.cpp"
     property string requestText: ""
 
     // History buffer for navigation
@@ -117,17 +117,17 @@ Terminal {
         }
 
         if (mainCmd === "/diff" || mainCmd === "/patch") {
-            diffInspector.open();
+            root.openDiffInspector();
             return;
         }
 
         if (mainCmd === "/model") {
-            modelModal.open();
+            root.openModelPicker();
             return;
         }
 
         if (mainCmd === "/doctor") {
-            addMessage(Main.SystemMessage, "System Status:\n" + "  ✓ Repository:   ~/QmlTui (branch: main*)\n" + "  ✓ Runtime:      C++20 & Qt 6.11.1\n" + "  ✓ Stream:       Zero-Copy Atomic Buffer\n" + "  ✓ Components:   TableView, TreeView, ProgressBar, Sparkline, StatusBadge\n" + "  ✓ Status:       All systems nominal", "Diagnostics");
+            addMessage(Main.SystemMessage, "System Status:\n" + "  ✓ Repository:   ~/QmlTui (branch: main*)\n" + "  ✓ Runtime:      C++17 & Qt 6.11.1\n" + "  ✓ Stream:       Zero-Copy Atomic Buffer\n" + "  ✓ Components:   TableView, TreeView, ProgressBar, Sparkline, StatusBadge\n" + "  ✓ Status:       All systems nominal", "Diagnostics");
             return;
         }
 
@@ -260,18 +260,36 @@ Terminal {
         agentState = Main.ReadyState;
     }
 
+    function openModelPicker() {
+        if (diffInspector.visible)
+            diffInspector.close();
+        if (modelModal.visible)
+            modelModal.close();
+        else
+            modelModal.open();
+    }
+
+    function openDiffInspector() {
+        if (modelModal.visible)
+            modelModal.close();
+        if (diffInspector.visible)
+            diffInspector.close();
+        else
+            diffInspector.open();
+    }
+
     function showBanner() {
         addMessage(Main.BannerMessage, "", "Qt", activeModel);
     }
 
     Keys.onPressed: event => {
         if (event.key === Qt.Key_F2) {
-            modelModal.open();
+            root.openModelPicker();
             event.accepted = true;
             return;
         }
         if (event.key === Qt.Key_F3) {
-            diffInspector.open();
+            root.openDiffInspector();
             event.accepted = true;
             return;
         }
@@ -283,9 +301,14 @@ Terminal {
             return;
         }
 
-        // Handle Escape to quit ONLY if prompt is empty and no popup/modal is open
-        if (root.ready && event.key === Qt.Key_Escape && promptBar.inputText.length === 0 && !promptBar.popupVisible && !modelModal.visible && !diffInspector.visible) {
-            Qt.quit();
+        // Handle Escape when ready and no popup/modal is open: clear non-empty input first, else quit
+        if (root.ready && event.key === Qt.Key_Escape && !promptBar.popupVisible && !modelModal.visible && !diffInspector.visible) {
+            if (promptBar.inputText.length > 0) {
+                promptBar.inputText = "";
+                root.historyIndex = root.inputHistory.length;
+            } else {
+                Qt.quit();
+            }
             event.accepted = true;
             return;
         }
@@ -504,8 +527,9 @@ Terminal {
 
         onRequestSubmitted: text => root.submitRequest(text)
         onPermissionChosen: index => root.choosePermission(index)
-        onOpenModelPickerRequested: () => modelModal.open()
-        onOpenDiffInspectorRequested: () => diffInspector.open()
+        onPermissionHovered: index => root.permissionIndex = index
+        onOpenModelPickerRequested: () => root.openModelPicker()
+        onOpenDiffInspectorRequested: () => root.openDiffInspector()
         onInterruptRequested: () => root.interruptAgent()
     }
 
@@ -516,6 +540,7 @@ Terminal {
         y: 0
         width: root.width
         currentModel: root.activeModel
+        onSwitchToDiffRequested: () => root.openDiffInspector()
         onModelSelected: modelId => {
             root.activeModel = modelId;
             toast.notify("Model: " + modelId, "info");
@@ -529,6 +554,8 @@ Terminal {
         x: 0
         y: 0
         width: root.width
+        targetFile: root.currentDiffFile
+        onSwitchToModelRequested: () => root.openModelPicker()
     }
 
     // Floating Background Task Notification Toast
@@ -642,10 +669,11 @@ Terminal {
                 } else if (root.agentStep === 2) {
                     root.addMessage(Main.ToolResultMessage, "Identified edge case in wide-character column clipping");
                 } else if (root.agentStep === 3) {
+                    root.currentDiffFile = "src/QmlTui/engine/TextGridBuffer.cpp";
                     root.currentToolName = "SecurityPatch";
                     root.currentToolTarget = "src/QmlTui/engine/TextGridBuffer.cpp";
                     root.currentToolAction = "Add displayWidth boundary clamp (+4, -1 lines)";
-                    root.addMessage(Main.DiffMessage, "", "src/QmlTui/engine/TextGridBuffer.cpp");
+                    root.addMessage(Main.DiffMessage, "", root.currentDiffFile);
 
                     if (!root.sessionAlwaysAllow) {
                         root.permissionIndex = 0;

@@ -1,6 +1,11 @@
 set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Gui Svg Pdf)
+find_package(Qt6 6.8 OPTIONAL_COMPONENTS Gui Svg Pdf QUIET)
+
+if(NOT TARGET Qt6::Gui)
+    message(STATUS "Skipping file_manager: Qt6::Gui not found")
+    return()
+endif()
 
 qt_add_executable(qmltui_file_manager src/main.cpp)
 
@@ -44,16 +49,26 @@ target_link_libraries(qmltui_file_manager PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
-    Qt6::Svg
-    Qt6::Pdf
     qmltui::core
     qmltui::controls
     qmltui::image
     qmltui::pty_view
 )
 
-if(QMLTUI_INSTALL_EXAMPLES)
-    install(TARGETS qmltui_file_manager RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+if(TARGET Qt6::Svg)
+    target_link_libraries(qmltui_file_manager PRIVATE Qt6::Svg)
+    target_compile_definitions(qmltui_file_manager PRIVATE FILE_MANAGER_HAVE_SVG=1)
+else()
+    target_compile_definitions(qmltui_file_manager PRIVATE FILE_MANAGER_HAVE_SVG=0)
+    message(STATUS "file_manager: Qt6::Svg not found, live SVG preview disabled")
+endif()
+
+if(TARGET Qt6::Pdf)
+    target_link_libraries(qmltui_file_manager PRIVATE Qt6::Pdf)
+    target_compile_definitions(qmltui_file_manager PRIVATE FILE_MANAGER_HAVE_PDF=1)
+else()
+    target_compile_definitions(qmltui_file_manager PRIVATE FILE_MANAGER_HAVE_PDF=0)
+    message(STATUS "file_manager: Qt6::Pdf not found, live PDF preview disabled")
 endif()
 
 if(BUILD_TESTING AND TARGET qmltui::runner)

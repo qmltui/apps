@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 import QmlTui.Controls
@@ -18,18 +20,54 @@ Row {
         color: "#f8fafc"
 
         // Center the nine-pixel-wide mark with one pixel of padding on each side.
-        Circle { cx: 5; cy: 4; radius: 3; fill: false }
-        Circle { cx: 5; cy: 4; radius: 4; fill: false }
+        Circle {
+            cx: 5
+            cy: 4
+            radius: 3
+            fill: false
+        }
+        Circle {
+            cx: 5
+            cy: 4
+            radius: 4
+            fill: false
+        }
         // One surface preserves independent colors in the two halves of a cell.
         Polygon {
             closed: false
             color: "#00ff66"
-            points: [{ x: 6, y: 5 }, { x: 8, y: 7 }, { x: 6, y: 9 }]
+            points: [
+                {
+                    x: 6,
+                    y: 5
+                },
+                {
+                    x: 8,
+                    y: 7
+                },
+                {
+                    x: 6,
+                    y: 9
+                }
+            ]
         }
         Polygon {
             closed: false
             color: "#00ff66"
-            points: [{ x: 7, y: 5 }, { x: 9, y: 7 }, { x: 7, y: 9 }]
+            points: [
+                {
+                    x: 7,
+                    y: 5
+                },
+                {
+                    x: 9,
+                    y: 7
+                },
+                {
+                    x: 7,
+                    y: 9
+                }
+            ]
         }
     }
 
@@ -44,10 +82,30 @@ Row {
             color: "#f8fafc"
 
             // Adjacent outlines form a thick ring without painting its hollow center.
-            Circle { cx: 11; cy: 8; radius: 5; fill: false }
-            Circle { cx: 11; cy: 8; radius: 6; fill: false }
-            Circle { cx: 11; cy: 8; radius: 7; fill: false }
-            Circle { cx: 11; cy: 8; radius: 8; fill: false }
+            Circle {
+                cx: 11
+                cy: 8
+                radius: 5
+                fill: false
+            }
+            Circle {
+                cx: 11
+                cy: 8
+                radius: 6
+                fill: false
+            }
+            Circle {
+                cx: 11
+                cy: 8
+                radius: 7
+                fill: false
+            }
+            Circle {
+                cx: 11
+                cy: 8
+                radius: 8
+                fill: false
+            }
         }
 
         // Separate glyph layers keep green from recoloring white circle dots.
@@ -60,19 +118,71 @@ Row {
             // Polygon strokes are one dot wide; layer parallel chevrons for density.
             Polygon {
                 closed: false
-                points: [{ x: 12, y: 10 }, { x: 16, y: 14 }, { x: 12, y: 18 }]
+                points: [
+                    {
+                        x: 12,
+                        y: 10
+                    },
+                    {
+                        x: 16,
+                        y: 14
+                    },
+                    {
+                        x: 12,
+                        y: 18
+                    }
+                ]
             }
             Polygon {
                 closed: false
-                points: [{ x: 13, y: 10 }, { x: 17, y: 14 }, { x: 13, y: 18 }]
+                points: [
+                    {
+                        x: 13,
+                        y: 10
+                    },
+                    {
+                        x: 17,
+                        y: 14
+                    },
+                    {
+                        x: 13,
+                        y: 18
+                    }
+                ]
             }
             Polygon {
                 closed: false
-                points: [{ x: 14, y: 10 }, { x: 18, y: 14 }, { x: 14, y: 18 }]
+                points: [
+                    {
+                        x: 14,
+                        y: 10
+                    },
+                    {
+                        x: 18,
+                        y: 14
+                    },
+                    {
+                        x: 14,
+                        y: 18
+                    }
+                ]
             }
             Polygon {
                 closed: false
-                points: [{ x: 15, y: 10 }, { x: 19, y: 14 }, { x: 15, y: 18 }]
+                points: [
+                    {
+                        x: 15,
+                        y: 10
+                    },
+                    {
+                        x: 19,
+                        y: 14
+                    },
+                    {
+                        x: 15,
+                        y: 18
+                    }
+                ]
             }
         }
     }
@@ -105,7 +215,7 @@ Row {
             color: "#64748b"
         }
         Text {
-            text: "/help for commands · [F1] persistent · [F2] model"
+            text: "/help for commands · [F2] model · [F3] diff"
             color: "#64748b"
         }
         Text {

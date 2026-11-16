@@ -1,4 +1,3 @@
-find_package(Qt6 REQUIRED COMPONENTS Gui)
 include(FetchContent)
 
 set(BUILD_MD4QT_TESTS OFF CACHE BOOL "" FORCE)
@@ -63,7 +62,6 @@ target_compile_definitions(qmltui_markdown_viewer_module PRIVATE MD4QT_QT_SUPPOR
 target_link_libraries(qmltui_markdown_viewer_module PRIVATE
     Qt6::Core
     Qt6::Qml
-    Qt6::Gui
     qmltui::core
     qmltui::controls
     md4qt::md4qt
@@ -75,10 +73,6 @@ target_link_libraries(qmltui_markdown_viewer PRIVATE
     Qt6::Qml
     qmltui_markdown_viewer_moduleplugin
 )
-
-if(QMLTUI_INSTALL_EXAMPLES)
-    install(TARGETS qmltui_markdown_viewer RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
 
 if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_markdown_viewer PRIVATE qmltui::runner)

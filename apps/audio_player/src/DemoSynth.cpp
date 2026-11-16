@@ -2,35 +2,37 @@
 
 #include <algorithm>
 #include <cmath>
-#include <numbers>
 
 namespace cyber {
 
-DemoTrackInfo DemoSynth::trackInfo(int preset)
-{
+namespace {
+constexpr double kPi = 3.14159265358979323846;
+} // namespace
+
+DemoTrackInfo DemoSynth::trackInfo(int preset) {
     switch (std::clamp(preset, 0, kDemoTrackCount - 1)) {
     case 0:
-        return { QStringLiteral("Synthwave Runner"), QStringLiteral("Neon Pulse"), 138, 165000, 320 };
+        return {QStringLiteral("Synthwave Runner"), QStringLiteral("Neon Pulse"), 138, 165000, 320};
     case 1:
-        return { QStringLiteral("Acid Overdrive"), QStringLiteral("SubGrid"), 145, 118000, 256 };
+        return {QStringLiteral("Acid Overdrive"), QStringLiteral("SubGrid"), 145, 118000, 256};
     case 2:
-        return { QStringLiteral("Nightcity Sub Protocol"), QStringLiteral("CyberCore"), 110, 200000, 320 };
+        return {QStringLiteral("Nightcity Sub Protocol"), QStringLiteral("CyberCore"), 110, 200000,
+                320};
     case 3:
-        return { QStringLiteral("Phosphor Horizon"), QStringLiteral("Demoscene"), 126, 150000, 192 };
+        return {QStringLiteral("Phosphor Horizon"), QStringLiteral("Demoscene"), 126, 150000, 192};
     default:
-        return { QStringLiteral("Bitcrushed Pulse"), QStringLiteral("Chiptune Matrix"), 160, 132000, 320 };
+        return {QStringLiteral("Bitcrushed Pulse"), QStringLiteral("Chiptune Matrix"), 160, 132000,
+                320};
     }
 }
 
-void DemoSynth::reset()
-{
+void DemoSynth::reset() {
     const int savedPreset = m_preset;
     *this = DemoSynth();
     m_preset = savedPreset;
 }
 
-void DemoSynth::setTrackPreset(int preset)
-{
+void DemoSynth::setTrackPreset(int preset) {
     m_preset = std::clamp(preset, 0, kDemoTrackCount - 1);
     m_tick = 0;
     m_beatIndex = -1;
@@ -39,22 +41,21 @@ void DemoSynth::setTrackPreset(int preset)
     m_wavePhase = 0.0;
 }
 
-void DemoSynth::setTickCount(int tick)
-{
+void DemoSynth::setTickCount(int tick) {
     m_tick = std::max(0, tick);
     m_synthTime = m_tick * 0.06;
-    m_wavePhase = std::fmod(m_tick * 0.18, 2.0 * std::numbers::pi);
+    m_wavePhase = std::fmod(m_tick * 0.18, 2.0 * kPi);
 }
 
-DemoSynth::Frame DemoSynth::step()
-{
-    constexpr double kTwoPi = 2.0 * std::numbers::pi;
+DemoSynth::Frame DemoSynth::step() {
+    constexpr double kTwoPi = 2.0 * kPi;
 
     // Preset-specific timing & harmonic multipliers; preset 0 is the exact original 138 BPM track.
-    const int ticksPerBeat = (m_preset == 0) ? 13
-                           : (m_preset == 1) ? 12
-                           : (m_preset == 2) ? 16
-                           : (m_preset == 3) ? 14 : 11;
+    const int ticksPerBeat = (m_preset == 0)   ? 13
+                             : (m_preset == 1) ? 12
+                             : (m_preset == 2) ? 16
+                             : (m_preset == 3) ? 14
+                                               : 11;
     const double timeStep = (m_preset == 0) ? 0.06 : 0.06 * (13.0 / ticksPerBeat);
     const double phaseStep = (m_preset == 0) ? 0.18 : (0.15 + m_preset * 0.04);
 
@@ -97,7 +98,8 @@ DemoSynth::Frame DemoSynth::step()
             base = (snareEnergy + synthArp) * acidBoost;
         } else {
             // High-mid & treble: hi-hats, noise and air
-            const double hiHat = std::abs(std::cos(m_synthTime * (12.0 + m_preset * 1.5) + i)) * 0.4;
+            const double hiHat =
+                std::abs(std::cos(m_synthTime * (12.0 + m_preset * 1.5) + i)) * 0.4;
             const double air = std::abs(std::sin(m_synthTime * 2.0 + i * 0.5)) * 0.25;
             base = (hiHat + air) * chipBoost;
         }
@@ -109,10 +111,11 @@ DemoSynth::Frame DemoSynth::step()
     const double harmonicRatio = (m_preset == 0) ? 2.2 : (1.8 + m_preset * 0.5);
     const double cycles = (m_preset == 2) ? 3.0 : (m_preset == 4) ? 6.0 : 4.0;
     for (int i = 0; i < kScopePoints; ++i) {
-        const double x = (double(i) / kScopePoints) * cycles * std::numbers::pi;
-        double l = std::sin(x + m_wavePhase) + 0.4 * std::sin(x * harmonicRatio - m_wavePhase * 1.4);
-        double r = std::sin(x + m_wavePhase + std::numbers::pi / 2)
-                 + 0.4 * std::sin(x * harmonicRatio - m_wavePhase * 1.4 + std::numbers::pi / 2);
+        const double x = (double(i) / kScopePoints) * cycles * kPi;
+        double l =
+            std::sin(x + m_wavePhase) + 0.4 * std::sin(x * harmonicRatio - m_wavePhase * 1.4);
+        double r = std::sin(x + m_wavePhase + kPi / 2) +
+                   0.4 * std::sin(x * harmonicRatio - m_wavePhase * 1.4 + kPi / 2);
         if (m_preset == 4) {
             // Quantize slightly for chiptune character on preset 4
             l = std::round(l * 4.0) / 4.0;

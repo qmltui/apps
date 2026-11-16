@@ -11,6 +11,12 @@ Terminal {
 
     PlcController {
         id: plc
+        onActiveTabChanged: {
+            if (plc.activeTab === PlcTypes.Alarms)
+                alarmsView.focusAuditTable();
+            else
+                rootWindow.forceActiveFocus();
+        }
         onConfirmationRequested: (dialogTitle, dialogMessage, isFault) => {
             confirmDlg.showPrompt(dialogTitle, dialogMessage, isFault);
         }
@@ -170,6 +176,7 @@ Terminal {
 
             // PAGE 2 [F2]: ALARMS & AUDIT LOG
             AlarmsView {
+                id: alarmsView
                 visible: plc.activeTab === PlcTypes.Alarms
                 eventRows: plc.eventRows
                 errorCount: plc.errorCount

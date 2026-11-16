@@ -15,6 +15,13 @@ Popup {
     width: 62
     height: 21
 
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_Question || event.text === "?") {
+            root.close();
+            event.accepted = true;
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         color: Theme.bgModal

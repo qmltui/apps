@@ -1,13 +1,5 @@
 qt_add_executable(qmltui_screensaver
     src/main.cpp
-    src/DoomFireItem.h
-    src/DoomFireItem.cpp
-    src/PipesItem.h
-    src/PipesItem.cpp
-    src/DonutItem.h
-    src/DonutItem.cpp
-    src/LifeItem.h
-    src/LifeItem.cpp
 )
 
 qt_add_qml_module(qmltui_screensaver

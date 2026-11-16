@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 
@@ -6,19 +8,7 @@ Terminal {
     color: "#000000"
 
     property int currentMode: 0
-    readonly property var modeNames: [
-        qsTr("STARFIELD"),
-        qsTr("MYSTIFY"),
-        qsTr("DOOM FIRE"),
-        qsTr("3D TESSERACT"),
-        qsTr("PLASMA"),
-        qsTr("MATRIX RAIN"),
-        qsTr("3D PIPES"),
-        qsTr("ASCII DONUT"),
-        qsTr("GAME OF LIFE"),
-        qsTr("DVD LOGO"),
-        qsTr("LORENZ ATTRACTOR")
-    ]
+    readonly property var modeNames: [qsTr("STARFIELD"), qsTr("MYSTIFY"), qsTr("DOOM FIRE"), qsTr("3D TESSERACT"), qsTr("PLASMA"), qsTr("MATRIX RAIN"), qsTr("3D PIPES"), qsTr("ASCII DONUT"), qsTr("GAME OF LIFE"), qsTr("DVD LOGO"), qsTr("LORENZ ATTRACTOR")]
 
     property int themeIndex: 0
     readonly property var themes: ["cyber", "emerald", "amber", "cga"]
@@ -30,38 +20,38 @@ Terminal {
 
     Keys.onPressed: event => {
         if (event.key === Qt.Key_Q || event.key === Qt.Key_Escape) {
-            Qt.quit()
-            event.accepted = true
+            Qt.quit();
+            event.accepted = true;
         } else if (event.key >= Qt.Key_1 && event.key <= Qt.Key_9) {
-            currentMode = event.key - Qt.Key_1
-            event.accepted = true
+            currentMode = event.key - Qt.Key_1;
+            event.accepted = true;
         } else if (event.key === Qt.Key_0) {
-            currentMode = 9
-            event.accepted = true
+            currentMode = 9;
+            event.accepted = true;
         } else if (event.key === Qt.Key_L) {
-            currentMode = 10
-            event.accepted = true
+            currentMode = 10;
+            event.accepted = true;
         } else if (event.key === Qt.Key_Tab) {
-            currentMode = (currentMode + 1) % modeNames.length
-            event.accepted = true
+            currentMode = (currentMode + 1) % modeNames.length;
+            event.accepted = true;
         } else if (event.key === Qt.Key_Backtab) {
-            currentMode = (currentMode + modeNames.length - 1) % modeNames.length
-            event.accepted = true
+            currentMode = (currentMode + modeNames.length - 1) % modeNames.length;
+            event.accepted = true;
         } else if (event.key === Qt.Key_Space) {
-            isPaused = !isPaused
-            event.accepted = true
+            isPaused = !isPaused;
+            event.accepted = true;
         } else if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal) {
-            speedMultiplier = Math.min(3.0, speedMultiplier + 0.25)
-            event.accepted = true
+            speedMultiplier = Math.min(3.0, speedMultiplier + 0.25);
+            event.accepted = true;
         } else if (event.key === Qt.Key_Minus || event.key === Qt.Key_Underscore) {
-            speedMultiplier = Math.max(0.25, speedMultiplier - 0.25)
-            event.accepted = true
+            speedMultiplier = Math.max(0.25, speedMultiplier - 0.25);
+            event.accepted = true;
         } else if (event.key === Qt.Key_C) {
-            themeIndex = (themeIndex + 1) % themes.length
-            event.accepted = true
+            themeIndex = (themeIndex + 1) % themes.length;
+            event.accepted = true;
         } else if (event.key === Qt.Key_H) {
-            showHud = !showHud
-            event.accepted = true
+            showHud = !showHud;
+            event.accepted = true;
         }
     }
 
@@ -82,9 +72,7 @@ Terminal {
                 anchors.left: parent.left
                 anchors.leftMargin: 1
                 anchors.top: parent.top
-                text: parent.width < 80
-                      ? qsTr("RETRO SCREENSAVER")
-                      : qsTr("RETRO SCREENSAVER // DEMOSCENE SHOWCASE")
+                text: parent.width < 80 ? qsTr("RETRO SCREENSAVER") : qsTr("RETRO SCREENSAVER // DEMOSCENE SHOWCASE")
                 color: "#38bdf8"
                 bold: true
             }
@@ -102,9 +90,7 @@ Terminal {
                 anchors.left: parent.left
                 anchors.leftMargin: 1
                 anchors.bottom: parent.bottom
-                text: parent.width < 90
-                      ? qsTr("[1-0,L] SELECT · TAB: CYCLE (%1/%2)").arg(rootWindow.currentMode + 1).arg(rootWindow.modeNames.length)
-                      : qsTr("[1]STAR [2]MYST [3]FIRE [4]CUBE [5]PLAS [6]RAIN [7]PIPE [8]DONUT [9]LIFE [0]DVD [L]LRNZ")
+                text: parent.width < 90 ? qsTr("[1-0,L] SELECT · TAB: CYCLE (%1/%2)").arg(rootWindow.currentMode + 1).arg(rootWindow.modeNames.length) : qsTr("[1]STAR [2]MYST [3]FIRE [4]CUBE [5]PLAS [6]RAIN [7]PIPE [8]DONUT [9]LIFE [0]DVD [L]LRNZ")
                 color: "#94a3b8"
             }
 
@@ -112,12 +98,7 @@ Terminal {
                 anchors.right: parent.right
                 anchors.rightMargin: 1
                 anchors.bottom: parent.bottom
-                text: parent.width < 75
-                      ? qsTr("%1 · %2").arg(rootWindow.currentTheme.toUpperCase()).arg(rootWindow.isPaused ? qsTr("PAUSED") : qsTr("RUN"))
-                      : qsTr("%1 · %2x · %3")
-                            .arg(rootWindow.currentTheme.toUpperCase())
-                            .arg(rootWindow.speedMultiplier.toFixed(2))
-                            .arg(rootWindow.isPaused ? qsTr("PAUSED") : qsTr("RUNNING"))
+                text: parent.width < 75 ? qsTr("%1 · %2").arg(rootWindow.currentTheme.toUpperCase()).arg(rootWindow.isPaused ? qsTr("PAUSED") : qsTr("RUN")) : qsTr("%1 · %2x · %3").arg(rootWindow.currentTheme.toUpperCase()).arg(rootWindow.speedMultiplier.toFixed(2)).arg(rootWindow.isPaused ? qsTr("PAUSED") : qsTr("RUNNING"))
                 color: rootWindow.isPaused ? "#f59e0b" : "#4ade80"
                 bold: true
             }
@@ -239,9 +220,7 @@ Terminal {
                 anchors.left: parent.left
                 anchors.leftMargin: 1
                 anchors.verticalCenter: parent.verticalCenter
-                text: parent.width < 75
-                      ? qsTr("1-0,L: MODE · TAB · SPACE · +/- · C · H · Q")
-                      : qsTr("1-0, L: MODE  ·  TAB: CYCLE  ·  SPACE: PAUSE  ·  +/-: SPD  ·  C: THEME  ·  H: HUD  ·  Q: QUIT")
+                text: parent.width < 75 ? qsTr("1-0,L: MODE · TAB · SPACE · +/- · C · H · Q") : qsTr("1-0, L: MODE  ·  TAB: CYCLE  ·  SPACE: PAUSE  ·  +/-: SPD  ·  C: THEME  ·  H: HUD  ·  Q: QUIT")
                 color: "#64748b"
             }
         }

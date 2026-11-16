@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 import QmlTui.Controls
@@ -5,7 +7,9 @@ import QmlTui.Controls
 Rectangle {
     id: toast
 
-    Theme { id: theme }
+    Theme {
+        id: theme
+    }
 
     property string message: ""
     property string status: "success"
@@ -17,10 +21,11 @@ Rectangle {
     visible: false
 
     function notify(msg, stat) {
-        message = msg || ""
-        if (stat) status = stat
-        visible = true
-        dismissTimer.restart()
+        message = msg || "";
+        if (stat)
+            status = stat;
+        visible = true;
+        dismissTimer.restart();
     }
 
     Timer {

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 
@@ -37,20 +39,32 @@ Column {
                         "text": "src/QmlTui/Engine",
                         "expanded": true,
                         "children": [
-                            { "text": "InlineRenderer.cpp [Optimized]", "expanded": false },
-                            { "text": "TextGridBuffer.cpp [Verified]", "expanded": false }
+                            {
+                                "text": "InlineRenderer.cpp [Optimized]",
+                                "expanded": false
+                            },
+                            {
+                                "text": "TextGridBuffer.cpp [Verified]",
+                                "expanded": false
+                            }
                         ]
                     },
                     {
                         "text": "apps/agent_stream",
                         "expanded": true,
                         "children": [
-                            { "text": "Main.qml [Active]", "expanded": false },
-                            { "text": "PinnedPromptBar.qml [Clean]", "expanded": false }
+                            {
+                                "text": "Main.qml [Active]",
+                                "expanded": false
+                            },
+                            {
+                                "text": "PinnedPromptBar.qml [Clean]",
+                                "expanded": false
+                            }
                         ]
                     }
                 ]
-            }
+            };
         }
     }
 }

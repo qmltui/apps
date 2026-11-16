@@ -5,12 +5,13 @@ set(qtop_sources
 
 qt_add_executable(qmltui_qtop
     src/main.cpp
-    ${qtop_sources}
 )
 
 qt_add_qml_module(qmltui_qtop
     URI QtopDemo
     VERSION 1.0
+    SOURCES
+        ${qtop_sources}
     QML_FILES
         qml/Main.qml
         qml/QtopPanel.qml
@@ -27,10 +28,6 @@ target_link_libraries(qmltui_qtop PRIVATE
     qmltui::core
     qmltui::controls
 )
-
-if(QMLTUI_INSTALL_EXAMPLES)
-    install(TARGETS qmltui_qtop RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
 
 if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_qtop PRIVATE qmltui::runner)

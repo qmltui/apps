@@ -1,5 +1,5 @@
 
-/** @param {Terminal} terminal */
+/** @param {Runner} terminal */
 function main(terminal) {
     terminal.expectText("Ask anything")
     terminal.expectNoText("shell")

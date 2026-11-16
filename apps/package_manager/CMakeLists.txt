@@ -33,10 +33,6 @@ qt_add_qml_module(qmltui_package_manager
 target_include_directories(qmltui_package_manager PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(qmltui_package_manager PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
 
-if(QMLTUI_INSTALL_EXAMPLES)
-    install(TARGETS qmltui_package_manager RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
-
 if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_package_manager PRIVATE qmltui::runner)
     qmltui_add_scenario(

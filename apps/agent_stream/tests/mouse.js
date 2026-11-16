@@ -1,4 +1,4 @@
-/** @param {Terminal} terminal */
+/** @param {Runner} terminal */
 function main(terminal) {
     terminal.expectText("Ask anything")
     terminal.expectText("[F2] model")

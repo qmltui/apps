@@ -46,7 +46,25 @@ public:
     MdPalette() = default;
     ~MdPalette() = default;
 
-    bool operator==(const MdPalette &other) const = default;
+    bool operator==(const MdPalette& other) const {
+        return m_text == other.m_text && m_textMuted == other.m_textMuted &&
+               m_heading == other.m_heading && m_heading1Bg == other.m_heading1Bg &&
+               m_heading2 == other.m_heading2 && m_heading3 == other.m_heading3 &&
+               m_heading4 == other.m_heading4 && m_heading5 == other.m_heading5 &&
+               m_code == other.m_code && m_codeBg == other.m_codeBg &&
+               m_inlineCode == other.m_inlineCode && m_inlineCodeBg == other.m_inlineCodeBg &&
+               m_quote == other.m_quote && m_border == other.m_border && m_link == other.m_link &&
+               m_success == other.m_success && m_warning == other.m_warning &&
+               m_syntaxKeyword == other.m_syntaxKeyword && m_syntaxType == other.m_syntaxType &&
+               m_syntaxFunction == other.m_syntaxFunction &&
+               m_syntaxString == other.m_syntaxString && m_syntaxComment == other.m_syntaxComment &&
+               m_syntaxNumber == other.m_syntaxNumber &&
+               m_syntaxPreprocessor == other.m_syntaxPreprocessor &&
+               m_syntaxSymbol == other.m_syntaxSymbol && m_searchMatchBg == other.m_searchMatchBg &&
+               m_searchMatchFg == other.m_searchMatchFg &&
+               m_activeMatchBg == other.m_activeMatchBg && m_activeMatchFg == other.m_activeMatchFg;
+    }
+    bool operator!=(const MdPalette& other) const { return !(*this == other); }
 
     uint32_t resolvedText() const { return Color::resolve(m_text, 0xFFC0CAF5); }
     uint32_t resolvedTextMuted() const { return Color::resolve(m_textMuted, 0xFF565F89); }
@@ -73,25 +91,44 @@ public:
 
     uint32_t resolve(MdRole role) const {
         switch (role) {
-        case MdRole::Transparent: return 0x00000000;
-        case MdRole::Text: return resolvedText();
-        case MdRole::TextMuted: return resolvedTextMuted();
-        case MdRole::Heading1: return resolvedHeading();
-        case MdRole::Heading1Bg: return resolvedHeading1Bg();
-        case MdRole::Heading2: return resolvedHeading2();
-        case MdRole::Heading3: return resolvedHeading3();
-        case MdRole::Heading4: return resolvedHeading4();
-        case MdRole::Heading5: return resolvedHeading5();
-        case MdRole::Heading6: return resolvedTextMuted();
-        case MdRole::Link: return resolvedLink();
-        case MdRole::Code: return resolvedCode();
-        case MdRole::CodeBackground: return resolvedCodeBg();
-        case MdRole::InlineCode: return resolvedInlineCode();
-        case MdRole::InlineCodeBackground: return resolvedInlineCodeBg();
-        case MdRole::Quote: return resolvedQuote();
-        case MdRole::Border: return resolvedBorder();
-        case MdRole::Success: return resolvedSuccess();
-        case MdRole::Warning: return resolvedWarning();
+        case MdRole::Transparent:
+            return 0x00000000;
+        case MdRole::Text:
+            return resolvedText();
+        case MdRole::TextMuted:
+            return resolvedTextMuted();
+        case MdRole::Heading1:
+            return resolvedHeading();
+        case MdRole::Heading1Bg:
+            return resolvedHeading1Bg();
+        case MdRole::Heading2:
+            return resolvedHeading2();
+        case MdRole::Heading3:
+            return resolvedHeading3();
+        case MdRole::Heading4:
+            return resolvedHeading4();
+        case MdRole::Heading5:
+            return resolvedHeading5();
+        case MdRole::Heading6:
+            return resolvedTextMuted();
+        case MdRole::Link:
+            return resolvedLink();
+        case MdRole::Code:
+            return resolvedCode();
+        case MdRole::CodeBackground:
+            return resolvedCodeBg();
+        case MdRole::InlineCode:
+            return resolvedInlineCode();
+        case MdRole::InlineCodeBackground:
+            return resolvedInlineCodeBg();
+        case MdRole::Quote:
+            return resolvedQuote();
+        case MdRole::Border:
+            return resolvedBorder();
+        case MdRole::Success:
+            return resolvedSuccess();
+        case MdRole::Warning:
+            return resolvedWarning();
         case MdRole::SyntaxKeyword:
             return Color::resolve(m_syntaxKeyword, 0xFFBB9AF7);
         case MdRole::SyntaxType:

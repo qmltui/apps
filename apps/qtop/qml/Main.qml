@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQml
 import QmlTui
 import QmlTui.Controls
+import QtopDemo
 
 Terminal {
     id: root
@@ -23,9 +24,21 @@ Terminal {
     property bool memoryPanelVisible: true
     property bool networkPanelVisible: true
     property bool processPanelVisible: true
+    property var inspectedProcess: ({})
     readonly property bool sidePanelsVisible: memoryPanelVisible || networkPanelVisible
     readonly property bool upperPanelsVisible: processPanelVisible || sidePanelsVisible
     readonly property bool cpuFocusMode: cpuPanelVisible && !upperPanelsVisible
+
+    function inspectProcess(row) {
+        const targetRow = row >= 0 ? row : 0;
+        if (processTable.selectedRow < 0 && systemModel.totalProcesses > 0)
+            processTable.selectedRow = 0;
+        const details = systemModel.processDetails(targetRow);
+        if (!details || details.pid === undefined)
+            return;
+        root.inspectedProcess = details;
+        processInspectPopup.open();
+    }
 
     QtopModel {
         id: systemModel
@@ -39,8 +52,21 @@ Terminal {
     }
 
     function handleKeyEvent(event) {
+        if (processInspectPopup.visible) {
+            if (event.key === Qt.Key_Escape || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                processInspectPopup.close();
+                event.accepted = true;
+            } else if (event.key === Qt.Key_Q) {
+                Qt.quit();
+                event.accepted = true;
+            }
+            return;
+        }
         if (event.key === Qt.Key_Q || event.key === Qt.Key_Escape) {
             Qt.quit();
+            event.accepted = true;
+        } else if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && root.processPanelVisible) {
+            root.inspectProcess(processTable.selectedRow);
             event.accepted = true;
         } else if (event.key === Qt.Key_Space) {
             systemModel.togglePaused();
@@ -230,7 +256,17 @@ Terminal {
                     anchors.left: parent.left
                     anchors.right: parent.right
                     focus: true
+                    selectedRow: 0
                     Keys.onPressed: event => root.handleKeyEvent(event)
+                    onRowActivated: index => root.inspectProcess(index)
+                    onHeaderClicked: column => {
+                        if (column === 0)
+                            systemModel.sortByPid();
+                        else if (column === 5)
+                            systemModel.sortByMemory();
+                        else if (column === 6)
+                            systemModel.sortByCpu();
+                    }
                     model: systemModel
                     columns: systemModel.columnDefinitions()
                     columnWidthProvider: column => {
@@ -731,6 +767,87 @@ Terminal {
             text: qsTr("[q/esc] quit ")
             color: root.pinkColor
             bold: true
+        }
+    }
+
+    Popup {
+        id: processInspectPopup
+
+        width: Math.min(76, Math.max(40, root.width - 8))
+        height: 11
+        anchors.centerIn: parent
+        modal: true
+        dimBackground: true
+        closePolicy: Popup.CloseOnEscape
+        initialFocusItem: inspectBody
+
+        onClosed: {
+            if (root.processPanelVisible)
+                processTable.forceActiveFocus();
+        }
+
+        FocusScope {
+            id: inspectBody
+
+            anchors.fill: parent
+            focus: true
+            Keys.onPressed: event => {
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Escape) {
+                    processInspectPopup.close();
+                    event.accepted = true;
+                } else if (event.key === Qt.Key_Q) {
+                    Qt.quit();
+                    event.accepted = true;
+                }
+            }
+
+            QtopPanel {
+                anchors.fill: parent
+                color: root.panelColor
+                border.color: root.cyanColor
+
+                title: Text {
+                    text: qsTr("process  PID %1").arg(root.inspectedProcess.pid !== undefined ? root.inspectedProcess.pid : "")
+                    color: root.cyanColor
+                }
+                titleTrailing: Text {
+                    text: String(root.inspectedProcess.program || "")
+                    color: root.greenColor
+                }
+                footer: Text {
+                    text: qsTr("Enter/Esc close")
+                    color: root.mutedColor
+                }
+
+                Column {
+                    anchors.fill: parent
+                    anchors.leftMargin: 1
+                    anchors.rightMargin: 1
+                    spacing: 1
+
+                    Text {
+                        width: parent.width
+                        text: qsTr("User: %1   Threads: %2   CPU: %3   Memory: %4").arg(String(root.inspectedProcess.user || "")).arg(String(root.inspectedProcess.threads !== undefined ? root.inspectedProcess.threads : 0)).arg(String(root.inspectedProcess.cpuText || "0.0%")).arg(String(root.inspectedProcess.memoryText || "0 B"))
+                        color: root.textColor
+                        clip: true
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: qsTr("Command:")
+                        color: root.yellowColor
+                        bold: true
+                    }
+
+                    Text {
+                        width: parent.width
+                        height: 4
+                        text: String(root.inspectedProcess.command || "")
+                        color: root.textColor
+                        wrapMode: Text.WrapAnywhere
+                    }
+                }
+            }
         }
     }
 }

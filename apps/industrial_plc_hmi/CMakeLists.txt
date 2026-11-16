@@ -26,13 +26,16 @@ set(plc_qml_files
 
 qt_add_executable(qmltui_industrial_plc_hmi src/main.cpp)
 
+set(plc_resources)
+if(BUILD_TESTING)
+    list(APPEND plc_resources tests/plc.js)
+endif()
+
 qt_add_qml_module(qmltui_industrial_plc_hmi
     URI IndustrialPlcHmi
     VERSION 1.0
     QML_FILES ${plc_qml_files}
-
-    RESOURCES
-        tests/plc.js
+    RESOURCES ${plc_resources}
 
     DEPENDENCIES
         TARGET qmltui::core

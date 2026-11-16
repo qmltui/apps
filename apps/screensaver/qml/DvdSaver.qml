@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQml
 import QmlTui
 
@@ -27,19 +29,19 @@ Item {
 
     function getPalette() {
         if (theme === "amber") {
-            return ["#f59e0b", "#fbbf24", "#f97316", "#fde047", "#ea580c", "#ffffff"]
+            return ["#f59e0b", "#fbbf24", "#f97316", "#fde047", "#ea580c", "#ffffff"];
         } else if (theme === "emerald") {
-            return ["#10b981", "#34d399", "#6ee7b7", "#4ade80", "#22c55e", "#ffffff"]
+            return ["#10b981", "#34d399", "#6ee7b7", "#4ade80", "#22c55e", "#ffffff"];
         } else if (theme === "cga") {
-            return ["#55ffff", "#ff55ff", "#ffff55", "#55ff55", "#ff5555", "#ffffff"]
+            return ["#55ffff", "#ff55ff", "#ffff55", "#55ff55", "#ff5555", "#ffffff"];
         } else { // cyber
-            return ["#38bdf8", "#f43f5e", "#a855f7", "#22d3ee", "#e879f9", "#ffffff"]
+            return ["#38bdf8", "#f43f5e", "#a855f7", "#22d3ee", "#e879f9", "#ffffff"];
         }
     }
 
     readonly property string currentColor: {
-        let pal = getPalette()
-        return pal[colorIndex % pal.length]
+        let pal = getPalette();
+        return pal[colorIndex % pal.length];
     }
 
     Timer {
@@ -48,69 +50,71 @@ Item {
         running: root.active && !root.paused
         repeat: true
         onTriggered: {
-            let w = root.width
-            let h = root.height
-            if (w <= logoWidth + 2 || h <= logoHeight + 2) return
+            let w = root.width;
+            let h = root.height;
+            if (w <= root.logoWidth + 2 || h <= root.logoHeight + 2)
+                return;
+            let pal = root.getPalette();
+            let speed = 1.0 * root.speedMultiplier;
 
-            let pal = getPalette()
-            let speed = 1.0 * root.speedMultiplier
-
-            let nextX = logoX + vx * speed
-            let nextY = logoY + vy * speed
-            let hitX = false
-            let hitY = false
+            let nextX = root.logoX + root.vx * speed;
+            let nextY = root.logoY + root.vy * speed;
+            let hitX = false;
+            let hitY = false;
 
             if (nextX <= 0) {
-                nextX = 0
-                vx = Math.abs(vx)
-                hitX = true
-            } else if (nextX >= w - logoWidth) {
-                nextX = w - logoWidth
-                vx = -Math.abs(vx)
-                hitX = true
+                nextX = 0;
+                root.vx = Math.abs(root.vx);
+                hitX = true;
+            } else if (nextX >= w - root.logoWidth) {
+                nextX = w - root.logoWidth;
+                root.vx = -Math.abs(root.vx);
+                hitX = true;
             }
 
             if (nextY <= 0) {
-                nextY = 0
-                vy = Math.abs(vy)
-                hitY = true
-            } else if (nextY >= h - logoHeight) {
-                nextY = h - logoHeight
-                vy = -Math.abs(vy)
-                hitY = true
+                nextY = 0;
+                root.vy = Math.abs(root.vy);
+                hitY = true;
+            } else if (nextY >= h - root.logoHeight) {
+                nextY = h - root.logoHeight;
+                root.vy = -Math.abs(root.vy);
+                hitY = true;
             }
 
             if (hitX || hitY) {
-                totalBounces++
-                colorIndex = (colorIndex + 1) % pal.length
+                root.totalBounces++;
+                root.colorIndex = (root.colorIndex + 1) % pal.length;
             }
 
             if (hitX && hitY) {
-                cornerHits++
-                flashTimer = 20
+                root.cornerHits++;
+                root.flashTimer = 20;
             }
 
-            if (flashTimer > 0) flashTimer--
+            if (root.flashTimer > 0)
+                root.flashTimer--;
 
             // Push old position into trails
             let currentSnap = {
-                x: Math.round(logoX),
-                y: Math.round(logoY),
-                col: currentColor
-            }
-            trails.push(currentSnap)
-            if (trails.length > 3) trails.shift()
+                x: Math.round(root.logoX),
+                y: Math.round(root.logoY),
+                col: root.currentColor
+            };
+            root.trails.push(currentSnap);
+            if (root.trails.length > 3)
+                root.trails.shift();
 
-            logoX = nextX
-            logoY = nextY
+            root.logoX = nextX;
+            root.logoY = nextY;
         }
     }
 
     // Motion Echo Trail 1
     Rectangle {
-        visible: trails.length >= 2
-        x: trails.length >= 2 ? trails[0].x : 0
-        y: trails.length >= 2 ? trails[0].y : 0
+        visible: root.trails.length >= 2
+        x: root.trails.length >= 2 ? root.trails[0].x : 0
+        y: root.trails.length >= 2 ? root.trails[0].y : 0
         width: root.logoWidth
         height: root.logoHeight
         border.style: Border.Single
@@ -120,9 +124,9 @@ Item {
 
     // Motion Echo Trail 2
     Rectangle {
-        visible: trails.length >= 3
-        x: trails.length >= 3 ? trails[1].x : 0
-        y: trails.length >= 3 ? trails[1].y : 0
+        visible: root.trails.length >= 3
+        x: root.trails.length >= 3 ? root.trails[1].x : 0
+        y: root.trails.length >= 3 ? root.trails[1].y : 0
         width: root.logoWidth
         height: root.logoHeight
         border.style: Border.Single

@@ -9,8 +9,24 @@ Popup {
 
     required property AudioEngine engine
     property bool appendMode: true
+    // 0: pathInput, 1: load, 2: demo album, 3: cancel, 4: mode toggle
+    property int focusedAction: 0
 
-    signal closedAndRestoreFocus()
+    signal closedAndRestoreFocus
+
+    function setFocusedAction(action: int) {
+        dialog.focusedAction = action;
+        if (action === 0)
+            pathInput.focus = true;
+        else
+            dialog.focus = true;
+    }
+
+    function loadDemo() {
+        dialog.engine.loadDemoAlbum();
+        dialog.close();
+        dialog.closedAndRestoreFocus();
+    }
 
     function submitPath() {
         const trimmed = pathInput.text.trim();
@@ -24,6 +40,18 @@ Popup {
         dialog.closedAndRestoreFocus();
     }
 
+    function activateFocusedAction() {
+        if (dialog.focusedAction === 2) {
+            dialog.loadDemo();
+        } else if (dialog.focusedAction === 3) {
+            dialog.close();
+        } else if (dialog.focusedAction === 4) {
+            dialog.appendMode = !dialog.appendMode;
+        } else {
+            dialog.submitPath();
+        }
+    }
+
     modal: true
     dimBackground: true
     closePolicy: Popup.CloseOnEscape
@@ -32,22 +60,46 @@ Popup {
     height: 9
 
     onOpened: {
-        pathInput.focus = true;
+        dialog.setFocusedAction(0);
     }
 
     onClosed: {
         dialog.closedAndRestoreFocus();
     }
 
-    Keys.onPressed: (event) => {
+    Keys.onPressed: event => {
         if (event.key === Qt.Key_Escape) {
             dialog.close();
             event.accepted = true;
-        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-            dialog.submitPath();
+        } else if ((event.modifiers & (Qt.ControlModifier | Qt.AltModifier)) && event.key === Qt.Key_D) {
+            dialog.loadDemo();
+            event.accepted = true;
+        } else if ((event.modifiers & (Qt.ControlModifier | Qt.AltModifier)) && event.key === Qt.Key_M) {
+            dialog.appendMode = !dialog.appendMode;
             event.accepted = true;
         } else if (event.key === Qt.Key_Tab) {
-            dialog.appendMode = !dialog.appendMode;
+            dialog.setFocusedAction((dialog.focusedAction + 1) % 5);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Backtab) {
+            dialog.setFocusedAction((dialog.focusedAction + 4) % 5);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Down && (dialog.focusedAction === 0 || dialog.focusedAction === 4)) {
+            dialog.setFocusedAction(1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Up && dialog.focusedAction >= 1 && dialog.focusedAction <= 3) {
+            dialog.setFocusedAction(0);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Right && dialog.focusedAction >= 1 && dialog.focusedAction <= 3) {
+            dialog.setFocusedAction(dialog.focusedAction === 3 ? 1 : dialog.focusedAction + 1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Left && dialog.focusedAction >= 1 && dialog.focusedAction <= 3) {
+            dialog.setFocusedAction(dialog.focusedAction === 1 ? 3 : dialog.focusedAction - 1);
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            dialog.activateFocusedAction();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Space && dialog.focusedAction !== 0) {
+            dialog.activateFocusedAction();
             event.accepted = true;
         }
     }
@@ -79,8 +131,13 @@ Popup {
             }
             Text {
                 anchors.right: parent.right
-                text: dialog.appendMode ? "mode: append" : "mode: replace"
+                text: {
+                    const label = dialog.appendMode ? "mode: append" : "mode: replace";
+                    return dialog.focusedAction === 4 ? ("[" + label + "]") : label;
+                }
                 color: Theme.accent
+                bold: dialog.focusedAction === 4
+                underline: dialog.focusedAction === 4
                 MouseArea {
                     anchors.fill: parent
                     onClicked: dialog.appendMode = !dialog.appendMode
@@ -104,7 +161,7 @@ Popup {
                 id: pathInput
                 anchors.fill: parent
                 color: Theme.text
-                cursorVisible: true
+                cursorVisible: dialog.focusedAction === 0
                 cursorColor: Theme.accent
                 onAccepted: dialog.submitPath()
             }
@@ -114,29 +171,31 @@ Popup {
             spacing: 3
 
             Text {
-                text: "load"
+                text: dialog.focusedAction === 1 ? "[load]" : "load"
                 color: Theme.accent
                 bold: true
+                underline: dialog.focusedAction === 1
                 MouseArea {
                     anchors.fill: parent
                     onClicked: dialog.submitPath()
                 }
             }
             Text {
-                text: "demo album"
+                text: dialog.focusedAction === 2 ? "[demo album]" : "demo album"
                 color: Theme.header
+                bold: dialog.focusedAction === 2
+                underline: dialog.focusedAction === 2
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
-                        dialog.engine.loadDemoAlbum();
-                        dialog.close();
-                    }
+                    onClicked: dialog.loadDemo()
                 }
             }
             Text {
-                text: "cancel"
+                text: dialog.focusedAction === 3 ? "[cancel]" : "cancel"
                 color: Theme.text
-                dim: true
+                dim: dialog.focusedAction !== 3
+                bold: dialog.focusedAction === 3
+                underline: dialog.focusedAction === 3
                 MouseArea {
                     anchors.fill: parent
                     onClicked: dialog.close()

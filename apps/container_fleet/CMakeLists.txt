@@ -1,7 +1,5 @@
 qt_add_executable(qmltui_container_fleet
     src/main.cpp
-    src/FleetListModel.cpp
-    src/FleetListModel.h
 )
 
 qt_add_qml_module(qmltui_container_fleet
@@ -19,10 +17,6 @@ qt_add_qml_module(qmltui_container_fleet
 
 target_include_directories(qmltui_container_fleet PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(qmltui_container_fleet PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
-
-if(QMLTUI_INSTALL_EXAMPLES)
-    install(TARGETS qmltui_container_fleet RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-endif()
 
 if(BUILD_TESTING AND TARGET qmltui::runner)
     target_link_libraries(qmltui_container_fleet PRIVATE qmltui::runner)
