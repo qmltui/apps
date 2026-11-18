@@ -1,28 +1,28 @@
 # QmlTui Framework Technical Guide
 
-QmlTui is a modern retained-mode terminal UI framework designed for Qt 6.
+QmlTui is a retained-mode terminal UI framework for Qt 6.8+ and C++17.
 
 ## Retained-Mode Terminal Architecture
 
-Unlike traditional immediate-mode TUI libraries, QmlTui uses a scene graph and retained-mode terminal items:
+Unlike immediate-mode TUI libraries, QmlTui evaluates a declarative QML item tree into a double-buffered character-cell grid:
 
-1. **Items & Hierarchies**: Subclass `qmltui::Item` to provide custom rendering into `TextGridBuffer`.
-2. **Layout Engine**: Automatic declarative positioning with `Row`, `Column`, `GridLayout`, and `Anchors`.
-3. **QML Declarative Bindings**: Full reactive properties and signal-slot mechanisms.
-4. **Behavior on Properties**: Smooth animated value transitions in terminals.
-5. **Automation & Testing**: Native `Runner` closed-loop automation engine.
+1. **Items & Hierarchies**: Subclass `qmltui::Item` to render directly into `TextGridBuffer`.
+2. **Layout Engine**: Declarative positioning with `Row`, `Column`, `RowLayout`, `ColumnLayout`, `GridLayout`, `StackLayout`, and `Anchors`.
+3. **QML Declarative Bindings**: Reactive properties, `State` / `Transition`, and C++ `QAbstractItemModel` views.
+4. **Behavior on Properties**: Smooth animated value and color transitions in terminals.
+5. **Automation & Testing**: Headless `qmltui::Runner` closed-loop automation engine.
 
-## Core QML Modules
+## QML Modules
 
-- `QmlTui`: Core terminal primitives (`Terminal`, `Item`, `Rectangle`, `Text`, `Paragraph`, `ListView`, `ScrollView`, `TableView`, `TreeView`, `Scrollback`, `Canvas`, `AnimatedSprite`).
-- `QmlTui.Controls`: Pre-built interactive widgets (`Button`, `CheckBox`, `RadioButton`, `Slider`, `ComboBox`, `SpinBox`, `Dialog`, `Popup`, `Calendar`).
-- `QmlTui.Image`: Textual pixel art and image rendering (`Image`).
-- `QmlTui.PtyView`: Embedded Unix PTY virtual terminal host (`PtyView`).
+- `QmlTui`: Core primitives (`Terminal`, `Scrollback`, `Item`, `FocusScope`, `Popup`, `Rectangle`, `Text`, `TextInput`, `TextArea`, `ListView`, `TableView`, `TreeView`, `GridView`, `ScrollView`, `Canvas`).
+- `QmlTui.Controls`: Interactive controls (`Button`, `CheckBox`, `RadioButton`, `Slider`, `ComboBox`, `SpinBox`, `ProgressBar`, `BusyIndicator`, `Sparkline`, `TabBar`, `StackView`, `Panel`, `Dialog`, `ToolTip`).
+- `QmlTui.Image`: Terminal graphics (`Image`, `AnimatedSprite`).
+- `QmlTui.PtyView`: Embedded Unix PTY subshell (`PtyView`).
 
 ## Closed-Loop Agent Workflow
 
-Inspect initial frames or run scripted scenarios without launching full terminal emulators:
+Capture rendered frames or run scripted scenarios headlessly without an interactive TTY:
 
 ```bash
-QMLTUI_RUNNER_CAPTURE_AFTER_MS=0 ./build/examples/apps/markdown_viewer/qmltui_markdown_viewer
+qmltui-runner --clock virtual --print -- ./build/apps/markdown_viewer/qmltui_markdown_viewer
 ```

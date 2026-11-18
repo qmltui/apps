@@ -44,7 +44,7 @@ void MockFileSystem::reset() {
     item.size = children.size();
     item.modified = nowUtc.addDays(-2);
     item.permissions = perms;
-    item.owner = QStringLiteral("yosri:users");
+    item.owner = QStringLiteral("dev:users");
     item.mimeType = QStringLiteral("inode/directory");
     item.childNames = children;
     m_items.insert(path, item);
@@ -62,7 +62,7 @@ void MockFileSystem::reset() {
     item.size = size > 0 ? size : content.toUtf8().size();
     item.modified = nowUtc.addSecs(-3600 * (content.size() % 24 + 1));
     item.permissions = perms;
-    item.owner = QStringLiteral("yosri:users");
+    item.owner = QStringLiteral("dev:users");
     item.mimeType = mime;
     m_items.insert(path, item);
   };
@@ -120,12 +120,12 @@ void MockFileSystem::reset() {
 
   addFile(QStringLiteral("/workspace/CMakeLists.txt"),
           QStringLiteral("CMakeLists.txt"),
-          QStringLiteral("cmake_minimum_required(VERSION 3.22)\n"
+          QStringLiteral("cmake_minimum_required(VERSION 3.21)\n"
                          "project(FileManager VERSION 1.0.0 LANGUAGES CXX)\n\n"
-                         "set(CMAKE_CXX_STANDARD 20)\n"
+                         "set(CMAKE_CXX_STANDARD 17)\n"
                          "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n"
                          "find_package(Qt6 6.8 REQUIRED COMPONENTS Core Qml)\n"
-                         "find_package(QmlTui REQUIRED)\n\n"
+                         "find_package(QmlTui 0.6 REQUIRED)\n\n"
                          "qt_add_executable(qmltui_file_manager main.cpp)\n"
                          "target_link_libraries(qmltui_file_manager PRIVATE "
                          "Qt6::Core qmltui::core)"),
@@ -170,7 +170,7 @@ void MockFileSystem::reset() {
           QStringLiteral("architecture.md"),
           QStringLiteral(
               "# Architecture Overview\n\n"
-              "1. **Core Engine**: C++20 backend with reactive properties.\n"
+              "1. **Core Engine**: C++17 backend with reactive properties.\n"
               "2. **Declarative UI**: Pure QML frontend utilizing QmlTui.\n"
               "3. **Miller Navigation**: 3 synchronized reactive viewports."),
           QStringLiteral("text/markdown"));

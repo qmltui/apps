@@ -2,7 +2,6 @@ qt_add_executable(qmltui_twozero48 src/main.cpp)
 
 qt_add_qml_module(qmltui_twozero48
     URI TwoZero48
-    VERSION 1.0
     QML_FILES
         qml/Main.qml
     DEPENDENCIES
@@ -11,7 +10,7 @@ qt_add_qml_module(qmltui_twozero48
 
 target_link_libraries(qmltui_twozero48 PRIVATE Qt6::Core Qt6::Qml qmltui::core)
 
-if(COMMAND qmltui_wasm_app)   # browser build, see docs/guide/webassembly.md
+if(COMMAND qmltui_wasm_app)   # browser build, see docs/guides/webassembly.md
     qmltui_wasm_app(qmltui_twozero48)
 endif()
 

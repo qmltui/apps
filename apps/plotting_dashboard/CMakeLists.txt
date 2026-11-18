@@ -2,7 +2,6 @@ qt_add_executable(qmltui_plotting_dashboard src/main.cpp)
 
 qt_add_qml_module(qmltui_plotting_dashboard
     URI PlottingDashboard
-    VERSION 1.0
     QML_FILES
         qml/Main.qml
     DEPENDENCIES

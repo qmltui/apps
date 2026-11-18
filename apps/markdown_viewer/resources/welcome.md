@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 ```qml
 import QtQml
 import QmlTui
-import QmlTui.Examples.MarkdownViewer 1.0
+import QmlTui.Examples.MarkdownViewer
 
 Terminal {
     id: root

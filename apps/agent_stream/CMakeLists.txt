@@ -27,7 +27,6 @@ qt_add_executable(qmltui_agent_stream src/main.cpp)
 
 qt_add_qml_module(qmltui_agent_stream
     URI AgentStreamDemo
-    VERSION 1.0
     QML_FILES ${agent_stream_qml_files}
     DEPENDENCIES
         TARGET qmltui::core

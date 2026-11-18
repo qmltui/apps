@@ -1,30 +1,70 @@
 name: Applications
+
 on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
 jobs:
   main:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/checkout@v4
         with:
           repository: qmltui/qmltui
           path: qml-tui
+
+      - uses: seanmiddleditch/gha-setup-ninja@v5
+
       - uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
-          modules: qtmultimedia
-      - run: cmake -S . -B build -G Ninja -DFETCHCONTENT_SOURCE_DIR_QMLTUI=${{ github.workspace }}/qml-tui
-      - run: cmake --build build -j 4
-      - run: ctest --test-dir build -LE Demo --output-on-failure -j 4
+          modules: qtmultimedia qtpdf qtimageformats
+          cache: true
+
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DFETCHCONTENT_SOURCE_DIR_QMLTUI=${{ github.workspace }}/qml-tui
+
+      - name: Build
+        run: cmake --build build -j 4
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build -LE Demo --output-on-failure -j 4
+
   release:
     if: vars.QMLTUI_RELEASE_AVAILABLE == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
+      - uses: seanmiddleditch/gha-setup-ninja@v5
+
       - uses: jurplel/install-qt-action@v4
         with:
           version: '6.8.3'
-          modules: qtmultimedia
-      - run: cmake -S . -B build -G Ninja
-      - run: cmake --build build -j 4
-      - run: ctest --test-dir build -LE Demo --output-on-failure -j 4
+          modules: qtmultimedia qtpdf qtimageformats
+          cache: true
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja
+
+      - name: Build
+        run: cmake --build build -j 4
+
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build -LE Demo --output-on-failure -j 4
+
+  reuse:
+    name: REUSE licensing compliance
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: fsfe/reuse-action@v5

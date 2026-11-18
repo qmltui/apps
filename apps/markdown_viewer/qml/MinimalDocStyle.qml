@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQml
-import QmlTui.Examples.MarkdownViewer 1.0
+import QmlTui.Examples.MarkdownViewer
 
 MdDocStyle {
     id: root

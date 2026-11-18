@@ -2,7 +2,6 @@ qt_add_executable(qmltui_snake_game src/main.cpp)
 
 qt_add_qml_module(qmltui_snake_game
     URI SnakeGame
-    VERSION 1.0
     QML_FILES
         qml/Main.qml
 
@@ -12,7 +11,7 @@ qt_add_qml_module(qmltui_snake_game
 
 target_link_libraries(qmltui_snake_game PRIVATE Qt6::Core Qt6::Qml qmltui::core)
 
-if(COMMAND qmltui_wasm_app)   # browser build, see docs/guide/webassembly.md
+if(COMMAND qmltui_wasm_app)   # browser build, see docs/guides/webassembly.md
     qmltui_wasm_app(qmltui_snake_game)
 endif()
 

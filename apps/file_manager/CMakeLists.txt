@@ -11,7 +11,6 @@ qt_add_executable(qmltui_file_manager src/main.cpp)
 
 qt_add_qml_module(qmltui_file_manager
     URI QmlTui.Examples.FileManager
-    VERSION 1.0
     SOURCES
         src/FileEntryFormatter.h
         src/FileEntryFormatter.cpp

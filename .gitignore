@@ -1,4 +1,5 @@
 build*/
 .qmltui/
 .qtcreator/
+/.vscode/
 apps/*/.qmlls.ini

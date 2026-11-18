@@ -197,7 +197,7 @@ Row {
                 bold: true
             }
             StatusBadge {
-                text: "v0.5"
+                text: "v0.6"
                 status: "info"
                 variant: "subtle"
             }

@@ -4,7 +4,6 @@ qt_add_executable(qmltui_container_fleet
 
 qt_add_qml_module(qmltui_container_fleet
     URI ContainerFleetApp
-    VERSION 1.0
     SOURCES
         src/FleetListModel.cpp
         src/FleetListModel.h

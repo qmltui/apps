@@ -283,7 +283,7 @@ private:
     void recomputePhaseTelemetry();
 
     QString m_targetName = QStringLiteral("qpm-studio");
-    QString m_targetVersion = QStringLiteral("0.5.0");
+    QString m_targetVersion = QStringLiteral("0.6.0");
     int m_phase = PromptPhase;
     bool m_autoConfirm = false;
     bool m_autoExit = false;

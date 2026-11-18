@@ -230,17 +230,17 @@ PackageEngine::PackageEngine(QObject *parent)
          1840, 4200, 6, true, QStringLiteral("3a81..7b09")},
         {QStringLiteral("qcoro-core"), QStringLiteral("0.11.0"), QString(), QStringLiteral("core"),
          2860, 6800, 9, false, QStringLiteral("71de..44c0")},
-        {QStringLiteral("qmltui-core"), QStringLiteral("0.5.0"), QString(), QStringLiteral("core"),
+        {QStringLiteral("qmltui-core"), QStringLiteral("0.6.0"), QString(), QStringLiteral("core"),
          4920, 12400, 18, false, QStringLiteral("e502..19fa")},
-        {QStringLiteral("qmltui-controls"), QStringLiteral("0.5.0"), QString(),
+        {QStringLiteral("qmltui-controls"), QStringLiteral("0.6.0"), QString(),
          QStringLiteral("core"), 4100, 9800, 14, false, QStringLiteral("b83c..6d12")},
         {QStringLiteral("qt6-shadertools"), QStringLiteral("6.8.3"), QString(),
          QStringLiteral("core"), 8640, 21200, 16, false, QStringLiteral("4c90..88ef")},
-        {QStringLiteral("qmltui-ptyview"), QStringLiteral("0.5.0"), QStringLiteral("ptyview"),
+        {QStringLiteral("qmltui-ptyview"), QStringLiteral("0.6.0"), QStringLiteral("ptyview"),
          QStringLiteral("+ptyview"), 2150, 5300, 8, false, QStringLiteral("d17a..03b4")},
-        {QStringLiteral("qmltui-image"), QStringLiteral("0.5.0"), QStringLiteral("sixel"),
+        {QStringLiteral("qmltui-image"), QStringLiteral("0.6.0"), QStringLiteral("sixel"),
          QStringLiteral("+sixel"), 4520, 10800, 12, false, QStringLiteral("62fa..c518")},
-        {QStringLiteral("qmltui-wasm-shell"), QStringLiteral("0.5.0"), QStringLiteral("wasm"),
+        {QStringLiteral("qmltui-wasm-shell"), QStringLiteral("0.6.0"), QStringLiteral("wasm"),
          QStringLiteral("+wasm-sdk"), 3680, 8400, 10, false, QStringLiteral("10be..9a77")},
         {QStringLiteral("qt6-wasm-runtime"), QStringLiteral("6.8.3"), QStringLiteral("wasm"),
          QStringLiteral("+wasm-sdk"), 7960, 19400, 15, false, QStringLiteral("88d4..51ce")},
@@ -503,23 +503,23 @@ void PackageEngine::rebuildPlan() {
                                         {QStringLiteral("expanded"), false}});
 
     QVariantList topChildren;
-    topChildren.append(QVariantMap{{QStringLiteral("text"), QStringLiteral("qmltui-core v0.5.0")},
+    topChildren.append(QVariantMap{{QStringLiteral("text"), QStringLiteral("qmltui-core v0.6.0")},
                                    {QStringLiteral("expanded"), true},
                                    {QStringLiteral("children"), coreChildren}});
-    topChildren.append(QVariantMap{{QStringLiteral("text"), QStringLiteral("qmltui-controls v0.5.0")},
+    topChildren.append(QVariantMap{{QStringLiteral("text"), QStringLiteral("qmltui-controls v0.6.0")},
                                    {QStringLiteral("expanded"), true},
                                    {QStringLiteral("children"), controlsChildren}});
 
     int rows = 1 + 2 + 2 + 2; // root + core(2) + controls(2)
     if (m_ptyviewEnabled) {
         topChildren.append(QVariantMap{
-            {QStringLiteral("text"), QStringLiteral("qmltui-ptyview v0.5.0 [+ptyview]")},
+            {QStringLiteral("text"), QStringLiteral("qmltui-ptyview v0.6.0 [+ptyview]")},
             {QStringLiteral("expanded"), false}});
         ++rows;
     }
     if (m_sixelEnabled) {
         topChildren.append(QVariantMap{
-            {QStringLiteral("text"), QStringLiteral("qmltui-image v0.5.0 [+sixel]")},
+            {QStringLiteral("text"), QStringLiteral("qmltui-image v0.6.0 [+sixel]")},
             {QStringLiteral("expanded"), false}});
         ++rows;
     }
@@ -529,7 +529,7 @@ void PackageEngine::rebuildPlan() {
             {QStringLiteral("text"), QStringLiteral("qt6-wasm-runtime v6.8.3")},
             {QStringLiteral("expanded"), false}});
         topChildren.append(QVariantMap{
-            {QStringLiteral("text"), QStringLiteral("qmltui-wasm-shell v0.5.0 [+wasm-sdk]")},
+            {QStringLiteral("text"), QStringLiteral("qmltui-wasm-shell v0.6.0 [+wasm-sdk]")},
             {QStringLiteral("expanded"), true},
             {QStringLiteral("children"), wasmChildren}});
         rows += 2;
@@ -830,9 +830,9 @@ void PackageEngine::advanceBuildSlot(int slot, int deltaMs) {
             ScrollbackEntry diag;
             diag.entryKind = ScrollbackFeedModel::DiagnosticEntry;
             diag.title = QStringLiteral("qmlcachegen · AOT Binding Report");
-            diag.subtitle = QStringLiteral("qmltui-controls v0.5.0");
+            diag.subtitle = QStringLiteral("qmltui-controls v0.6.0");
             diag.line1 = QStringLiteral(
-                "Compiled 42 QML property bindings & 11 required-property delegates to C++20");
+                "Compiled 42 QML property bindings & 11 required-property delegates to C++17");
             diag.line2 = QStringLiteral(
                 "pragma ComponentBehavior: Bound verified across all modules (0 dynamic lookups)");
             diag.accentColor = QStringLiteral("#fbbf24");

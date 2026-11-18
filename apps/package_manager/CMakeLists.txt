@@ -21,7 +21,6 @@ qt_add_executable(qmltui_package_manager src/main.cpp)
 
 qt_add_qml_module(qmltui_package_manager
     URI PackageManagerApp
-    VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
     SOURCES ${package_manager_sources}
     QML_FILES ${package_manager_qml_files}

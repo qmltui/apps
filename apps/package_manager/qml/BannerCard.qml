@@ -27,7 +27,7 @@ Column {
                 bold: true
             },
             {
-                text: "  [qpm v0.5.0]",
+                text: "  [qpm v0.6.0]",
                 color: Theme.green,
                 bold: true
             }

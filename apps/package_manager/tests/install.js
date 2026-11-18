@@ -2,7 +2,7 @@
 function main(app) {
     // 1. Initial interactive Transaction Plan prompt & startup banner in scrollback
     app.expectText("Transaction Plan");
-    app.expectText("qpm-studio v0.5.0");
+    app.expectText("qpm-studio v0.6.0");
     app.expectText("8 pkgs");
     app.expectText("qmltui-core");
     app.expectScrollbackText("qpm install qpm-studio --release");
@@ -46,7 +46,7 @@ function main(app) {
     app.advanceTime(4500);
     app.expectText("Summary  Successfully installed 10 packages");
     app.expectScrollbackText("qmlcachegen · AOT Binding Report");
-    app.expectScrollbackText("Installed qpm-studio v0.5.0");
+    app.expectScrollbackText("Installed qpm-studio v0.6.0");
     app.expectScrollbackText("~/.qpm/bin/qpm-studio");
     app.captureText("05_finished_inline.txt");
     app.captureScrollback("05_finished_scrollback.txt");

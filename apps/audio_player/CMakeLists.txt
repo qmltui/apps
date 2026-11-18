@@ -49,7 +49,6 @@ function(audio_player_add_executable target uri main_source)
     qt_add_qml_module(${target}
         URI ${uri}
         ${module_output_directory}
-        VERSION 1.0
         RESOURCE_PREFIX "/qt/qml"
         SOURCES ${audio_player_sources}
         QML_FILES ${audio_player_qml_files}

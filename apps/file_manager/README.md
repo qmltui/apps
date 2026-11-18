@@ -1,6 +1,6 @@
 # Terminal File Manager (`file_manager`)
 
-Three-column Miller file manager (Parent, Current, Preview) built with C++20 and QmlTui:
+Three-column Miller file manager (Parent, Current, Preview) built with C++17 and QmlTui:
 
 - **Streaming filesystem backend**: Enumerates entries via `QDirListing` and reports mount usage via `QStorageInfo`.
 - **Multi-format live preview**: Renders syntax-highlighted text/Markdown, directory subtrees, binary metadata, and asynchronous off-thread image, SVG, and multi-page PDF previews via `qmltui::AsyncImageProvider` (`Qt6::Gui`, `Qt6::Svg`, `Qt6::Pdf`).

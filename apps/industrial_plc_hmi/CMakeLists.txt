@@ -33,7 +33,6 @@ endif()
 
 qt_add_qml_module(qmltui_industrial_plc_hmi
     URI IndustrialPlcHmi
-    VERSION 1.0
     QML_FILES ${plc_qml_files}
     RESOURCES ${plc_resources}
 

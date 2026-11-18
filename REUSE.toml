@@ -1,10 +1,14 @@
 version = 1
 SPDX-PackageName = "qmltui-apps"
 SPDX-PackageSupplier = "Yosri Ayed"
+SPDX-PackageDownloadLocation = "https://github.com/qmltui/apps"
+
 [[annotations]]
-path = ["**", ".github/**", ".vscode/**", ".gitignore", ".qmlls.ini"]
+path = ["**", ".github/**", ".gitignore", ".qmlls.ini"]
+precedence = "override"
 SPDX-FileCopyrightText = "2026 Yosri Ayed"
 SPDX-License-Identifier = "BSD-3-Clause"
+
 [[annotations]]
 path = ["**/*.md", "*.md"]
 precedence = "override"

@@ -4,7 +4,6 @@ qt_add_executable(qmltui_screensaver
 
 qt_add_qml_module(qmltui_screensaver
     URI Screensaver
-    VERSION 1.0
     SOURCES
         src/DoomFireItem.h
         src/DoomFireItem.cpp

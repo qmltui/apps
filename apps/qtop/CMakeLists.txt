@@ -9,7 +9,6 @@ qt_add_executable(qmltui_qtop
 
 qt_add_qml_module(qmltui_qtop
     URI QtopDemo
-    VERSION 1.0
     SOURCES
         ${qtop_sources}
     QML_FILES

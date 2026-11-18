@@ -131,14 +131,14 @@ bool SyntaxHighlighter::isType(const QString &word, Language lang) {
         "int32_t", "uint32_t", "int16_t", "uint16_t", "int8_t", "uint8_t",
         "QString", "QByteArray", "QList", "QVector", "QMap", "QHash", "QSet", "QObject",
         "QWidget", "QSharedPointer", "std::string", "std::vector", "std::shared_ptr", "std::unique_ptr",
-        "Item", "Text", "Paragraph", "Terminal", "Rectangle", "Border", "ListView", "ScrollView"
+        "Item", "Text", "FocusScope", "Terminal", "Rectangle", "Border", "ListView", "ScrollView"
     };
 
     static const QSet<QString> qmlTypes = {
         "int", "double", "string", "bool", "real", "var", "list", "color", "date", "point", "size", "rect",
-        "Item", "Rectangle", "Text", "Paragraph", "Terminal", "Column", "Row", "Grid", "GridLayout",
-        "ListView", "ScrollView", "TableView", "TreeView", "Scrollback", "Canvas", "AnimatedSprite",
-        "Button", "CheckBox", "RadioButton", "Slider", "ComboBox", "SpinBox", "Dialog",
+        "Item", "FocusScope", "Rectangle", "Text", "TextInput", "TextArea", "Terminal", "Column", "Row", "GridLayout",
+        "StackLayout", "ListView", "GridView", "ScrollView", "TableView", "TreeView", "Scrollback", "Canvas", "AnimatedSprite",
+        "Button", "CheckBox", "RadioButton", "Slider", "ComboBox", "SpinBox", "Panel", "Dialog",
         "Popup", "Timer", "MouseArea", "Repeater", "Loader", "Sparkline", "TabBar", "BusyIndicator", "StatusBadge"
     };
 

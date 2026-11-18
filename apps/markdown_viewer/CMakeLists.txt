@@ -17,7 +17,6 @@ qt_add_library(qmltui_markdown_viewer_module STATIC)
 
 qt_add_qml_module(qmltui_markdown_viewer_module
     URI QmlTui.Examples.MarkdownViewer
-    VERSION 1.0
     SOURCES
         src/MdRole.h
         src/MdPalette.h
