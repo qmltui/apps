@@ -27,6 +27,8 @@ Column {
         id: repoTreeView
         width: parent.width > 0 ? Math.min(parent.width, 76) : 76
         height: 7
+        focus: false
+        focusPolicy: Qt.NoFocus
         textColor: "white"
         branchColor: "#38bdf8"
 
@@ -65,6 +67,8 @@ Column {
                     }
                 ]
             };
+            // Scrollback history is non-interactive; clear the auto-selected first row after loading the model.
+            repoTreeView.currentIndex = -1;
         }
     }
 }

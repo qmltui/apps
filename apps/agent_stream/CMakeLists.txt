@@ -47,6 +47,10 @@ if(BUILD_TESTING AND TARGET qmltui::runner)
     qmltui_add_scenario(NAME agent_stream_mouse TARGET qmltui_agent_stream
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/mouse.js"
         COLUMNS 120 ROWS 35 CLOCK VIRTUAL LABELS AgentSmoke)
+    qmltui_add_scenario(NAME agent_stream_tree TARGET qmltui_agent_stream
+        SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/tree.js"
+        COLUMNS 120 ROWS 35 CLOCK VIRTUAL LABELS AgentSmoke
+        ARTIFACT "tree_styled.txt" ARTIFACT_CONTENT "y=2 x=0-3 fg=#38BDF8FF bg=default")
     qmltui_add_scenario(NAME agent_stream_demo TARGET qmltui_agent_stream
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/demo.js"
         COLUMNS 120 ROWS 35 CLOCK REAL
