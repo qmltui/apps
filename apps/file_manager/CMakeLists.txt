@@ -36,10 +36,10 @@ qt_add_qml_module(qmltui_file_manager
         qml/InputDialog.qml
         qml/ConfirmDialog.qml
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
-        TARGET qmltui::image
-        TARGET qmltui::pty_view
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
+        TARGET QmlTui::Image
+        TARGET QmlTui::PtyView
 )
 
 target_include_directories(qmltui_file_manager PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -48,10 +48,10 @@ target_link_libraries(qmltui_file_manager PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
-    qmltui::core
-    qmltui::controls
-    qmltui::image
-    qmltui::pty_view
+    QmlTui::Core
+    QmlTui::Controls
+    QmlTui::Image
+    QmlTui::PtyView
 )
 
 if(TARGET Qt6::Svg)
@@ -70,8 +70,8 @@ else()
     message(STATUS "file_manager: Qt6::Pdf not found, live PDF preview disabled")
 endif()
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_file_manager PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_file_manager PRIVATE QmlTui::Runner)
 
     # idle_budget asserts the application does not repaint while nothing changes.
     foreach(scenario navigation preview search actions idle_budget)

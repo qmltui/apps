@@ -128,7 +128,7 @@ void MockFileSystem::reset() {
                          "find_package(QmlTui 0.6 REQUIRED)\n\n"
                          "qt_add_executable(qmltui_file_manager main.cpp)\n"
                          "target_link_libraries(qmltui_file_manager PRIVATE "
-                         "Qt6::Core qmltui::core)"),
+                         "Qt6::Core QmlTui::Core)"),
           QStringLiteral("text/x-cmake"));
 
   addFile(QStringLiteral("/workspace/package.json"),

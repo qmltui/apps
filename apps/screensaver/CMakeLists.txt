@@ -28,18 +28,18 @@ qt_add_qml_module(qmltui_screensaver
         qml/LorenzSaver.qml
 
     DEPENDENCIES
-        TARGET qmltui::core
+        TARGET QmlTui::Core
 )
 
 target_include_directories(qmltui_screensaver PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_link_libraries(qmltui_screensaver PRIVATE Qt6::Core Qt6::Qml qmltui::core)
+target_link_libraries(qmltui_screensaver PRIVATE Qt6::Core Qt6::Qml QmlTui::Core)
 
 if(COMMAND qmltui_wasm_app)
     qmltui_wasm_app(qmltui_screensaver)
 endif()
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_screensaver PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_screensaver PRIVATE QmlTui::Runner)
     qmltui_add_scenario(
         NAME test_runner_screensaver TARGET qmltui_screensaver
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/screensaver.js"

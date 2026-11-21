@@ -37,19 +37,19 @@ qt_add_qml_module(qmltui_industrial_plc_hmi
     RESOURCES ${plc_resources}
 
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
 )
 
 target_link_libraries(qmltui_industrial_plc_hmi PRIVATE
     Qt6::Core
     Qt6::Qml
-    qmltui::core
-    qmltui::controls
+    QmlTui::Core
+    QmlTui::Controls
 )
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_industrial_plc_hmi PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_industrial_plc_hmi PRIVATE QmlTui::Runner)
     # Stays on the real clock: the scenario waits on simulation state with
     # waitForCondition(), which does not advance virtual time.
     qmltui_add_scenario(

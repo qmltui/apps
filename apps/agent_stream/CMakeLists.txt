@@ -29,14 +29,14 @@ qt_add_qml_module(qmltui_agent_stream
     URI AgentStreamDemo
     QML_FILES ${agent_stream_qml_files}
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
 )
 
-target_link_libraries(qmltui_agent_stream PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
+target_link_libraries(qmltui_agent_stream PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_agent_stream PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_agent_stream PRIVATE QmlTui::Runner)
     qmltui_add_scenario(NAME agent_stream_inline TARGET qmltui_agent_stream
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/inline.js"
         COLUMNS 120 ROWS 35 CLOCK VIRTUAL LABELS AgentSmoke

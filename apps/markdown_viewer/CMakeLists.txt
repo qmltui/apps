@@ -47,8 +47,8 @@ qt_add_qml_module(qmltui_markdown_viewer_module
         resources/cheatsheet.md
         resources/edge_cases.md
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
 )
 
 target_include_directories(qmltui_markdown_viewer_module
@@ -61,8 +61,8 @@ target_compile_definitions(qmltui_markdown_viewer_module PRIVATE MD4QT_QT_SUPPOR
 target_link_libraries(qmltui_markdown_viewer_module PRIVATE
     Qt6::Core
     Qt6::Qml
-    qmltui::core
-    qmltui::controls
+    QmlTui::Core
+    QmlTui::Controls
     md4qt::md4qt
 )
 
@@ -73,8 +73,8 @@ target_link_libraries(qmltui_markdown_viewer PRIVATE
     qmltui_markdown_viewer_moduleplugin
 )
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_markdown_viewer PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_markdown_viewer PRIVATE QmlTui::Runner)
 
     qmltui_add_scenario(
         NAME markdown_viewer_scenario_wide
@@ -112,7 +112,7 @@ if(BUILD_TESTING)
     target_link_libraries(test_markdown_viewer_document PRIVATE
         Qt6::Core
         Qt6::Test
-        qmltui::core
+        QmlTui::Core
         qmltui_markdown_viewer_module
     )
     add_test(NAME markdown_viewer_document COMMAND test_markdown_viewer_document)

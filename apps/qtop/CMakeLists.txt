@@ -15,8 +15,8 @@ qt_add_qml_module(qmltui_qtop
         qml/Main.qml
         qml/QtopPanel.qml
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
 )
 
 target_include_directories(qmltui_qtop PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -24,12 +24,12 @@ target_include_directories(qmltui_qtop PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src"
 target_link_libraries(qmltui_qtop PRIVATE
     Qt6::Core
     Qt6::Qml
-    qmltui::core
-    qmltui::controls
+    QmlTui::Core
+    QmlTui::Controls
 )
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_qtop PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_qtop PRIVATE QmlTui::Runner)
 
     qmltui_add_scenario(
         NAME qtop_smoke

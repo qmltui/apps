@@ -5,17 +5,17 @@ qt_add_qml_module(qmltui_twozero48
     QML_FILES
         qml/Main.qml
     DEPENDENCIES
-        TARGET qmltui::core
+        TARGET QmlTui::Core
 )
 
-target_link_libraries(qmltui_twozero48 PRIVATE Qt6::Core Qt6::Qml qmltui::core)
+target_link_libraries(qmltui_twozero48 PRIVATE Qt6::Core Qt6::Qml QmlTui::Core)
 
 if(COMMAND qmltui_wasm_app)   # browser build, see docs/guides/webassembly.md
     qmltui_wasm_app(qmltui_twozero48)
 endif()
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_twozero48 PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_twozero48 PRIVATE QmlTui::Runner)
     qmltui_add_scenario(
         NAME test_runner_twozero48 TARGET qmltui_twozero48
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/twozero48.js"

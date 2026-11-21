@@ -25,15 +25,15 @@ qt_add_qml_module(qmltui_package_manager
     SOURCES ${package_manager_sources}
     QML_FILES ${package_manager_qml_files}
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
 )
 
 target_include_directories(qmltui_package_manager PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_link_libraries(qmltui_package_manager PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
+target_link_libraries(qmltui_package_manager PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_package_manager PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_package_manager PRIVATE QmlTui::Runner)
     qmltui_add_scenario(
         NAME package_manager_install
         TARGET qmltui_package_manager
@@ -65,7 +65,7 @@ if(BUILD_TESTING)
         Qt6::Core
         Qt6::Qml
         Qt6::Test
-        qmltui::core
+        QmlTui::Core
     )
     add_test(NAME package_manager_engine COMMAND test_package_manager_engine)
     set_tests_properties(package_manager_engine PROPERTIES LABELS PackageManagerSmoke)

@@ -5,19 +5,19 @@ qt_add_qml_module(qmltui_plotting_dashboard
     QML_FILES
         qml/Main.qml
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
 )
 
 target_link_libraries(qmltui_plotting_dashboard PRIVATE
     Qt6::Core
     Qt6::Qml
-    qmltui::core
-    qmltui::controls
+    QmlTui::Core
+    QmlTui::Controls
 )
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_plotting_dashboard PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_plotting_dashboard PRIVATE QmlTui::Runner)
     qmltui_add_scenario(
         NAME test_runner_plotting_dashboard
         TARGET qmltui_plotting_dashboard

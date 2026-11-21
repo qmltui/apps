@@ -10,15 +10,15 @@ qt_add_qml_module(qmltui_container_fleet
     QML_FILES
         qml/Main.qml
     DEPENDENCIES
-        TARGET qmltui::core
-        TARGET qmltui::controls
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
 )
 
 target_include_directories(qmltui_container_fleet PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_link_libraries(qmltui_container_fleet PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
+target_link_libraries(qmltui_container_fleet PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_container_fleet PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_container_fleet PRIVATE QmlTui::Runner)
     qmltui_add_scenario(
         NAME test_runner_container_fleet TARGET qmltui_container_fleet
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/fleet.js"

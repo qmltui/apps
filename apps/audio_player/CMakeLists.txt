@@ -8,7 +8,7 @@ set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 # build tree's QML import path into a qt.conf beside it and `import QmlTui.Controls`
 # resolves when the binary is launched from Qt Creator or a shell. A shared
 # static module library would not get that treatment, and since no C++ symbol
-# of qmltui::controls is referenced the linker drops the library that carries
+# of QmlTui::Controls is referenced the linker drops the library that carries
 # the module's qmldir.
 set(audio_player_sources
     src/AudioEngine.h
@@ -53,11 +53,11 @@ function(audio_player_add_executable target uri main_source)
         SOURCES ${audio_player_sources}
         QML_FILES ${audio_player_qml_files}
         DEPENDENCIES
-            TARGET qmltui::core
-            TARGET qmltui::controls
+            TARGET QmlTui::Core
+            TARGET QmlTui::Controls
     )
     target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-    target_link_libraries(${target} PRIVATE Qt6::Core Qt6::Qml qmltui::core qmltui::controls)
+    target_link_libraries(${target} PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
     if(TARGET Qt6::Multimedia)
         target_link_libraries(${target} PRIVATE Qt6::Multimedia)
         target_compile_definitions(${target} PRIVATE AUDIO_PLAYER_HAVE_MULTIMEDIA=1)
@@ -74,8 +74,8 @@ endif()
 
 audio_player_add_executable(qmltui_audio_player AudioPlayer src/main.cpp)
 
-if(BUILD_TESTING AND TARGET qmltui::runner)
-    target_link_libraries(qmltui_audio_player PRIVATE qmltui::runner)
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_audio_player PRIVATE QmlTui::Runner)
 
     qmltui_add_scenario(
         NAME audio_player_demo_smoke
@@ -107,7 +107,7 @@ if(BUILD_TESTING)
         Qt6::Core
         Qt6::Qml
         Qt6::Test
-        qmltui::core
+        QmlTui::Core
     )
     if(TARGET Qt6::Multimedia)
         target_link_libraries(test_audio_player_dsp PRIVATE Qt6::Multimedia)
