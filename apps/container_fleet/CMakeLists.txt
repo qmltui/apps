@@ -17,6 +17,10 @@ qt_add_qml_module(qmltui_container_fleet
 target_include_directories(qmltui_container_fleet PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(qmltui_container_fleet PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
 
+if(COMMAND qmltui_wasm_app)
+    qmltui_wasm_app(qmltui_container_fleet)
+endif()
+
 if(BUILD_TESTING AND TARGET QmlTui::Runner)
     target_link_libraries(qmltui_container_fleet PRIVATE QmlTui::Runner)
     qmltui_add_scenario(

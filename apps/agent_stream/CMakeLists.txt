@@ -35,6 +35,10 @@ qt_add_qml_module(qmltui_agent_stream
 
 target_link_libraries(qmltui_agent_stream PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
 
+if(COMMAND qmltui_wasm_app)
+    qmltui_wasm_app(qmltui_agent_stream)
+endif()
+
 if(BUILD_TESTING AND TARGET QmlTui::Runner)
     target_link_libraries(qmltui_agent_stream PRIVATE QmlTui::Runner)
     qmltui_add_scenario(NAME agent_stream_inline TARGET qmltui_agent_stream

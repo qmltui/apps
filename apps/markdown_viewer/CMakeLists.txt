@@ -73,6 +73,10 @@ target_link_libraries(qmltui_markdown_viewer PRIVATE
     qmltui_markdown_viewer_moduleplugin
 )
 
+if(COMMAND qmltui_wasm_app)
+    qmltui_wasm_app(qmltui_markdown_viewer)
+endif()
+
 if(BUILD_TESTING AND TARGET QmlTui::Runner)
     target_link_libraries(qmltui_markdown_viewer PRIVATE QmlTui::Runner)
 

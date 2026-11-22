@@ -74,6 +74,10 @@ endif()
 
 audio_player_add_executable(qmltui_audio_player AudioPlayer src/main.cpp)
 
+if(COMMAND qmltui_wasm_app)
+    qmltui_wasm_app(qmltui_audio_player)
+endif()
+
 if(BUILD_TESTING AND TARGET QmlTui::Runner)
     target_link_libraries(qmltui_audio_player PRIVATE QmlTui::Runner)
 

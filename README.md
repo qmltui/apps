@@ -22,7 +22,9 @@ cmake --build build --target qmltui_qtop
 Useful CMake options:
 
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI=/path/to/qmltui`: build against a local QmlTui checkout instead of fetching `main`.
+- `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_TVISION=/path/to/tvision`: build `turbo_hex` against a local `QmlTui.TVision` checkout.
 - `-DQMLTUI_BUILD_MARKDOWN_VIEWER=OFF`: skip fetching KDE `md4qt` at configure time.
+- `-DQMLTUI_BUILD_TURBO_HEX=OFF`: skip fetching `QmlTui.TVision` at configure time.
 - `ctest --test-dir build -L Demo --output-on-failure`: record `.cast` and `.gif` previews into `docs/assets/casts/` (requires [`agg`](https://github.com/asciinema/agg) in `PATH` or `~/.cargo/bin` for GIF conversion).
 
 ## Applications
@@ -92,6 +94,12 @@ Collection of 11 classic screensavers across `Canvas.HalfBlock`, `Canvas.Braille
 Arcade Snake game rendered with `Canvas.HalfBlock` subpixels, dynamic speed levels, pause overlay, and responsive viewport sizing.
 
 ![snake_game showcase](docs/assets/casts/snake_game.gif)
+
+### [turbo_hex](apps/turbo_hex/)
+
+IDA `idat`- and Borland Turbo Debugger-inspired **Multi-Window Hex & Binary Inspector** built on [`QmlTui.TVision`](https://github.com/qmltui/tvision), featuring synchronized Hex + ASCII windows, a live Little/Big-Endian Data Inspector, ELF/PNG/ZIP/WASM header & string span highlighting, hex/text search, in-place byte patching, and switchable BIOS palettes.
+
+![turbo_hex showcase](docs/assets/casts/turbo_hex.gif)
 
 ### [twozero48](apps/twozero48/)
 

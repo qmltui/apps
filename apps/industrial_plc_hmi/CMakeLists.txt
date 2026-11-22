@@ -48,6 +48,10 @@ target_link_libraries(qmltui_industrial_plc_hmi PRIVATE
     QmlTui::Controls
 )
 
+if(COMMAND qmltui_wasm_app)
+    qmltui_wasm_app(qmltui_industrial_plc_hmi)
+endif()
+
 if(BUILD_TESTING AND TARGET QmlTui::Runner)
     target_link_libraries(qmltui_industrial_plc_hmi PRIVATE QmlTui::Runner)
     # Stays on the real clock: the scenario waits on simulation state with
