@@ -19,35 +19,19 @@ if(NOT TARGET QmlTui::TVision AND NOT TARGET QmlTuiTVision)
     FetchContent_MakeAvailable(qmltui_tvision)
 endif()
 
-if(TARGET QmlTui::Core)
-    set(_th_core_target QmlTui::Core)
-    set(_th_controls_target QmlTui::Controls)
-else()
-    set(_th_core_target qmltui::core)
-    set(_th_controls_target qmltui::controls)
-endif()
-
-if(TARGET QmlTui::Runner)
-    set(_th_runner_target QmlTui::Runner)
-elseif(TARGET qmltui::runner)
-    set(_th_runner_target qmltui::runner)
-else()
-    set(_th_runner_target "")
-endif()
-
 set(_turbo_hex_deps
     DEPENDENCIES
         TARGET QmlTuiTVision
 )
-get_target_property(_qmltui_is_imported ${_th_core_target} IMPORTED)
+get_target_property(_qmltui_is_imported QmlTui::Core IMPORTED)
 if(_qmltui_is_imported)
     if(QmlTui_QML_IMPORT_PATH)
         list(APPEND _turbo_hex_deps IMPORT_PATH "${QmlTui_QML_IMPORT_PATH}")
     endif()
 else()
     list(APPEND _turbo_hex_deps
-        TARGET ${_th_core_target}
-        TARGET ${_th_controls_target}
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
     )
 endif()
 
@@ -83,8 +67,8 @@ target_include_directories(qmltui_turbo_hex PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(qmltui_turbo_hex PRIVATE
     Qt6::Core
     Qt6::Qml
-    ${_th_core_target}
-    ${_th_controls_target}
+    QmlTui::Core
+    QmlTui::Controls
     QmlTui::TVision
 )
 
@@ -107,16 +91,16 @@ if(BUILD_TESTING)
         Qt6::Core
         Qt6::Qml
         Qt6::Test
-        ${_th_core_target}
-        ${_th_controls_target}
+        QmlTui::Core
+        QmlTui::Controls
         QmlTui::TVision
     )
     add_test(NAME tst_turbo_hex COMMAND tst_turbo_hex)
     set_tests_properties(tst_turbo_hex PROPERTIES LABELS "Unit")
 endif()
 
-if(BUILD_TESTING AND _th_runner_target)
-    target_link_libraries(qmltui_turbo_hex PRIVATE ${_th_runner_target})
+if(BUILD_TESTING AND TARGET QmlTui::Runner)
+    target_link_libraries(qmltui_turbo_hex PRIVATE QmlTui::Runner)
     qmltui_add_scenario(
         NAME test_runner_turbo_hex
         TARGET qmltui_turbo_hex
