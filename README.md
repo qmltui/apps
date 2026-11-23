@@ -1,6 +1,6 @@
 # QmlTui Applications
 
-Full-scale showcase applications built with [QmlTui](https://github.com/qmltui/qmltui). Browse the rendered [Application Showcase](https://qmltui.github.io/website/showcase.html), read the [Documentation Portal](https://qmltui.github.io/website/), or try the [Live WebAssembly Playground](https://qmltui.github.io/website/playground.html) (site source in [`qmltui/website`](https://github.com/qmltui/website)). Core libraries, component examples, recipes, and reference documentation live in [`qmltui/qmltui`](https://github.com/qmltui/qmltui).
+Full-scale showcase applications built with [QmlTui](https://github.com/qmltui/qmltui). Browse the rendered [Application Showcase](https://qmltui.github.io/showcase.html), read the [Documentation Portal](https://qmltui.github.io/), or try the [Live WebAssembly Playground](https://qmltui.github.io/playground.html) (site source in [`qmltui/qmltui.github.io`](https://github.com/qmltui/qmltui.github.io)). Core libraries, component examples, recipes, and reference documentation live in [`qmltui/qmltui`](https://github.com/qmltui/qmltui).
 
 ## Build and Test
 
