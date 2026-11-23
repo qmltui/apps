@@ -1,19 +1,21 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
 
 Column {
     id: treeCard
+
     required property string title
+
     width: parent ? parent.width : 76
     spacing: 0
 
     Row {
         spacing: 1
+
         Text {
             text: "🌲 Workspace Hierarchy:"
-            color: "#38bdf8"
+            color: Theme.cyan
             bold: true
         }
         Text {
@@ -30,7 +32,7 @@ Column {
         focus: false
         focusPolicy: Qt.NoFocus
         textColor: "white"
-        branchColor: "#38bdf8"
+        branchColor: Theme.cyan
 
         Component.onCompleted: {
             repoTreeView.model = {

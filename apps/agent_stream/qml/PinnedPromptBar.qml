@@ -1,20 +1,10 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
-import QmlTui.Controls
 
 Column {
     id: promptBar
 
-    Theme {
-        id: theme
-    }
-    // 1-character/line vertical spacer above prompt bar
-    Item {
-        width: parent.width
-        height: 1
-    }
     required property bool ready
     required property bool working
     required property bool awaitingPermission
@@ -25,7 +15,7 @@ Column {
     required property string currentToolTarget
     required property string currentToolAction
     required property int permissionIndex
-    required property var spinnerFrames
+    required property list<string> spinnerFrames
     required property int spinnerIndex
     required property string workingLabel
 
@@ -34,6 +24,8 @@ Column {
     property alias popupVisible: cmdPopup.visible
     property bool userNavigated: false
 
+    readonly property list<string> permissionChoices: ["Allow once", "Always allow for this session", "Deny execution", "Cancel request"]
+
     signal requestSubmitted(string text)
     signal permissionChosen(int index)
     signal permissionHovered(int index)
@@ -41,12 +33,18 @@ Column {
     signal openDiffInspectorRequested
     signal interruptRequested
 
-    function focusPrompt() {
+    function focusPrompt(): void {
         inputField.focus = true;
     }
 
     width: parent ? parent.width : 80
     spacing: 0
+
+    // 1-character/line vertical spacer above prompt bar
+    Item {
+        width: parent.width
+        height: 1
+    }
 
     // Top Status Header (Ready & Working)
     Row {
@@ -65,13 +63,13 @@ Column {
         Rectangle {
             width: modelChipText.implicitWidth
             height: 1
-            color: modelChipMouse.containsMouse ? "#1e293b" : "transparent"
+            color: modelChipMouse.containsMouse ? Theme.hoverBg : "transparent"
 
             Text {
                 id: modelChipText
                 anchors.fill: parent
                 text: promptBar.activeModel
-                color: modelChipMouse.containsMouse ? theme.white : theme.cyan
+                color: modelChipMouse.containsMouse ? Theme.white : Theme.cyan
                 bold: true
                 underline: modelChipMouse.containsMouse
             }
@@ -86,12 +84,12 @@ Column {
 
         Text {
             text: "· ~/QmlTui ·"
-            color: theme.muted
+            color: Theme.muted
         }
 
         Text {
             text: promptBar.sessionCostStr
-            color: theme.green
+            color: Theme.green
             bold: true
         }
 
@@ -101,19 +99,19 @@ Column {
 
             Text {
                 text: " · "
-                color: theme.muted
+                color: Theme.muted
             }
 
             Rectangle {
                 width: modelBtnText.implicitWidth
                 height: 1
-                color: modelBtnMouse.containsMouse ? "#1e293b" : "transparent"
+                color: modelBtnMouse.containsMouse ? Theme.hoverBg : "transparent"
 
                 Text {
                     id: modelBtnText
                     anchors.fill: parent
                     text: "[F2] model"
-                    color: modelBtnMouse.containsMouse ? theme.white : theme.amber
+                    color: modelBtnMouse.containsMouse ? Theme.white : Theme.amber
                     bold: modelBtnMouse.containsMouse
                     underline: modelBtnMouse.containsMouse
                 }
@@ -128,19 +126,19 @@ Column {
 
             Text {
                 text: " · "
-                color: theme.muted
+                color: Theme.muted
             }
 
             Rectangle {
                 width: diffBtnText.implicitWidth
                 height: 1
-                color: diffBtnMouse.containsMouse ? "#1e293b" : "transparent"
+                color: diffBtnMouse.containsMouse ? Theme.hoverBg : "transparent"
 
                 Text {
                     id: diffBtnText
                     anchors.fill: parent
                     text: "[F3] diff"
-                    color: diffBtnMouse.containsMouse ? theme.white : theme.amber
+                    color: diffBtnMouse.containsMouse ? Theme.white : Theme.amber
                     bold: diffBtnMouse.containsMouse
                     underline: diffBtnMouse.containsMouse
                 }
@@ -164,7 +162,7 @@ Column {
 
         Text {
             text: promptBar.spinnerFrames[promptBar.spinnerIndex] + " "
-            color: theme.cyan
+            color: Theme.cyan
             bold: true
         }
         Text {
@@ -173,18 +171,18 @@ Column {
         }
         Text {
             text: " · "
-            color: theme.muted
+            color: Theme.muted
         }
         Rectangle {
             width: abortBtnText.implicitWidth
             height: 1
-            color: abortBtnMouse.containsMouse ? "#3b1219" : "transparent"
+            color: abortBtnMouse.containsMouse ? Theme.abortHoverBg : "transparent"
 
             Text {
                 id: abortBtnText
                 anchors.fill: parent
                 text: "Ctrl+C to abort"
-                color: abortBtnMouse.containsMouse ? theme.rose : theme.muted
+                color: abortBtnMouse.containsMouse ? Theme.rose : Theme.muted
                 bold: abortBtnMouse.containsMouse
                 underline: abortBtnMouse.containsMouse
             }
@@ -229,12 +227,12 @@ Column {
             Rectangle {
                 width: 2
                 height: 1
-                color: chevronMouse.containsMouse ? "#1e293b" : "transparent"
+                color: chevronMouse.containsMouse ? Theme.hoverBg : "transparent"
 
                 Text {
                     anchors.fill: parent
                     text: "❯ "
-                    color: chevronMouse.containsMouse ? theme.white : theme.cyan
+                    color: chevronMouse.containsMouse ? Theme.white : Theme.cyan
                     bold: true
                 }
 
@@ -251,7 +249,7 @@ Column {
                 width: parent.width - 4
                 color: "white"
                 placeholderText: "Ask anything, type / for commands, F2: model, F3: diff..."
-                placeholderColor: theme.muted
+                placeholderColor: Theme.muted
                 cursorBlinking: false
                 cursorShape: TextInput.Block
                 // Request focus only after the containing prompt becomes visible.
@@ -350,7 +348,7 @@ Column {
 
             Text {
                 text: promptBar.currentToolName + "(" + promptBar.currentToolTarget + ")"
-                color: theme.cyan
+                color: Theme.cyan
                 bold: true
             }
         }
@@ -359,9 +357,10 @@ Column {
             width: parent.width
             height: 1
             spacing: 0
+
             Text {
                 text: "  Action: "
-                color: theme.muted
+                color: Theme.muted
             }
             Text {
                 text: promptBar.currentToolAction
@@ -369,79 +368,34 @@ Column {
             }
         }
 
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: (promptBar.permissionIndex === 0 || perm0Mouse.containsMouse) ? (perm0Mouse.pressed ? "#d97706" : theme.amber) : "transparent"
-            Text {
-                text: ((promptBar.permissionIndex === 0 || perm0Mouse.containsMouse) ? "  > [1] " : "    [1] ") + "Allow once"
-                color: (promptBar.permissionIndex === 0 || perm0Mouse.containsMouse) ? "black" : "white"
-                bold: promptBar.permissionIndex === 0 || perm0Mouse.containsMouse
-                underline: perm0Mouse.containsMouse
-            }
-            MouseArea {
-                id: perm0Mouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: promptBar.permissionHovered(0)
-                onClicked: promptBar.permissionChosen(0)
-            }
-        }
+        Repeater {
+            model: promptBar.permissionChoices
+            delegate: Rectangle {
+                id: permChoice
 
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: (promptBar.permissionIndex === 1 || perm1Mouse.containsMouse) ? (perm1Mouse.pressed ? "#d97706" : theme.amber) : "transparent"
-            Text {
-                text: ((promptBar.permissionIndex === 1 || perm1Mouse.containsMouse) ? "  > [2] " : "    [2] ") + "Always allow for this session"
-                color: (promptBar.permissionIndex === 1 || perm1Mouse.containsMouse) ? "black" : "white"
-                bold: promptBar.permissionIndex === 1 || perm1Mouse.containsMouse
-                underline: perm1Mouse.containsMouse
-            }
-            MouseArea {
-                id: perm1Mouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: promptBar.permissionHovered(1)
-                onClicked: promptBar.permissionChosen(1)
-            }
-        }
+                required property int index
+                required property string modelData
 
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: (promptBar.permissionIndex === 2 || perm2Mouse.containsMouse) ? (perm2Mouse.pressed ? "#d97706" : theme.amber) : "transparent"
-            Text {
-                text: ((promptBar.permissionIndex === 2 || perm2Mouse.containsMouse) ? "  > [3] " : "    [3] ") + "Deny execution"
-                color: (promptBar.permissionIndex === 2 || perm2Mouse.containsMouse) ? "black" : "white"
-                bold: promptBar.permissionIndex === 2 || perm2Mouse.containsMouse
-                underline: perm2Mouse.containsMouse
-            }
-            MouseArea {
-                id: perm2Mouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: promptBar.permissionHovered(2)
-                onClicked: promptBar.permissionChosen(2)
-            }
-        }
+                readonly property bool highlighted: promptBar.permissionIndex === permChoice.index || permMouse.containsMouse
 
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: (promptBar.permissionIndex === 3 || perm3Mouse.containsMouse) ? (perm3Mouse.pressed ? "#d97706" : theme.amber) : "transparent"
-            Text {
-                text: ((promptBar.permissionIndex === 3 || perm3Mouse.containsMouse) ? "  > [4] " : "    [4] ") + "Cancel request"
-                color: (promptBar.permissionIndex === 3 || perm3Mouse.containsMouse) ? "black" : "white"
-                bold: promptBar.permissionIndex === 3 || perm3Mouse.containsMouse
-                underline: perm3Mouse.containsMouse
-            }
-            MouseArea {
-                id: perm3Mouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: promptBar.permissionHovered(3)
-                onClicked: promptBar.permissionChosen(3)
+                width: promptBar.width
+                height: 1
+                color: permChoice.highlighted ? (permMouse.pressed ? Theme.amberPressed : Theme.amber) : "transparent"
+
+                Text {
+                    text: (permChoice.highlighted ? "  > [" : "    [") + (permChoice.index + 1) + "] " + permChoice.modelData
+                    color: permChoice.highlighted ? "black" : "white"
+                    bold: permChoice.highlighted
+                    underline: permMouse.containsMouse
+                }
+
+                MouseArea {
+                    id: permMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onEntered: promptBar.permissionHovered(permChoice.index)
+                    onClicked: promptBar.permissionChosen(permChoice.index)
+                }
             }
         }
     }

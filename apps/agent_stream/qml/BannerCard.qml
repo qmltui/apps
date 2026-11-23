@@ -1,14 +1,14 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
-import QmlTui.Controls
 
 // Session banner: a Canvas mark beside the product and model details.
 Row {
     id: banner
+
     required property string activeModel
     property int logoRenderMode: Canvas.HalfBlock
+
     width: parent ? parent.width : 80
     spacing: 2
 
@@ -17,7 +17,7 @@ Row {
         width: 11
         height: 5
         renderMode: Canvas.HalfBlock
-        color: "#f8fafc"
+        color: Theme.white
 
         // Center the nine-pixel-wide mark with one pixel of padding on each side.
         Circle {
@@ -79,7 +79,7 @@ Row {
         Canvas {
             anchors.fill: parent
             renderMode: Canvas.Braille
-            color: "#f8fafc"
+            color: Theme.white
 
             // Adjacent outlines form a thick ring without painting its hollow center.
             Circle {
@@ -189,11 +189,13 @@ Row {
 
     Column {
         spacing: 0
+
         Row {
             spacing: 1
+
             Text {
                 text: "QmlTui"
-                color: "#f8fafc"
+                color: Theme.white
                 bold: true
             }
             StatusBadge {
@@ -203,24 +205,24 @@ Row {
             }
             Text {
                 text: "· agent stream demo"
-                color: "#38bdf8"
+                color: Theme.cyan
             }
         }
         Text {
             text: "✦ Qt AI studio · " + banner.activeModel + " · ~/QmlTui"
-            color: "#94a3b8"
+            color: Theme.slate
         }
         Text {
             text: "Type a prompt or /demo [1-4] to simulate agent workflows"
-            color: "#64748b"
+            color: Theme.muted
         }
         Text {
             text: "/help for commands · [F2] model · [F3] diff"
-            color: "#64748b"
+            color: Theme.muted
         }
         Text {
             text: "Ctrl+Q quits · Esc quits when the prompt is empty"
-            color: "#64748b"
+            color: Theme.muted
         }
     }
 }

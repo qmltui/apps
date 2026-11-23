@@ -1,45 +1,34 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
 
 Column {
     id: thoughtCard
+
     required property string content
     required property string title
-
-    property bool collapsed: false
 
     width: parent ? parent.width : 80
     spacing: 0
 
     Row {
         spacing: 1
+
         Text {
-            text: thoughtCard.collapsed ? "▶ Thought" : "▼ Thought"
-            color: "#a78bfa"
+            text: "▼ Thought"
+            color: Theme.violet
             bold: true
         }
         Text {
             text: " (" + (thoughtCard.title || "0.8s") + ")"
-            color: "#64748b"
-        }
-        Text {
-            visible: thoughtCard.collapsed
-            text: " · [Click to expand]"
-            color: "#64748b"
+            color: Theme.muted
         }
     }
 
     Text {
-        visible: !thoughtCard.collapsed
-        text: "  " + thoughtCard.content
-        color: "#94a3b8"
+        x: 2
+        text: thoughtCard.content
+        color: Theme.slate
         italic: true
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        onClicked: thoughtCard.collapsed = !thoughtCard.collapsed
     }
 }

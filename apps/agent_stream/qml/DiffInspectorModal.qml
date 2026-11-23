@@ -1,17 +1,13 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
-import QmlTui.Controls
 
 Popup {
     id: diffModal
 
-    Theme {
-        id: theme
-    }
+    required property DiffPreviewModel diffModel
 
-    property string targetFile: "src/QmlTui/engine/InlineRenderer.cpp"
+    readonly property string targetFile: diffModal.diffModel.targetFile
 
     signal switchToModelRequested
 
@@ -22,9 +18,20 @@ Popup {
     dimBackground: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnOutsideClick
 
+    Keys.priority: Keys.BeforeItem
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_Escape || event.key === Qt.Key_F3) {
+            diffModal.close();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_F2) {
+            diffModal.switchToModelRequested();
+            event.accepted = true;
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
-        color: "#0f172a"
+        color: Theme.surface
     }
 
     Column {
@@ -46,26 +53,26 @@ Popup {
             }
 
             Text {
-                text: diffModal.targetFile
-                color: theme.amber
+                text: diffModal.diffModel.targetFile
+                color: Theme.amber
                 bold: true
             }
 
             Text {
                 text: " · "
-                color: theme.muted
+                color: Theme.muted
             }
 
             Rectangle {
                 width: closeText.implicitWidth + 2
                 height: 1
-                color: closeMouse.containsMouse ? "#1e293b" : "transparent"
+                color: closeMouse.containsMouse ? Theme.hoverBg : "transparent"
 
                 Text {
                     id: closeText
                     anchors.centerIn: parent
                     text: "[Esc/F3] close"
-                    color: closeMouse.containsMouse ? "white" : theme.muted
+                    color: closeMouse.containsMouse ? "white" : Theme.muted
                     bold: closeMouse.containsMouse
                     underline: closeMouse.containsMouse
                 }
@@ -86,21 +93,21 @@ Popup {
             spacing: 1
 
             Text {
-                text: "@@ -72,6 +72,8 @@ "
-                color: theme.cyan
+                text: diffModal.diffModel.hunkHeader
+                color: Theme.cyan
                 bold: true
             }
             Text {
-                text: "+3 additions"
-                color: theme.green
+                text: diffModal.diffModel.additionsLabel
+                color: Theme.green
             }
             Text {
                 text: "·"
-                color: theme.muted
+                color: Theme.muted
             }
             Text {
-                text: "-1 deletion"
-                color: theme.rose
+                text: diffModal.diffModel.deletionsLabel
+                color: Theme.rose
             }
         }
 
@@ -113,198 +120,56 @@ Popup {
             Text {
                 width: 36
                 text: "  Original (HEAD)"
-                color: theme.muted
+                color: Theme.muted
                 bold: true
             }
             Text {
                 text: "  "
-                color: theme.muted
+                color: Theme.muted
             }
             Text {
                 text: "Modified (proposed patch)"
-                color: theme.muted
+                color: Theme.muted
                 bold: true
             }
         }
 
-        // Code Diff Lines Side-by-Side
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: "transparent"
-            Row {
+        // Side-by-side diff rows backed by C++ DiffPreviewModel
+        Repeater {
+            model: diffModal.diffModel
+            delegate: Rectangle {
+                id: diffRow
+
+                required property string leftText
+                required property color leftColor
+                required property string rightText
+                required property color rightColor
+                required property color rowBg
+
                 width: parent.width
                 height: 1
-                spacing: 0
-                Text {
-                    width: 36
-                    text: " 72: void InlineRenderer::render() {"
-                    color: theme.slate
-                }
-                Text {
-                    text: "  "
-                    color: theme.muted
-                }
-                Text {
-                    text: " 72: void InlineRenderer::render() {"
-                    color: theme.slate
+                color: diffRow.rowBg
+
+                Row {
+                    width: parent.width
+                    height: 1
+                    spacing: 0
+
+                    Text {
+                        width: 36
+                        text: diffRow.leftText
+                        color: diffRow.leftColor
+                    }
+                    Text {
+                        text: "  "
+                        color: Theme.muted
+                    }
+                    Text {
+                        text: diffRow.rightText
+                        color: diffRow.rightColor
+                    }
                 }
             }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: "#1e1e2e"
-            Row {
-                width: parent.width
-                height: 1
-                spacing: 0
-                Text {
-                    width: 36
-                    text: " 73:   const int h = buffer.height();"
-                    color: theme.slate
-                }
-                Text {
-                    text: "  "
-                    color: theme.muted
-                }
-                Text {
-                    text: " 73:   const int h = buffer.height();"
-                    color: theme.slate
-                }
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: "#2a1215"
-            Row {
-                width: parent.width
-                height: 1
-                spacing: 0
-                Text {
-                    width: 36
-                    text: "-74:   device.write(buffer.data());"
-                    color: theme.rose
-                }
-                Text {
-                    text: "  "
-                    color: theme.muted
-                }
-                Text {
-                    text: "    (replaced with bounds check)"
-                    color: theme.muted
-                }
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: "#0d2818"
-            Row {
-                width: parent.width
-                height: 1
-                spacing: 0
-                Text {
-                    width: 36
-                    text: "                                    "
-                    color: theme.muted
-                }
-                Text {
-                    text: "  "
-                    color: theme.muted
-                }
-                Text {
-                    text: "+74:   const int safeHeight = clamp(h);"
-                    color: theme.green
-                }
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: "#0d2818"
-            Row {
-                width: parent.width
-                height: 1
-                spacing: 0
-                Text {
-                    width: 36
-                    text: "                                    "
-                    color: theme.muted
-                }
-                Text {
-                    text: "  "
-                    color: theme.muted
-                }
-                Text {
-                    text: "+75:   markDirty(safeHeight);"
-                    color: theme.green
-                }
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: "#0d2818"
-            Row {
-                width: parent.width
-                height: 1
-                spacing: 0
-                Text {
-                    width: 36
-                    text: "                                    "
-                    color: theme.muted
-                }
-                Text {
-                    text: "  "
-                    color: theme.muted
-                }
-                Text {
-                    text: "+76:   device.write(buffer.slice(...));"
-                    color: theme.green
-                }
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: "transparent"
-            Row {
-                width: parent.width
-                height: 1
-                spacing: 0
-                Text {
-                    width: 36
-                    text: " 77: }"
-                    color: theme.slate
-                }
-                Text {
-                    text: "  "
-                    color: theme.muted
-                }
-                Text {
-                    text: " 77: }"
-                    color: theme.slate
-                }
-            }
-        }
-    }
-
-    Keys.priority: Keys.BeforeItem
-    Keys.onPressed: event => {
-        if (event.key === Qt.Key_Escape || event.key === Qt.Key_F3) {
-            diffModal.close();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_F2) {
-            diffModal.switchToModelRequested();
-            event.accepted = true;
         }
     }
 }

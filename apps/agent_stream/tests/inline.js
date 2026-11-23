@@ -37,4 +37,27 @@ function main(terminal) {
     terminal.press("3")
     terminal.expectText("Ask anything")
     terminal.captureText("ready.txt")
+
+    // Scenario 3 (/demo 3) streams live thought deltas in the inline viewport,
+    // commits them to Scrollback, updates DiffCard & DiffInspectorModal to
+    // TextGridBuffer.cpp, and runs step 4 stress tests after permission approval.
+    terminal.typeText("/demo 3")
+    terminal.press("Enter")
+    terminal.advanceTime(200)
+    terminal.expectText("streaming...")
+    terminal.expectText("Scanning text buffer bounds ▍")
+    terminal.expectNoScrollbackText("against UTF-8 overflow vectors.")
+    terminal.advanceTime(2800)
+    terminal.waitForText("Allow once", 7000)
+    terminal.expectNoText("streaming...")
+    terminal.expectScrollbackText("Scanning text buffer bounds against UTF-8 overflow vectors.")
+    terminal.expectScrollbackText("TextGridBuffer::putCluster")
+    terminal.press("F3")
+    terminal.expectText("TextGridBuffer.cpp")
+    terminal.expectText("+4 additions")
+    terminal.press("Escape")
+    terminal.press("1")
+    terminal.advanceTime(1500)
+    terminal.waitForText("Ask anything", 5000)
+    terminal.expectScrollbackText("Passed 24/24 buffer stress tests")
 }

@@ -1,32 +1,26 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
-import QmlTui.Controls
 
 Rectangle {
     id: toast
-
-    Theme {
-        id: theme
-    }
 
     property string message: ""
     property string status: "success"
     property int displayDuration: 3500
 
-    width: Math.min(50, message.length + 8)
-    height: 1
-    color: toastMouse.containsMouse ? "#334155" : "#1e293b"
-    visible: false
-
-    function notify(msg, stat) {
-        message = msg || "";
-        if (stat)
-            status = stat;
-        visible = true;
+    function notify(msg: string, stat: string): void {
+        toast.message = msg;
+        if (stat.length > 0)
+            toast.status = stat;
+        toast.visible = true;
         dismissTimer.restart();
     }
+
+    width: Math.min(parent ? Math.max(1, parent.width - 2) : 60, toastRow.implicitWidth)
+    height: 1
+    color: toastMouse.containsMouse ? Theme.pressedBg : Theme.hoverBg
+    visible: false
 
     Timer {
         id: dismissTimer
@@ -36,6 +30,7 @@ Rectangle {
     }
 
     Row {
+        id: toastRow
         anchors.fill: parent
         spacing: 1
 

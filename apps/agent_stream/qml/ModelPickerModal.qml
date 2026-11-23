@@ -1,15 +1,9 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
-import QmlTui.Controls
 
 Popup {
     id: modelPicker
-
-    Theme {
-        id: theme
-    }
 
     property string currentModel: "claude-3-7-sonnet"
     property int selectedIndex: 0
@@ -17,48 +11,23 @@ Popup {
     signal modelSelected(string modelId)
     signal switchToDiffRequested
 
-    readonly property var models: [
-        {
-            "id": "claude-3-7-sonnet",
-            "name": "Claude 3.7 Sonnet",
-            "provider": "Anthropic",
-            "context": "128k / 64k thinking",
-            "rate": "$3.00/M in · $15.00/M out",
-            "badge": "default",
-            "badgeStatus": "success",
-            "desc": "Hybrid reasoning with adaptive token budget & code synthesis"
-        },
-        {
-            "id": "gpt-4.5-preview",
-            "name": "GPT-4.5 Preview",
-            "provider": "OpenAI",
-            "context": "128k / 32k thinking",
-            "rate": "$7.50/M in · $37.50/M out",
-            "badge": "frontier",
-            "badgeStatus": "info",
-            "desc": "Deep reasoning & architecture analysis with high fidelity"
-        },
-        {
-            "id": "gemini-2.0-flash",
-            "name": "Gemini 2.0 Flash",
-            "provider": "Google",
-            "context": "1.0M context window",
-            "rate": "$0.10/M in · $0.40/M out",
-            "badge": "fastest",
-            "badgeStatus": "warning",
-            "desc": "Ultra-low latency streaming with 1M token context window"
-        },
-        {
-            "id": "deepseek-r1",
-            "name": "DeepSeek R1",
-            "provider": "DeepSeek",
-            "context": "64k context window",
-            "rate": "$0.55/M in · $2.19/M out",
-            "badge": "reasoning",
-            "badgeStatus": "subtle",
-            "desc": "Open-weights reinforced reasoning for math & logic proofs"
+    function selectNext(): void {
+        if (modelCatalog.count > 0)
+            modelPicker.selectedIndex = (modelPicker.selectedIndex + 1) % modelCatalog.count;
+    }
+
+    function selectPrev(): void {
+        if (modelCatalog.count > 0)
+            modelPicker.selectedIndex = (modelPicker.selectedIndex - 1 + modelCatalog.count) % modelCatalog.count;
+    }
+
+    function chooseCurrent(): void {
+        const chosenId = modelCatalog.modelIdAt(modelPicker.selectedIndex);
+        if (chosenId.length > 0) {
+            modelPicker.modelSelected(chosenId);
+            modelPicker.close();
         }
-    ]
+    }
 
     width: parent ? parent.width : 78
     height: 16
@@ -67,35 +36,57 @@ Popup {
     dimBackground: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnOutsideClick
 
-    function selectNext() {
-        selectedIndex = (selectedIndex + 1) % models.length;
-    }
-
-    function selectPrev() {
-        selectedIndex = (selectedIndex - 1 + models.length) % models.length;
-    }
-
-    function chooseCurrent() {
-        if (selectedIndex >= 0 && selectedIndex < models.length) {
-            modelSelected(models[selectedIndex].id);
-            close();
-        }
-    }
-
     onVisibleChanged: {
-        if (visible) {
-            for (let i = 0; i < models.length; ++i) {
-                if (models[i].id === currentModel) {
-                    selectedIndex = i;
-                    break;
-                }
-            }
+        if (modelPicker.visible) {
+            const idx = modelCatalog.indexOfModel(modelPicker.currentModel);
+            if (idx >= 0)
+                modelPicker.selectedIndex = idx;
         }
+    }
+
+    Keys.priority: Keys.BeforeItem
+    Keys.onPressed: event => {
+        if (event.key === Qt.Key_1) {
+            modelPicker.selectedIndex = 0;
+            modelPicker.chooseCurrent();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_2) {
+            modelPicker.selectedIndex = 1;
+            modelPicker.chooseCurrent();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_3) {
+            modelPicker.selectedIndex = 2;
+            modelPicker.chooseCurrent();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_4) {
+            modelPicker.selectedIndex = 3;
+            modelPicker.chooseCurrent();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Up) {
+            modelPicker.selectPrev();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Down) {
+            modelPicker.selectNext();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            modelPicker.chooseCurrent();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_F2) {
+            modelPicker.close();
+            event.accepted = true;
+        } else if (event.key === Qt.Key_F3) {
+            modelPicker.switchToDiffRequested();
+            event.accepted = true;
+        }
+    }
+
+    NeuralModelCatalog {
+        id: modelCatalog
     }
 
     Rectangle {
         anchors.fill: parent
-        color: "#0f172a"
+        color: Theme.surface
     }
 
     Column {
@@ -124,19 +115,19 @@ Popup {
 
             Text {
                 text: " · [1-4/Enter] select · "
-                color: theme.muted
+                color: Theme.muted
             }
 
             Rectangle {
                 width: closeModelBtn.implicitWidth + 2
                 height: 1
-                color: closeModelMouse.containsMouse ? "#1e293b" : "transparent"
+                color: closeModelMouse.containsMouse ? Theme.hoverBg : "transparent"
 
                 Text {
                     id: closeModelBtn
                     anchors.centerIn: parent
                     text: "[Esc] close"
-                    color: closeModelMouse.containsMouse ? "white" : theme.muted
+                    color: closeModelMouse.containsMouse ? "white" : Theme.muted
                     bold: closeModelMouse.containsMouse
                     underline: closeModelMouse.containsMouse
                 }
@@ -159,18 +150,27 @@ Popup {
 
         // Model List Items
         Repeater {
-            model: modelPicker.models
+            model: modelCatalog
             delegate: Rectangle {
                 id: modelEntry
+
                 required property int index
-                readonly property var m: modelPicker.models[modelEntry.index]
+                required property string modelId
+                required property string name
+                required property string provider
+                required property string context
+                required property string rate
+                required property string badge
+                required property string badgeStatus
+                required property string desc
+
                 readonly property bool isSelected: modelEntry.index === modelPicker.selectedIndex
-                readonly property bool isActive: modelEntry.m.id === modelPicker.currentModel
+                readonly property bool isActive: modelEntry.modelId === modelPicker.currentModel
                 readonly property bool isHovered: modelMouse.containsMouse
 
                 width: parent.width
                 height: 3
-                color: modelEntry.isHovered ? (modelMouse.pressed ? "#334155" : "#1e293b") : (modelEntry.isSelected ? "#1e293b" : "transparent")
+                color: modelEntry.isHovered ? (modelMouse.pressed ? Theme.pressedBg : Theme.hoverBg) : (modelEntry.isSelected ? Theme.hoverBg : "transparent")
 
                 Column {
                     anchors.fill: parent
@@ -184,32 +184,32 @@ Popup {
 
                         Text {
                             text: (modelEntry.isSelected || modelEntry.isHovered ? "❯ [" : "  [") + (modelEntry.index + 1) + "] "
-                            color: (modelEntry.isSelected || modelEntry.isHovered) ? theme.cyan : theme.muted
+                            color: (modelEntry.isSelected || modelEntry.isHovered) ? Theme.cyan : Theme.muted
                             bold: modelEntry.isSelected || modelEntry.isHovered
                         }
 
                         Text {
-                            text: modelEntry.m.name
-                            color: modelEntry.isHovered ? "white" : (modelEntry.isSelected ? "white" : (modelEntry.isActive ? theme.cyan : theme.slate))
+                            text: modelEntry.name
+                            color: modelEntry.isHovered ? "white" : (modelEntry.isSelected ? "white" : (modelEntry.isActive ? Theme.cyan : Theme.slate))
                             bold: modelEntry.isSelected || modelEntry.isActive || modelEntry.isHovered
                             underline: modelEntry.isHovered
                         }
 
                         Text {
-                            text: "(" + modelEntry.m.provider + ")"
-                            color: modelEntry.isHovered ? theme.slate : theme.muted
+                            text: "(" + modelEntry.provider + ")"
+                            color: modelEntry.isHovered ? Theme.slate : Theme.muted
                         }
 
                         StatusBadge {
-                            text: modelEntry.m.badge
-                            status: modelEntry.m.badgeStatus
+                            text: modelEntry.badge
+                            status: modelEntry.badgeStatus
                             variant: "subtle"
                             showIcon: false
                         }
 
                         Text {
                             text: modelEntry.isActive ? "● active" : ""
-                            color: theme.green
+                            color: Theme.green
                             bold: true
                         }
                     }
@@ -220,8 +220,8 @@ Popup {
                         spacing: 1
 
                         Text {
-                            text: "      " + modelEntry.m.desc
-                            color: modelEntry.isHovered ? theme.white : (modelEntry.isSelected ? theme.slate : theme.muted)
+                            text: "      " + modelEntry.desc
+                            color: modelEntry.isHovered ? Theme.white : (modelEntry.isSelected ? Theme.slate : Theme.muted)
                         }
                     }
 
@@ -231,8 +231,8 @@ Popup {
                         spacing: 1
 
                         Text {
-                            text: "      Ctx: " + modelEntry.m.context + " · " + modelEntry.m.rate
-                            color: modelEntry.isHovered ? theme.slate : theme.muted
+                            text: "      Ctx: " + modelEntry.context + " · " + modelEntry.rate
+                            color: modelEntry.isHovered ? Theme.slate : Theme.muted
                         }
                     }
                 }
@@ -248,42 +248,6 @@ Popup {
                     }
                 }
             }
-        }
-    }
-
-    Keys.priority: Keys.BeforeItem
-    Keys.onPressed: event => {
-        if (event.key === Qt.Key_1) {
-            selectedIndex = 0;
-            chooseCurrent();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_2) {
-            selectedIndex = 1;
-            chooseCurrent();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_3) {
-            selectedIndex = 2;
-            chooseCurrent();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_4) {
-            selectedIndex = 3;
-            chooseCurrent();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Up) {
-            selectPrev();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Down) {
-            selectNext();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-            chooseCurrent();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_Escape || event.key === Qt.Key_F2) {
-            close();
-            event.accepted = true;
-        } else if (event.key === Qt.Key_F3) {
-            switchToDiffRequested();
-            event.accepted = true;
         }
     }
 }

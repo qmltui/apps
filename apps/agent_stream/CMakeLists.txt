@@ -1,10 +1,23 @@
 cmake_minimum_required(VERSION 3.20)
 
+set_source_files_properties(qml/Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+
+set(agent_stream_sources
+    src/AgentTransport.h
+    src/MockAgentTransport.h
+    src/MockAgentTransport.cpp
+    src/AgentModels.h
+    src/AgentModels.cpp
+    src/AgentSession.h
+    src/AgentSession.cpp
+)
+
 set(agent_stream_qml_files
     qml/StatusBadge.qml
     qml/Main.qml
     qml/Theme.qml
     qml/BannerCard.qml
+    qml/LiveStreamCard.qml
     qml/UserPromptCard.qml
     qml/ThoughtCard.qml
     qml/ToolCallCard.qml
@@ -27,12 +40,14 @@ qt_add_executable(qmltui_agent_stream src/main.cpp)
 
 qt_add_qml_module(qmltui_agent_stream
     URI AgentStreamDemo
+    SOURCES ${agent_stream_sources}
     QML_FILES ${agent_stream_qml_files}
     DEPENDENCIES
         TARGET QmlTui::Core
         TARGET QmlTui::Controls
 )
 
+target_include_directories(qmltui_agent_stream PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(qmltui_agent_stream PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
 
 if(COMMAND qmltui_wasm_app)
@@ -59,4 +74,20 @@ if(BUILD_TESTING AND TARGET QmlTui::Runner)
         SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tests/demo.js"
         COLUMNS 120 ROWS 35 CLOCK REAL
         RECORD agent_stream.cast LABELS Demo)
+endif()
+
+if(BUILD_TESTING)
+    qt_add_executable(test_agent_stream_models
+        tests/test_agent_models.cpp
+        ${agent_stream_sources}
+    )
+    target_include_directories(test_agent_stream_models PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(test_agent_stream_models PRIVATE
+        Qt6::Core
+        Qt6::Qml
+        Qt6::Test
+        QmlTui::Core
+    )
+    add_test(NAME agent_stream_models COMMAND test_agent_stream_models)
+    set_tests_properties(agent_stream_models PROPERTIES LABELS "Unit;AgentSmoke")
 endif()

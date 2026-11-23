@@ -1,21 +1,25 @@
 pragma ComponentBehavior: Bound
 
-import QtQml
 import QmlTui
 
 Column {
     id: swarmCard
+
     required property string title
-    property var tableModel: null
 
     width: parent ? parent.width : 76
     spacing: 0
 
+    SwarmAuditModel {
+        id: swarmAuditModel
+    }
+
     Row {
         spacing: 1
+
         Text {
             text: "✦ Subagent Swarm Mesh:"
-            color: "#38bdf8"
+            color: Theme.cyan
             bold: true
         }
         Text {
@@ -28,7 +32,9 @@ Column {
     TableView {
         width: parent.width > 0 ? Math.min(parent.width, 76) : 76
         height: 5
-        headerColor: "#38bdf8"
+        focus: false
+        focusPolicy: Qt.NoFocus
+        headerColor: Theme.cyan
         headerBackgroundColor: "transparent"
         showColumnGrid: false
         alternatingRows: false
@@ -56,7 +62,7 @@ Column {
             }
         ]
 
-        model: swarmCard.tableModel ? swarmCard.tableModel : [["MemoryAuditor", "src/QmlTui/engine/", "Pass", "0 leaks (checked 18)"], ["QmlProfiler", "examples/agent/", "Pass", "0 binding loops"], ["RaceVerifier", "Terminal.cpp", "Pass", "Thread-affinity safe"]]
+        model: swarmAuditModel
 
         cellFormat: (row, col, value) => {
             if (col === 0)
