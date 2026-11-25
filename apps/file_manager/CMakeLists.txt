@@ -7,6 +7,24 @@ if(NOT TARGET Qt6::Gui)
     return()
 endif()
 
+set(_file_manager_deps
+    DEPENDENCIES
+        TARGET QmlTuiMarkdown
+)
+get_target_property(_qmltui_is_imported QmlTui::Core IMPORTED)
+if(_qmltui_is_imported)
+    if(QmlTui_QML_IMPORT_PATH)
+        list(APPEND _file_manager_deps IMPORT_PATH "${QmlTui_QML_IMPORT_PATH}")
+    endif()
+else()
+    list(APPEND _file_manager_deps
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
+        TARGET QmlTui::Image
+        TARGET QmlTui::PtyView
+    )
+endif()
+
 qt_add_executable(qmltui_file_manager src/main.cpp)
 
 qt_add_qml_module(qmltui_file_manager
@@ -35,11 +53,7 @@ qt_add_qml_module(qmltui_file_manager
         qml/HelpDialog.qml
         qml/InputDialog.qml
         qml/ConfirmDialog.qml
-    DEPENDENCIES
-        TARGET QmlTui::Core
-        TARGET QmlTui::Controls
-        TARGET QmlTui::Image
-        TARGET QmlTui::PtyView
+    ${_file_manager_deps}
 )
 
 target_include_directories(qmltui_file_manager PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -52,6 +66,7 @@ target_link_libraries(qmltui_file_manager PRIVATE
     QmlTui::Controls
     QmlTui::Image
     QmlTui::PtyView
+    QmlTui::Markdown
 )
 
 if(TARGET Qt6::Svg)

@@ -16,9 +16,12 @@ function main(terminal) {
     terminal.press("End");
     terminal.waitForText("README.md", 2000);
 
-    // Verify text preview has line numbers and markdown content
+    // Verify Markdown preview renders formatted document via QmlTui.Markdown MdView with line numbers
     terminal.expectText("1 │");
     terminal.expectText("Terminal File Manager");
+    terminal.expectNoText("# Terminal File Manager");
+    terminal.expectText("● Features");
+    terminal.expectNoText("## Features");
     terminal.captureStyled("readme_preview_styled.txt");
 
     // Move up to package.json to verify JSON key/string preview

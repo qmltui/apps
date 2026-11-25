@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQml
 import QmlTui
 import QmlTui.Image
+import QmlTui.Markdown
 
 Rectangle {
     id: root
@@ -42,8 +43,60 @@ Rectangle {
         }
     }
 
+    onPreviewDataChanged: {
+        if (root.previewData && root.previewData.type === "markdown") {
+            mdPreview.scrollToLine(0);
+        }
+    }
+
     color: Theme.bgColumnDim
     border.style: Border.None
+
+    ModernDocStyle {
+        id: mdDocStyle
+
+        wrapCodeBlocks: true
+        wrapTableCells: true
+    }
+
+    MdViewStyle {
+        id: mdViewStyle
+
+        showLineNumbers: true
+        palette {
+            text: Theme.textPrimary
+            textMuted: Theme.textMuted
+            heading: Theme.textHighlight
+            heading1Bg: "ansi:blue"
+            heading2: Theme.accentBlue
+            heading3: Theme.accentCyan
+            heading4: Theme.accentGreen
+            heading5: Theme.accentYellow
+            code: Theme.accentPeach
+            inlineCode: Theme.accentCyan
+            inlineCodeBg: "default"
+            quote: Theme.accentCyan
+            border: Theme.borderNormal
+            link: Theme.accentCyan
+            success: Theme.accentGreen
+            warning: Theme.accentYellow
+            syntaxKeyword: Theme.accentMauve
+            syntaxType: Theme.accentCyan
+            syntaxFunction: Theme.accentBlue
+            syntaxString: Theme.accentGreen
+            syntaxComment: Theme.textMuted
+            syntaxNumber: Theme.accentYellow
+            syntaxPreprocessor: Theme.accentMauve
+            syntaxSymbol: Theme.accentPink
+        }
+    }
+
+    MdDoc {
+        id: mdPreviewDoc
+
+        text: (root.previewData && root.previewData.type === "markdown") ? (root.previewData.rawText || "") : ""
+        style: mdDocStyle
+    }
 
     // 1. Text File Preview
     Item {
@@ -72,6 +125,28 @@ Rectangle {
                 color: Theme.textPrimary
                 text: root.previewData ? (root.previewData.highlightedText || root.previewData.formattedText || root.previewData.rawText || (root.previewData.textLines ? root.previewData.textLines.join("\n") : "")) : ""
             }
+        }
+    }
+
+    // 1b. Markdown Document Preview
+    Item {
+        id: markdownPreviewPane
+        visible: Boolean(root.previewData && root.previewData.type === "markdown")
+        anchors.top: parent.top
+        anchors.topMargin: 1
+        anchors.left: parent.left
+        anchors.leftMargin: 2
+        anchors.right: parent.right
+        anchors.rightMargin: 2
+        anchors.bottom: parent.bottom
+        clip: true
+
+        MdView {
+            id: mdPreview
+
+            anchors.fill: parent
+            document: mdPreviewDoc
+            style: mdViewStyle
         }
     }
 
