@@ -60,4 +60,9 @@ function main(terminal) {
     terminal.advanceTime(1500)
     terminal.waitForText("Ask anything", 5000)
     terminal.expectScrollbackText("Passed 24/24 buffer stress tests")
+    terminal.expectScrollbackText("Security patch applied to TextGridBuffer.cpp")
+    terminal.expectScrollbackText("overflow risk resolved")
+    terminal.expectNoScrollbackText("~~overflow risk~~")
+    terminal.expectNoScrollbackText("**24/24**")
+    terminal.captureScrollbackStyled("response_markdown_styled.txt")
 }

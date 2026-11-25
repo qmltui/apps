@@ -36,19 +36,39 @@ set(agent_stream_qml_files
     qml/ToastNotification.qml
 )
 
+set(_agent_stream_deps
+    DEPENDENCIES
+        TARGET QmlTuiMarkdown
+)
+get_target_property(_qmltui_is_imported QmlTui::Core IMPORTED)
+if(_qmltui_is_imported)
+    if(QmlTui_QML_IMPORT_PATH)
+        list(APPEND _agent_stream_deps IMPORT_PATH "${QmlTui_QML_IMPORT_PATH}")
+    endif()
+else()
+    list(APPEND _agent_stream_deps
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
+    )
+endif()
+
 qt_add_executable(qmltui_agent_stream src/main.cpp)
 
 qt_add_qml_module(qmltui_agent_stream
     URI AgentStreamDemo
     SOURCES ${agent_stream_sources}
     QML_FILES ${agent_stream_qml_files}
-    DEPENDENCIES
-        TARGET QmlTui::Core
-        TARGET QmlTui::Controls
+    ${_agent_stream_deps}
 )
 
 target_include_directories(qmltui_agent_stream PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_link_libraries(qmltui_agent_stream PRIVATE Qt6::Core Qt6::Qml QmlTui::Core QmlTui::Controls)
+target_link_libraries(qmltui_agent_stream PRIVATE
+    Qt6::Core
+    Qt6::Qml
+    QmlTui::Core
+    QmlTui::Controls
+    QmlTui::Markdown
+)
 
 if(COMMAND qmltui_wasm_app)
     qmltui_wasm_app(qmltui_agent_stream)
