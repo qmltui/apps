@@ -1,3 +1,24 @@
+if(NOT TARGET QmlTui::Markdown AND NOT TARGET QmlTuiMarkdown)
+    include(FetchContent)
+    set(QMLTUI_MARKDOWN_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(QMLTUI_MARKDOWN_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(_default_markdown_dir "${PROJECT_SOURCE_DIR}/../markdown")
+    if(NOT FETCHCONTENT_SOURCE_DIR_QMLTUI_MARKDOWN AND EXISTS "${_default_markdown_dir}/CMakeLists.txt")
+        FetchContent_Declare(
+            qmltui_markdown
+            SOURCE_DIR "${_default_markdown_dir}"
+        )
+    else()
+        FetchContent_Declare(
+            qmltui_markdown
+            GIT_REPOSITORY https://github.com/qmltui/markdown.git
+            GIT_TAG main
+            GIT_SHALLOW TRUE
+        )
+    endif()
+    FetchContent_MakeAvailable(qmltui_markdown)
+endif()
+
 add_subdirectory(agent_stream)
 add_subdirectory(container_fleet)
 add_subdirectory(package_manager)
@@ -22,9 +43,7 @@ if(QMLTUI_ENABLE_PRIVATE_QT)
     add_subdirectory(twozero48)
 endif()
 
-# The viewer fetches md4qt (KDE) itself; a failed fetch fails configuration
-# loudly instead of silently dropping the app.
-option(QMLTUI_BUILD_MARKDOWN_VIEWER "Build the markdown_viewer showcase (fetches md4qt)" ON)
+option(QMLTUI_BUILD_MARKDOWN_VIEWER "Build the markdown_viewer showcase (uses QmlTui.Markdown)" ON)
 if(QMLTUI_BUILD_MARKDOWN_VIEWER)
     add_subdirectory(markdown_viewer)
 endif()

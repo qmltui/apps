@@ -1,41 +1,47 @@
-include(FetchContent)
+if(NOT TARGET QmlTui::Markdown AND NOT TARGET QmlTuiMarkdown)
+    include(FetchContent)
+    set(QMLTUI_MARKDOWN_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(QMLTUI_MARKDOWN_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(_default_markdown_dir "${PROJECT_SOURCE_DIR}/../markdown")
+    if(NOT FETCHCONTENT_SOURCE_DIR_QMLTUI_MARKDOWN AND EXISTS "${_default_markdown_dir}/CMakeLists.txt")
+        FetchContent_Declare(
+            qmltui_markdown
+            SOURCE_DIR "${_default_markdown_dir}"
+        )
+    else()
+        FetchContent_Declare(
+            qmltui_markdown
+            GIT_REPOSITORY https://github.com/qmltui/markdown.git
+            GIT_TAG main
+            GIT_SHALLOW TRUE
+        )
+    endif()
+    FetchContent_MakeAvailable(qmltui_markdown)
+endif()
 
-set(BUILD_MD4QT_TESTS OFF CACHE BOOL "" FORCE)
-set(BUILD_MD4QT_BENCHMARK OFF CACHE BOOL "" FORCE)
-set(BUILD_MD2HTML_APP OFF CACHE BOOL "" FORCE)
-set(BUILD_MD2QDOC_APP OFF CACHE BOOL "" FORCE)
-set(INSTALL_MD4QT OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-    md4qt
-    GIT_REPOSITORY https://github.com/KDE/md4qt.git
-    GIT_TAG 1a878810adeeb534de4de395f4951edd54ab6072
+set(_markdown_viewer_deps
+    DEPENDENCIES
+        TARGET QmlTuiMarkdown
 )
-FetchContent_MakeAvailable(md4qt)
+get_target_property(_qmltui_is_imported QmlTui::Core IMPORTED)
+if(_qmltui_is_imported)
+    if(QmlTui_QML_IMPORT_PATH)
+        list(APPEND _markdown_viewer_deps IMPORT_PATH "${QmlTui_QML_IMPORT_PATH}")
+    endif()
+else()
+    list(APPEND _markdown_viewer_deps
+        TARGET QmlTui::Core
+        TARGET QmlTui::Controls
+    )
+endif()
 
-qt_add_library(qmltui_markdown_viewer_module STATIC)
+qt_add_executable(qmltui_markdown_viewer src/main.cpp)
 
-qt_add_qml_module(qmltui_markdown_viewer_module
+qt_add_qml_module(qmltui_markdown_viewer
     URI QmlTui.Examples.MarkdownViewer
-    SOURCES
-        src/MdRole.h
-        src/MdPalette.h
-        src/MdPalette.cpp
-        src/MdDocStyle.h
-        src/MdDocStyle.cpp
-        src/MdViewStyle.h
-        src/MdViewStyle.cpp
-        src/MdDoc.h
-        src/MdDoc.cpp
-        src/SyntaxHighlighter.h
-        src/SyntaxHighlighter.cpp
     QML_FILES
         qml/Main.qml
-        qml/MdView.qml
         qml/Theme.qml
-        qml/ModernDocStyle.qml
-        qml/ClassicDocStyle.qml
-        qml/MinimalDocStyle.qml
         qml/StyleEditor.qml
         qml/HeaderBar.qml
         qml/StatusBar.qml
@@ -46,31 +52,15 @@ qt_add_qml_module(qmltui_markdown_viewer_module
         resources/qmltui_guide.md
         resources/cheatsheet.md
         resources/edge_cases.md
-    DEPENDENCIES
-        TARGET QmlTui::Core
-        TARGET QmlTui::Controls
+    ${_markdown_viewer_deps}
 )
 
-target_include_directories(qmltui_markdown_viewer_module
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src"
-    PRIVATE ${md4qt_SOURCE_DIR}/src ${md4qt_SOURCE_DIR}
-)
-
-target_compile_definitions(qmltui_markdown_viewer_module PRIVATE MD4QT_QT_SUPPORT)
-
-target_link_libraries(qmltui_markdown_viewer_module PRIVATE
+target_link_libraries(qmltui_markdown_viewer PRIVATE
     Qt6::Core
     Qt6::Qml
     QmlTui::Core
     QmlTui::Controls
-    md4qt::md4qt
-)
-
-qt_add_executable(qmltui_markdown_viewer src/main.cpp)
-target_link_libraries(qmltui_markdown_viewer PRIVATE
-    Qt6::Core
-    Qt6::Qml
-    qmltui_markdown_viewer_moduleplugin
+    QmlTui::Markdown
 )
 
 if(COMMAND qmltui_wasm_app)
@@ -109,16 +99,4 @@ if(BUILD_TESTING AND TARGET QmlTui::Runner)
         RECORD markdown_viewer.cast
         LABELS Demo
     )
-endif()
-
-if(BUILD_TESTING)
-    qt_add_executable(test_markdown_viewer_document tests/markdown_viewer.cpp)
-    target_link_libraries(test_markdown_viewer_document PRIVATE
-        Qt6::Core
-        Qt6::Test
-        QmlTui::Core
-        qmltui_markdown_viewer_module
-    )
-    add_test(NAME markdown_viewer_document COMMAND test_markdown_viewer_document)
-    set_tests_properties(markdown_viewer_document PROPERTIES LABELS AgentSmoke)
 endif()

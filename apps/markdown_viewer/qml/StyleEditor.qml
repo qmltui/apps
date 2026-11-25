@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQml
 import QmlTui
+import QmlTui.Markdown
 import QmlTui.Examples.MarkdownViewer
 
 Rectangle {
