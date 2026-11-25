@@ -1,6 +1,6 @@
 # Terminal Markdown Viewer (`markdown_viewer`)
 
-Terminal Markdown document reader powered by KDE `md4qt` AST parsing with syntax-highlighted code blocks, Unicode box-drawing tables, heading navigation, live search highlighting, and interactive typography/style presets.
+Terminal Markdown document reader built on [`QmlTui.Markdown`](https://github.com/qmltui/markdown) (`MdView`, `MdDoc`, `MdDocStyle`, `MdViewStyle`, powered by KDE `md4qt`) with syntax-highlighted code blocks, Unicode box-drawing tables, heading navigation, OSC 8 hyperlinks, live search highlighting, and interactive typography/style presets.
 
 ```sh
 ./build/apps/markdown_viewer/qmltui_markdown_viewer [path/to/file.md]

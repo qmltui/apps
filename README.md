@@ -22,8 +22,9 @@ cmake --build build --target qmltui_qtop
 Useful CMake options:
 
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI=/path/to/qmltui`: build against a local QmlTui checkout instead of fetching `main`.
-- `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_TVISION=/path/to/tvision`: build `turbo_hex` against a local `QmlTui.TVision` checkout.
-- `-DQMLTUI_BUILD_MARKDOWN_VIEWER=OFF`: skip fetching KDE `md4qt` at configure time.
+- `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_MARKDOWN=/path/to/markdown`: build against a local `QmlTui.Markdown` checkout (a sibling `../markdown` directory is auto-detected when present).
+- `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_TVISION=/path/to/tvision`: build `turbo_hex` against a local `QmlTui.TVision` checkout (a sibling `../tvision` directory is auto-detected when present).
+- `-DQMLTUI_BUILD_MARKDOWN_VIEWER=OFF`: skip building the `markdown_viewer` showcase target.
 - `-DQMLTUI_BUILD_TURBO_HEX=OFF`: skip fetching `QmlTui.TVision` at configure time.
 - `ctest --test-dir build -L Demo --output-on-failure`: record `.cast` and `.gif` previews into `docs/assets/casts/` (requires [`agg`](https://github.com/asciinema/agg) in `PATH` or `~/.cargo/bin` for GIF conversion).
 
@@ -31,7 +32,7 @@ Useful CMake options:
 
 ### [agent_stream](apps/agent_stream/)
 
-Interactive coding-agent session using `Terminal.Inline`, `Scrollback`, slash-command autocomplete, side-by-side diff inspection, and streaming tool cards.
+Interactive coding-agent session using `Terminal.Inline`, `Scrollback`, [`QmlTui.Markdown`](https://github.com/qmltui/markdown) (`MdBlock`) streaming responses, slash-command autocomplete, side-by-side diff inspection, and streaming tool cards.
 
 ![agent_stream showcase](docs/assets/casts/agent_stream.gif)
 
@@ -49,7 +50,7 @@ Container fleet dashboard with `TableView` column sorting, status filter tabs, l
 
 ### [file_manager](apps/file_manager/)
 
-Three-column Miller file manager with syntax-highlighted text previews, asynchronous image/SVG/PDF rendering, live filtering, and an embedded `PtyView` shell drawer.
+Three-column Miller file manager with [`QmlTui.Markdown`](https://github.com/qmltui/markdown) previews (`MdView` for Markdown files and `SyntaxHighlighter` for source code), asynchronous image/SVG/PDF rendering, live filtering, and an embedded `PtyView` shell drawer.
 
 ![file_manager showcase](docs/assets/casts/file_manager.gif)
 
@@ -61,7 +62,7 @@ ISA-101 SCADA operator console and PLC simulator with thresholded gauges, multi-
 
 ### [markdown_viewer](apps/markdown_viewer/)
 
-Terminal Markdown reader powered by KDE `md4qt` with syntax-highlighted code blocks, Unicode box tables, heading navigation, search highlights, and live style editing.
+Terminal Markdown reader built on [`QmlTui.Markdown`](https://github.com/qmltui/markdown) (powered by KDE `md4qt`) with syntax-highlighted code blocks, Unicode box tables, heading navigation, OSC 8 hyperlinks, search highlights, and live style editing.
 
 ![markdown_viewer showcase](docs/assets/casts/markdown_viewer.gif)
 

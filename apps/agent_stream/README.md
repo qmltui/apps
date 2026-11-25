@@ -6,5 +6,6 @@ Interactive coding-agent session combining `Terminal.Inline`, live token-delta s
 ./build/apps/agent_stream/qmltui_agent_stream
 ```
 
+- **Markdown streaming**: Live in-flight responses (`LiveStreamCard`) and committed scrollback responses (`AgentResponseCard`) render CommonMark/GFM via `MdBlock` from [`QmlTui.Markdown`](https://github.com/qmltui/markdown).
 - **Pluggable harness seam**: `AgentSession` drives the UI through `IAgentTransport` (`src/AgentTransport.h`), defaulting to `MockAgentTransport` and ready to swap for an ACP stdio, CLI JSONL, or HTTP SSE adapter via `AgentSession::setTransport(...)`.
 - **Logo**: `BannerCard` defaults to a 5-row `Canvas.HalfBlock` logo (`Circle` and `Polygon` shapes); set `logoRenderMode: Canvas.Braille` for the Braille variant.
