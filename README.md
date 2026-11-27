@@ -23,6 +23,7 @@ Useful CMake options:
 
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI=/path/to/qmltui`: build against a local QmlTui checkout instead of fetching `main`.
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_MARKDOWN=/path/to/markdown`: build against a local `QmlTui.Markdown` checkout (a sibling `../markdown` directory is auto-detected when present).
+- `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_CHARTS=/path/to/charts`: build against a local `QmlTui.Charts` checkout (a sibling `../charts` directory is auto-detected when present).
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_TVISION=/path/to/tvision`: build `turbo_hex` against a local `QmlTui.TVision` checkout (a sibling `../tvision` directory is auto-detected when present).
 - `-DQMLTUI_BUILD_MARKDOWN_VIEWER=OFF`: skip building the `markdown_viewer` showcase target.
 - `-DQMLTUI_BUILD_TURBO_HEX=OFF`: skip fetching `QmlTui.TVision` at configure time.
@@ -56,7 +57,7 @@ Three-column Miller file manager with [`QmlTui.Markdown`](https://github.com/qml
 
 ### [industrial_plc_hmi](apps/industrial_plc_hmi/)
 
-ISA-101 SCADA operator console and PLC simulator with thresholded gauges, multi-trace Braille trend scope, animated P&ID reactor mimic, safety interlock popups, audit log, and I/O diagnostics.
+ISA-101 SCADA operator console and PLC simulator using [`QmlTui.Charts`](https://github.com/qmltui/charts) (`Gauge` thresholded telemetry bars and a dual-Y `ChartView` trend scope with `ReferenceLine`), animated P&ID reactor mimic, safety interlock popups, audit log, and I/O diagnostics.
 
 ![industrial_plc_hmi showcase](docs/assets/casts/industrial_plc_hmi.gif)
 
@@ -74,7 +75,7 @@ Multi-stage `Terminal.Inline` package installer (`qpm`) with an interactive tran
 
 ### [plotting_dashboard](apps/plotting_dashboard/)
 
-Real-time vector plotting dashboard with Braille `Canvas` waveforms (sine, square, triangle, sawtooth), frequency/noise modulation, and XY Lissajous orbits.
+Real-time vector plotting dashboard built on [`QmlTui.Charts`](https://github.com/qmltui/charts) (`ChartView` with interactive crosshair inspection, `ValueAxis`, `ReferenceLine`, and Braille `LineSeries`) for waveforms (sine, square, triangle, sawtooth), frequency/noise modulation, and closed XY Lissajous orbits.
 
 ![plotting_dashboard showcase](docs/assets/casts/plotting_dashboard.gif)
 

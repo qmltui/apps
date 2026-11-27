@@ -1,6 +1,6 @@
 # Industrial PLC & SCADA HMI (`industrial_plc_hmi`)
 
-ISA-101-inspired SCADA operator console and programmable logic controller (PLC) simulator. Demonstrates rounded `Panel` chrome, thresholded `ProgressBar` gauges with rolling `Sparkline` histories, multi-trace Braille `Canvas` trend plotting, an animated P&ID reactor mimic, modal `Popup` safety interlocks, a `TableView` audit log, and modular I/O rack diagnostics.
+ISA-101-inspired SCADA operator console and programmable logic controller (PLC) simulator. Demonstrates rounded `Panel` chrome, [`QmlTui.Charts`](https://github.com/qmltui/charts) thresholded `Gauge` meters paired with rolling `Sparkline` histories, a dual-Y `ChartView` Braille trend scope with `ReferenceLine` trip threshold, an animated P&ID reactor mimic, modal `Popup` safety interlocks, a `TableView` audit log, and modular I/O rack diagnostics.
 
 ```sh
 ./build/apps/industrial_plc_hmi/qmltui_industrial_plc_hmi
