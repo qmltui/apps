@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQml
 import QmlTui
 import QmlTui.Controls
+import QmlTui.Charts as Charts
 import IndustrialPlcHmi
 
 Column {
@@ -27,47 +28,25 @@ Column {
     width: parent ? parent.width : 22
     spacing: 0
 
-    Item {
+    Charts.Gauge {
         width: root.width
-        height: 1
-
-        Text {
-            anchors.left: parent.left
-            text: root.label
-            color: HmiTheme.textSecondary
-            bold: true
-        }
-
-        Text {
-            anchors.right: parent.right
-            text: (root.decimals > 0 ? root.value.toFixed(root.decimals) : Math.round(root.value).toString()) + " " + root.unit
-            color: root.readoutColor
-            bold: true
-        }
-    }
-
-    ProgressBar {
-        width: root.width
-        height: 1
-        from: root.from
-        to: root.to
+        height: 2
+        thresholdMode: Charts.Gauge.Solid
+        label: root.label
+        unit: root.unit.length > 0 ? (" " + root.unit) : ""
+        decimals: root.decimals
+        min: root.from
+        max: root.to
         value: root.value
-        style: "segmented"
-        trackColor: HmiTheme.recessedBg
-        thresholds: [
-            {
-                value: root.effectiveWarn,
-                color: HmiTheme.statusProcessing
-            },
-            {
-                value: root.effectiveDanger,
-                color: HmiTheme.textWarning
-            },
-            {
-                value: root.to,
-                color: HmiTheme.statusError
-            }
-        ]
+        warningThreshold: root.effectiveWarn
+        dangerThreshold: root.effectiveDanger
+        color: HmiTheme.statusProcessing
+        warningColor: HmiTheme.textWarning
+        dangerColor: HmiTheme.statusError
+        trackColor: HmiTheme.textDim
+        labelColor: HmiTheme.textSecondary
+        valueColor: root.readoutColor
+        backgroundColor: HmiTheme.recessedBg
     }
 
     Sparkline {

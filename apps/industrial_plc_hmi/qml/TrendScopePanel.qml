@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQml
 import QmlTui
 import QmlTui.Controls
+import QmlTui.Charts
 import IndustrialPlcHmi
 
 Panel {
@@ -15,51 +16,13 @@ Panel {
     property var tempHistory: []
     property var speedHistory: []
 
-    readonly property int innerWidth: Math.max(10, width - 4)
-    readonly property int innerHeight: Math.max(4, height - 2)
-
     signal traceCycleRequested
 
-    onTempHistoryChanged: {
-        if (root.visible)
-            tempCanvas.updatePlot();
-    }
-    onSpeedHistoryChanged: {
-        if (root.visible)
-            tempCanvas.updatePlot();
-    }
-    onMaxTempLimitChanged: tempCanvas.updatePlot()
-    onTraceModeChanged: tempCanvas.updatePlot()
-    onMachineStateChanged: tempCanvas.updatePlot()
-    onVisibleChanged: {
-        if (root.visible)
-            tempCanvas.updatePlot();
-    }
-
-    function buildSeriesPoints(series: var, minVal: real, maxVal: real, canvasWidth: int, canvasHeight: int): var {
-        if (!series || series.length < 2 || canvasWidth <= 0 || canvasHeight <= 0)
-            return [];
-        const w = canvasWidth * 2;
-        const h = canvasHeight * 4;
-        const len = series.length;
-        const range = Math.max(0.001, maxVal - minVal);
-        const pts = [];
-
-        for (let i = 0; i < len; ++i) {
-            const cx = Math.round((i / (len - 1)) * (w - 1));
-            let cy = Math.round((h - 1) - ((series[i] - minVal) / range) * (h - 1));
-            cy = Math.max(0, Math.min(h - 1, cy));
-            pts.push({
-                x: cx,
-                y: cy
-            });
-        }
-        return pts;
-    }
-
     color: HmiTheme.panelBg
-    border.style: Border.Rounded
-    border.color: root.machineState === PlcTypes.Error ? HmiTheme.borderError : HmiTheme.borderNormal
+    border {
+        style: Border.Rounded
+        color: root.machineState === PlcTypes.Error ? HmiTheme.borderError : HmiTheme.borderNormal
+    }
 
     title: Text {
         text: root.width >= 42 ? "◆ THERMAL & PROCESS SCOPE" : (root.width >= 34 ? "◆ TREND SCOPE" : "◆ SCOPE")
@@ -83,137 +46,73 @@ Panel {
         color: root.traceMode === PlcTypes.SpeedOnly ? HmiTheme.traceSpeed : HmiTheme.traceTemp
     }
 
-    Row {
-        anchors.fill: parent
-        anchors.leftMargin: 1
-        anchors.rightMargin: 1
-        spacing: 1
+    Rectangle {
+        anchors {
+            fill: parent
+            leftMargin: 1
+            rightMargin: 1
+        }
+        color: HmiTheme.recessedBg
 
-        Column {
-            width: 4
-            height: root.innerHeight
+        ChartView {
+            anchors.fill: parent
+            focusPolicy: Qt.NoFocus
+            gridStyle: ChartView.Lines
+            cellColorMode: ChartView.LastDot
 
-            Text {
-                text: "100°"
-                color: HmiTheme.textDim
+            axisX: ValueAxis {
+                visible: false
+                showGrid: false
             }
 
-            Item {
-                width: 4
-                height: Math.max(0, root.innerHeight - 2)
-
-                Text {
-                    anchors.centerIn: parent
-                    text: " 60°"
-                    color: HmiTheme.textDim
-                }
+            axisY: ValueAxis {
+                min: 20.0
+                max: 100.0
+                tickCount: 3
+                suffix: "°"
+                color: HmiTheme.traceGrid
+                labelColor: HmiTheme.textDim
+                gridColor: HmiTheme.traceGrid
             }
 
-            Text {
-                text: " 20°"
-                color: HmiTheme.textDim
+            axisYRight: ValueAxis {
+                id: rpmAxis
+                visible: root.width >= 44 && root.traceMode !== PlcTypes.TempOnly
+                min: 0.0
+                max: 3000.0
+                tickCount: 3
+                color: HmiTheme.traceGrid
+                labelColor: HmiTheme.textDim
+                showGrid: false
+            }
+
+            ReferenceLine {
+                value: root.maxTempLimit
+                color: HmiTheme.traceLimit
+                dashed: true
+                dim: root.machineState !== PlcTypes.Error
+            }
+
+            LineSeries {
+                name: "RPM"
+                axisY: rpmAxis
+                visible: root.traceMode !== PlcTypes.TempOnly
+                color: HmiTheme.traceSpeed
+                dim: root.traceMode === PlcTypes.AllTraces
+                values: root.speedHistory
+            }
+
+            LineSeries {
+                name: "TEMP"
+                visible: root.traceMode !== PlcTypes.SpeedOnly
+                color: root.temperature >= root.maxTempLimit ? HmiTheme.statusError : HmiTheme.traceTemp
+                values: root.tempHistory
             }
         }
 
-        Rectangle {
-            width: Math.max(6, root.innerWidth - 5)
-            height: root.innerHeight
-            color: HmiTheme.recessedBg
-
-            Canvas {
-                id: tempCanvas
-                anchors.fill: parent
-                cellColorMode: Canvas.LastDot
-
-                onWidthChanged: updatePlot()
-                onHeightChanged: updatePlot()
-
-                function updatePlot() {
-                    if (width <= 0 || height <= 0)
-                        return;
-
-                    const w2 = Math.max(1, width * 2 - 1);
-                    const h4 = Math.max(1, height * 4 - 1);
-
-                    gridUpper.x2 = w2;
-                    gridUpper.y1 = Math.round(h4 * 0.25);
-                    gridUpper.y2 = gridUpper.y1;
-
-                    gridMid.x2 = w2;
-                    gridMid.y1 = Math.round(h4 * 0.50);
-                    gridMid.y2 = gridMid.y1;
-
-                    gridLower.x2 = w2;
-                    gridLower.y1 = Math.round(h4 * 0.75);
-                    gridLower.y2 = gridLower.y1;
-
-                    const ly = Math.max(0, Math.min(h4, Math.round(h4 - ((root.maxTempLimit - 20.0) / 80.0) * h4)));
-                    limitLine.y1 = ly;
-                    limitLine.y2 = ly;
-                    limitLine.x2 = w2;
-
-                    speedPoly.points = root.traceMode !== PlcTypes.TempOnly ? root.buildSeriesPoints(root.speedHistory, 0.0, 3000.0, width, height) : [];
-                    tempPoly.points = root.traceMode !== PlcTypes.SpeedOnly ? root.buildSeriesPoints(root.tempHistory, 20.0, 100.0, width, height) : [];
-                }
-
-                Line {
-                    id: gridUpper
-                    x1: 0
-                    y1: 0
-                    x2: 10
-                    y2: 0
-                    color: HmiTheme.traceGrid
-                    dim: true
-                }
-
-                Line {
-                    id: gridMid
-                    x1: 0
-                    y1: 0
-                    x2: 10
-                    y2: 0
-                    color: HmiTheme.traceGrid
-                    dim: true
-                }
-
-                Line {
-                    id: gridLower
-                    x1: 0
-                    y1: 0
-                    x2: 10
-                    y2: 0
-                    color: HmiTheme.traceGrid
-                    dim: true
-                }
-
-                Line {
-                    id: limitLine
-                    x1: 0
-                    y1: 0
-                    x2: 10
-                    y2: 0
-                    color: HmiTheme.traceLimit
-                    dim: root.machineState !== PlcTypes.Error
-                }
-
-                Polygon {
-                    id: speedPoly
-                    closed: false
-                    color: HmiTheme.traceSpeed
-                    dim: root.traceMode === PlcTypes.AllTraces
-                }
-
-                Polygon {
-                    id: tempPoly
-                    closed: false
-                    color: root.temperature >= root.maxTempLimit ? HmiTheme.statusError : HmiTheme.traceTemp
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: root.traceCycleRequested()
-            }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.traceCycleRequested()
         }
     }
 }

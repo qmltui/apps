@@ -39,6 +39,7 @@ qt_add_qml_module(qmltui_industrial_plc_hmi
     DEPENDENCIES
         TARGET QmlTui::Core
         TARGET QmlTui::Controls
+        TARGET QmlTui::Charts
 )
 
 target_link_libraries(qmltui_industrial_plc_hmi PRIVATE
@@ -46,6 +47,7 @@ target_link_libraries(qmltui_industrial_plc_hmi PRIVATE
     Qt6::Qml
     QmlTui::Core
     QmlTui::Controls
+    QmlTui::Charts
 )
 
 if(COMMAND qmltui_wasm_app)
