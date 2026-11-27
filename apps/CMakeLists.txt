@@ -19,6 +19,27 @@ if(NOT TARGET QmlTui::Markdown AND NOT TARGET QmlTuiMarkdown)
     FetchContent_MakeAvailable(qmltui_markdown)
 endif()
 
+if(NOT TARGET QmlTui::Charts AND NOT TARGET QmlTuiCharts)
+    include(FetchContent)
+    set(QMLTUI_CHARTS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(QMLTUI_CHARTS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(_default_charts_dir "${PROJECT_SOURCE_DIR}/../charts")
+    if(NOT FETCHCONTENT_SOURCE_DIR_QMLTUI_CHARTS AND EXISTS "${_default_charts_dir}/CMakeLists.txt")
+        FetchContent_Declare(
+            qmltui_charts
+            SOURCE_DIR "${_default_charts_dir}"
+        )
+    else()
+        FetchContent_Declare(
+            qmltui_charts
+            GIT_REPOSITORY https://github.com/qmltui/charts.git
+            GIT_TAG main
+            GIT_SHALLOW TRUE
+        )
+    endif()
+    FetchContent_MakeAvailable(qmltui_charts)
+endif()
+
 add_subdirectory(agent_stream)
 add_subdirectory(container_fleet)
 add_subdirectory(package_manager)

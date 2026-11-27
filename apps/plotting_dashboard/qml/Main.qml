@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQml
 import QmlTui
 import QmlTui.Controls
+import QmlTui.Charts
 
 Terminal {
     id: rootWindow
@@ -21,6 +22,7 @@ Terminal {
 
     // App state
     property bool paused: false
+    property bool inspectEnabled: false
     property double waveSpeed: 0.08
     property int simulatedCpu: 4
 
@@ -36,22 +38,19 @@ Terminal {
         if (event.key === Qt.Key_Space) {
             rootWindow.paused = !rootWindow.paused;
             event.accepted = true;
+        } else if (event.key === Qt.Key_I) {
+            rootWindow.inspectEnabled = !rootWindow.inspectEnabled;
+            event.accepted = true;
         }
     }
 
-    // Mathematical calculations for the wave chart
-    function generateWaveformPoints(canvasWidth, canvasHeight, time, freq, noise, type) {
-        if (canvasWidth <= 0 || canvasHeight <= 0)
-            return [];
-
-        let pts = [];
-        let w = canvasWidth * 2;
-        let h = canvasHeight * 4;
-        let midY = h / 2;
-        let amp = h * 0.35;
-
-        for (let x = 0; x < w; x++) {
-            let angle = (x / w) * Math.PI * 2 * freq + time;
+    // Mathematical calculations for the wave chart in data coordinates (x in [0, 1], y in [-1.4, 1.4])
+    function generateWaveformPoints(time: real, freq: real, noise: real, type: string): var {
+        const pts = [];
+        const samples = 140;
+        for (let i = 0; i <= samples; i++) {
+            const x = i / samples;
+            const angle = x * Math.PI * 2 * freq + time;
             let yVal = 0.0;
 
             if (type === "sine") {
@@ -68,49 +67,29 @@ Terminal {
                 yVal += (Math.random() - 0.5) * noise;
             }
 
-            let y = Math.round(midY - yVal * amp);
-            y = Math.max(0, Math.min(h - 1, y));
             pts.push({
                 x: x,
-                y: y
+                y: Math.max(-1.4, Math.min(1.4, yVal))
             });
         }
         return pts;
     }
 
-    // Mathematical calculations for the Lissajous X-Y phase plot
-    function generateLissajousPoints(canvasWidth, canvasHeight, phase, fA, fB) {
-        if (canvasWidth <= 0 || canvasHeight <= 0)
-            return [];
-
-        let pts = [];
-        let w = canvasWidth * 2;
-        let h = canvasHeight * 4;
-        let midX = w / 2;
-        let midY = h / 2;
-        let sizeX = w * 0.42;
-        let sizeY = h * 0.42;
-        let steps = 160;
-
-        for (let i = 0; i <= steps; i++) {
-            let theta = (i / steps) * Math.PI * 2;
-            let xVal = Math.sin(fA * theta + phase);
-            let yVal = Math.sin(fB * theta);
-
-            let x = Math.round(midX + xVal * sizeX);
-            let y = Math.round(midY - yVal * sizeY);
-
-            x = Math.max(0, Math.min(w - 1, x));
-            y = Math.max(0, Math.min(h - 1, y));
+    // Mathematical calculations for the Lissajous X-Y phase plot in unit coordinates
+    function generateLissajousPoints(phase: real, fA: int, fB: int): var {
+        const pts = [];
+        const steps = 160;
+        for (let i = 0; i < steps; i++) {
+            const theta = (i / steps) * Math.PI * 2;
             pts.push({
-                x: x,
-                y: y
+                x: Math.sin(fA * theta + phase),
+                y: Math.sin(fB * theta)
             });
         }
         return pts;
     }
 
-    function cycleWaveType() {
+    function cycleWaveType(): void {
         if (waveType === "sine")
             waveType = "square";
         else if (waveType === "square")
@@ -121,7 +100,7 @@ Terminal {
             waveType = "sine";
     }
 
-    function cycleNoise() {
+    function cycleNoise(): void {
         if (noiseLevel === 0.0)
             noiseLevel = 0.15;
         else if (noiseLevel === 0.15)
@@ -132,14 +111,12 @@ Terminal {
             noiseLevel = 0.0;
     }
 
-    function updatePlots() {
-        if (waveformPlotCanvas.width > 0 && waveformPlotCanvas.height > 0) {
-            waveformPoly.points = rootWindow.generateWaveformPoints(waveformPlotCanvas.width, waveformPlotCanvas.height, rootWindow.waveTime, rootWindow.frequency, rootWindow.noiseLevel, rootWindow.waveType);
-        }
-        if (lissajousPlotCanvas.width > 0 && lissajousPlotCanvas.height > 0) {
-            lissajousPoly.points = rootWindow.generateLissajousPoints(lissajousPlotCanvas.width, lissajousPlotCanvas.height, rootWindow.lissajousPhase, rootWindow.freqA, rootWindow.freqB);
-        }
+    function updatePlots(): void {
+        waveformSeries.points = rootWindow.generateWaveformPoints(rootWindow.waveTime, rootWindow.frequency, rootWindow.noiseLevel, rootWindow.waveType);
+        lissajousSeries.points = rootWindow.generateLissajousPoints(rootWindow.lissajousPhase, rootWindow.freqA, rootWindow.freqB);
     }
+
+    Component.onCompleted: rootWindow.updatePlots()
 
     // Animation Timer
     Timer {
@@ -196,7 +173,7 @@ Terminal {
 
             Text {
                 anchors.centerIn: parent
-                text: "Focus: [Tab] / [Shift+Tab] | Quick Pause: [Space] | Quit: [Q] or [Esc]"
+                text: "Focus: [Tab] | Pause: [Space] | Inspect: [I] (" + (rootWindow.inspectEnabled ? "ON" : "OFF") + ") | Quit: [Q]/[Esc]"
                 color: "gray"
             }
         }
@@ -428,66 +405,91 @@ Terminal {
                         bold: true
                     }
 
-                    // Chart Drawing Area inset cleanly inside borders below title
-                    Item {
-                        id: upperChartBox
-                        anchors.top: upperTitle.bottom
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
+                    // Oscilloscope ChartView (user-composed crosshair inspection)
+                    ChartView {
+                        id: waveformChart
 
-                        // Superposed Canvas 1: High-Performance Background Grid Lines Canvas
-                        Canvas {
-                            id: waveformGridCanvas
-                            anchors.fill: parent
-                            color: "#004400"
-                            dim: true
+                        readonly property chartHit hit: (waveformHover.containsMouse && waveformChart.plotRevision >= 0) ? waveformChart.pick(waveformHover.x + waveformHover.mouseX, waveformHover.y + waveformHover.mouseY, ChartView.NearestX) : waveformChart.pick(-1, -1)
 
-                            // Draw C++ native Grid lines
-                            Line {
-                                x1: 0
-                                y1: Math.floor(waveformGridCanvas.height * 2)
-                                x2: Math.floor(waveformGridCanvas.width * 2)
-                                y2: Math.floor(waveformGridCanvas.height * 2)
-                            }
+                        anchors {
+                            top: upperTitle.bottom
+                            bottom: parent.bottom
+                            left: parent.left
+                            right: parent.right
+                        }
+                        gridStyle: ChartView.Dots
 
-                            Repeater {
-                                model: 5
-                                delegate: Line {
-                                    required property int index
-                                    x1: Math.floor((index + 1) * (waveformGridCanvas.width * 2) / 6)
-                                    y1: 0
-                                    x2: Math.floor((index + 1) * (waveformGridCanvas.width * 2) / 6)
-                                    y2: Math.floor(waveformGridCanvas.height * 4)
-                                }
-                            }
-
-                            Repeater {
-                                model: 3
-                                delegate: Line {
-                                    required property int index
-                                    x1: 0
-                                    y1: Math.floor((index + 1) * (waveformGridCanvas.height * 4) / 4)
-                                    x2: Math.floor(waveformGridCanvas.width * 2)
-                                    y2: Math.floor((index + 1) * (waveformGridCanvas.height * 4) / 4)
-                                }
-                            }
+                        axisX: ValueAxis {
+                            id: waveAxisX
+                            min: 0.0
+                            max: 1.0
+                            tickCount: 5
+                            labelFormat: "%.2f"
+                            suffix: "s"
+                            color: "#006600"
+                            labelColor: "#55aa55"
+                            gridColor: "#004400"
                         }
 
-                        // Superposed Canvas 2: High-Performance Foreground Waveform Plot Canvas
-                        Canvas {
-                            id: waveformPlotCanvas
-                            anchors.fill: parent
+                        axisY: ValueAxis {
+                            id: waveAxisY
+                            min: -1.4
+                            max: 1.4
+                            tickCount: 3
+                            labelFormat: "%.1f"
+                            color: "#006600"
+                            labelColor: "#55aa55"
+                            gridColor: "#004400"
+                        }
+
+                        ReferenceLine {
+                            value: 0.0
+                            color: "#006600"
+                            dashed: true
+                            dim: true
+                        }
+
+                        ReferenceLine {
+                            orientation: Qt.Vertical
+                            behindData: true
+                            visible: waveformChart.hit.valid
+                            value: waveformChart.hit.x
+                            color: "#88ff88"
+                            dashed: true
+                            dim: true
+                        }
+
+                        LineSeries {
+                            id: waveformSeries
+                            name: rootWindow.waveType.toUpperCase()
                             color: "green"
+                        }
 
-                            onWidthChanged: rootWindow.updatePlots()
-                            onHeightChanged: rootWindow.updatePlots()
+                        Text {
+                            visible: waveformChart.hit.valid
+                            x: waveformChart.hit.cellX
+                            y: waveformChart.hit.cellY
+                            text: "●"
+                            color: waveformChart.hit.color
+                            bold: true
+                        }
 
-                            // Dynamic vector curve
-                            Polygon {
-                                id: waveformPoly
-                                closed: false
-                            }
+                        Text {
+                            visible: waveformChart.hit.valid && waveformChart.plotRect.width >= 14
+                            x: waveformChart.hit.cellX >= waveformChart.plotRect.x + waveformChart.plotRect.width / 2 ? waveformChart.plotRect.x : Math.max(waveformChart.plotRect.x, waveformChart.plotRect.x + waveformChart.plotRect.width - implicitWidth)
+                            y: (waveformChart.hit.cellY <= waveformChart.plotRect.y + 1 && waveformChart.plotRect.height >= 3) ? (waveformChart.plotRect.y + waveformChart.plotRect.height - 1) : waveformChart.plotRect.y
+                            text: waveformChart.hit.valid ? ("[x:" + waveAxisX.formatValue(waveformChart.hit.x) + "  " + waveformSeries.name + ":" + waveAxisY.formatValue(waveformChart.hit.y) + "]") : ""
+                            color: "#88ff88"
+                            dim: true
+                        }
+
+                        MouseArea {
+                            id: waveformHover
+                            x: waveformChart.plotRect.x
+                            y: waveformChart.plotRect.y
+                            width: waveformChart.plotRect.width
+                            height: waveformChart.plotRect.height
+                            hoverEnabled: rootWindow.inspectEnabled
                         }
                     }
                 }
@@ -508,49 +510,110 @@ Terminal {
                         color: "cyan"
                     }
 
-                    // Chart Drawing Area inset cleanly inside borders below title
-                    Item {
-                        id: lowerChartBox
-                        anchors.top: lowerTitle.bottom
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                        anchors.right: parent.right
+                    // Lissajous XY Phase Orbit ChartView (user-composed crosshair inspection)
+                    ChartView {
+                        id: lissajousChart
 
-                        // Superposed Canvas 1: High-Performance Background Cross-hairs Grid Canvas
-                        Canvas {
-                            id: lissajousGridCanvas
-                            anchors.fill: parent
-                            color: "#004444"
+                        readonly property chartHit hit: (lissajousHover.containsMouse && lissajousChart.plotRevision >= 0) ? lissajousChart.pick(lissajousHover.x + lissajousHover.mouseX, lissajousHover.y + lissajousHover.mouseY, ChartView.NearestPoint) : lissajousChart.pick(-1, -1)
 
-                            Line {
-                                x1: 0
-                                y1: Math.floor(lissajousGridCanvas.height * 2)
-                                x2: Math.floor(lissajousGridCanvas.width * 2)
-                                y2: Math.floor(lissajousGridCanvas.height * 2)
-                            }
+                        anchors {
+                            top: lowerTitle.bottom
+                            bottom: parent.bottom
+                            left: parent.left
+                            right: parent.right
+                        }
+                        gridStyle: ChartView.Dots
 
-                            Line {
-                                x1: Math.floor(lissajousGridCanvas.width)
-                                y1: 0
-                                x2: Math.floor(lissajousGridCanvas.width)
-                                y2: Math.floor(lissajousGridCanvas.height * 4)
-                            }
+                        axisX: ValueAxis {
+                            id: lissAxisX
+                            min: -1.2
+                            max: 1.2
+                            tickCount: 3
+                            labelFormat: "%.1f"
+                            color: "#006666"
+                            labelColor: "#55aaaa"
+                            gridColor: "#004444"
                         }
 
-                        // Superposed Canvas 2: High-Performance Foreground Lissajous Orbit Plot Canvas
-                        Canvas {
-                            id: lissajousPlotCanvas
-                            anchors.fill: parent
+                        axisY: ValueAxis {
+                            id: lissAxisY
+                            min: -1.2
+                            max: 1.2
+                            tickCount: 3
+                            labelFormat: "%.1f"
+                            color: "#006666"
+                            labelColor: "#55aaaa"
+                            gridColor: "#004444"
+                        }
+
+                        ReferenceLine {
+                            value: 0.0
+                            orientation: Qt.Horizontal
+                            color: "#006666"
+                            dashed: true
+                            dim: true
+                        }
+
+                        ReferenceLine {
+                            value: 0.0
+                            orientation: Qt.Vertical
+                            color: "#006666"
+                            dashed: true
+                            dim: true
+                        }
+
+                        ReferenceLine {
+                            orientation: Qt.Vertical
+                            behindData: true
+                            visible: lissajousChart.hit.valid
+                            value: lissajousChart.hit.x
+                            color: "#88ffff"
+                            dashed: true
+                            dim: true
+                        }
+
+                        ReferenceLine {
+                            orientation: Qt.Horizontal
+                            behindData: true
+                            visible: lissajousChart.hit.valid
+                            value: lissajousChart.hit.y
+                            color: "#88ffff"
+                            dashed: true
+                            dim: true
+                        }
+
+                        LineSeries {
+                            id: lissajousSeries
+                            name: "ORBIT"
                             color: "cyan"
+                            closed: true
+                        }
 
-                            onWidthChanged: rootWindow.updatePlots()
-                            onHeightChanged: rootWindow.updatePlots()
+                        Text {
+                            visible: lissajousChart.hit.valid
+                            x: lissajousChart.hit.cellX
+                            y: lissajousChart.hit.cellY
+                            text: "●"
+                            color: lissajousChart.hit.color
+                            bold: true
+                        }
 
-                            // Dynamic Lissajous curve
-                            Polygon {
-                                id: lissajousPoly
-                                closed: true
-                            }
+                        Text {
+                            visible: lissajousChart.hit.valid && lissajousChart.plotRect.width >= 14
+                            x: lissajousChart.hit.cellX >= lissajousChart.plotRect.x + lissajousChart.plotRect.width / 2 ? lissajousChart.plotRect.x : Math.max(lissajousChart.plotRect.x, lissajousChart.plotRect.x + lissajousChart.plotRect.width - implicitWidth)
+                            y: (lissajousChart.hit.cellY <= lissajousChart.plotRect.y + 1 && lissajousChart.plotRect.height >= 3) ? (lissajousChart.plotRect.y + lissajousChart.plotRect.height - 1) : lissajousChart.plotRect.y
+                            text: lissajousChart.hit.valid ? ("[ORBIT (" + lissAxisX.formatValue(lissajousChart.hit.x) + ", " + lissAxisY.formatValue(lissajousChart.hit.y) + ")]") : ""
+                            color: "#88ffff"
+                            dim: true
+                        }
+
+                        MouseArea {
+                            id: lissajousHover
+                            x: lissajousChart.plotRect.x
+                            y: lissajousChart.plotRect.y
+                            width: lissajousChart.plotRect.width
+                            height: lissajousChart.plotRect.height
+                            hoverEnabled: rootWindow.inspectEnabled
                         }
                     }
                 }

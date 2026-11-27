@@ -7,6 +7,7 @@ qt_add_qml_module(qmltui_plotting_dashboard
     DEPENDENCIES
         TARGET QmlTui::Core
         TARGET QmlTui::Controls
+        TARGET QmlTui::Charts
 )
 
 target_link_libraries(qmltui_plotting_dashboard PRIVATE
@@ -14,6 +15,7 @@ target_link_libraries(qmltui_plotting_dashboard PRIVATE
     Qt6::Qml
     QmlTui::Core
     QmlTui::Controls
+    QmlTui::Charts
 )
 
 if(COMMAND qmltui_wasm_app)
