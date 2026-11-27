@@ -40,6 +40,27 @@ if(NOT TARGET QmlTui::Charts AND NOT TARGET QmlTuiCharts)
     FetchContent_MakeAvailable(qmltui_charts)
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin" AND NOT TARGET QmlTui::PtyView AND NOT TARGET QmlTuiPtyView)
+    include(FetchContent)
+    set(QMLTUI_PTYVIEW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(QMLTUI_PTYVIEW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(_default_ptyview_dir "${PROJECT_SOURCE_DIR}/../ptyview")
+    if(NOT FETCHCONTENT_SOURCE_DIR_QMLTUI_PTYVIEW AND EXISTS "${_default_ptyview_dir}/CMakeLists.txt")
+        FetchContent_Declare(
+            qmltui_ptyview
+            SOURCE_DIR "${_default_ptyview_dir}"
+        )
+    else()
+        FetchContent_Declare(
+            qmltui_ptyview
+            GIT_REPOSITORY https://github.com/qmltui/ptyview.git
+            GIT_TAG main
+            GIT_SHALLOW TRUE
+        )
+    endif()
+    FetchContent_MakeAvailable(qmltui_ptyview)
+endif()
+
 add_subdirectory(agent_stream)
 add_subdirectory(container_fleet)
 add_subdirectory(package_manager)
@@ -69,6 +90,6 @@ if(QMLTUI_BUILD_MARKDOWN_VIEWER)
     add_subdirectory(markdown_viewer)
 endif()
 
-if(QMLTUI_ENABLE_PTYVIEW AND TARGET QmlTui::Image)
+if(TARGET QmlTui::PtyView AND TARGET QmlTui::Image)
     add_subdirectory(file_manager)
 endif()

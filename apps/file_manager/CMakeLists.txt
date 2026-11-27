@@ -10,6 +10,7 @@ endif()
 set(_file_manager_deps
     DEPENDENCIES
         TARGET QmlTuiMarkdown
+        TARGET QmlTuiPtyView
 )
 get_target_property(_qmltui_is_imported QmlTui::Core IMPORTED)
 if(_qmltui_is_imported)
@@ -21,7 +22,6 @@ else()
         TARGET QmlTui::Core
         TARGET QmlTui::Controls
         TARGET QmlTui::Image
-        TARGET QmlTui::PtyView
     )
 endif()
 

@@ -25,6 +25,7 @@ Useful CMake options:
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_MARKDOWN=/path/to/markdown`: build against a local `QmlTui.Markdown` checkout (a sibling `../markdown` directory is auto-detected when present).
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_CHARTS=/path/to/charts`: build against a local `QmlTui.Charts` checkout (a sibling `../charts` directory is auto-detected when present).
 - `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_TVISION=/path/to/tvision`: build `turbo_hex` against a local `QmlTui.TVision` checkout (a sibling `../tvision` directory is auto-detected when present).
+- `-DFETCHCONTENT_SOURCE_DIR_QMLTUI_PTYVIEW=/path/to/ptyview`: build `file_manager` against a local `QmlTui.PtyView` checkout (a sibling `../ptyview` directory is auto-detected when present on Linux and macOS).
 - `-DQMLTUI_BUILD_MARKDOWN_VIEWER=OFF`: skip building the `markdown_viewer` showcase target.
 - `-DQMLTUI_BUILD_TURBO_HEX=OFF`: skip fetching `QmlTui.TVision` at configure time.
 - `ctest --test-dir build -L Demo --output-on-failure`: record `.cast` and `.gif` previews into `docs/assets/casts/` (requires [`agg`](https://github.com/asciinema/agg) in `PATH` or `~/.cargo/bin` for GIF conversion).
@@ -51,7 +52,7 @@ Container fleet dashboard with `TableView` column sorting, status filter tabs, l
 
 ### [file_manager](apps/file_manager/)
 
-Three-column Miller file manager with [`QmlTui.Markdown`](https://github.com/qmltui/markdown) previews (`MdView` for Markdown files and `SyntaxHighlighter` for source code), asynchronous image/SVG/PDF rendering, live filtering, and an embedded `PtyView` shell drawer.
+Three-column Miller file manager with [`QmlTui.Markdown`](https://github.com/qmltui/markdown) previews (`MdView` for Markdown files and `SyntaxHighlighter` for source code), asynchronous image/SVG/PDF rendering, live filtering, and an embedded [`QmlTui.PtyView`](https://github.com/qmltui/ptyview) shell drawer.
 
 ![file_manager showcase](docs/assets/casts/file_manager.gif)
 

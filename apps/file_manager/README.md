@@ -4,7 +4,7 @@ Three-column Miller file manager (Parent, Current, Preview) built with C++17 and
 
 - **Streaming filesystem backend**: Enumerates entries via `QDirListing` and reports mount usage via `QStorageInfo`.
 - **Multi-format live preview**: Renders Markdown files with `MdView` and source code with `SyntaxHighlighter` from [`QmlTui.Markdown`](https://github.com/qmltui/markdown), plus directory subtrees, binary metadata, and asynchronous off-thread image, SVG, and multi-page PDF previews via `qmltui::AsyncImageProvider` (`Qt6::Gui`, `Qt6::Svg`, `Qt6::Pdf`).
-- **Integrated shell**: Hosts an interactive Unix shell drawer (`QmlTui.PtyView`) synchronized with the active directory.
+- **Integrated shell**: Hosts an interactive Unix shell drawer ([`QmlTui.PtyView`](https://github.com/qmltui/ptyview)) synchronized with the active directory.
 
 ```sh
 ./build/apps/file_manager/qmltui_file_manager

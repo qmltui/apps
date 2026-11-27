@@ -13,9 +13,6 @@ option(QMLTUI_USE_INSTALLED "Consume an installed QmlTui 0.6 package instead of 
 option(QMLTUI_ENABLE_PRIVATE_QT "Enable features requiring private Qt modules (Behavior, advanced states)" ON)
 option(QMLTUI_ENABLE_IMAGE "Build the optional QmlTui Image module (requires Qt Gui and Network)" ON)
 option(QMLTUI_ENABLE_RUNNER "Build the optional QmlTui Runner library and CLI" ${_qmltui_apps_desktop})
-if(CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin")
-    option(QMLTUI_ENABLE_PTYVIEW "Build the optional Unix PTY PtyView module" ON)
-endif()
 unset(_qmltui_apps_desktop)
 
 if(QMLTUI_USE_INSTALLED)
